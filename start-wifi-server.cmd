@@ -8,7 +8,7 @@ if not exist "%NODE_EXE%" (
 )
 
 echo.
-echo Ken's Music App Wi-Fi server
+echo MusicDocs Wi-Fi server
 echo ----------------------------
 echo Keep this window open while testing on iPhone.
 echo.

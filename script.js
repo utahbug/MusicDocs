@@ -270,6 +270,10 @@ function collectElements() {
   el.settingsPanel = document.getElementById("settingsPanel");
   el.settingsCloseButton = document.getElementById("settingsCloseButton");
   el.settingsThemeChoices = document.getElementById("settingsThemeChoices");
+
+  el.helpModal = document.getElementById("helpModal");
+  el.helpPanel = document.getElementById("helpPanel");
+  el.helpCloseButton = document.getElementById("helpCloseButton");
 }
 
 function wireEvents() {
@@ -318,6 +322,7 @@ function wireEvents() {
   el.listEditForm.addEventListener("submit", saveListEditModal);
   el.settingsCloseButton.addEventListener("click", closeSettingsModal);
   el.settingsThemeChoices.addEventListener("change", handleSettingsThemeChange);
+  el.helpCloseButton.addEventListener("click", closeHelpModal);
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
   window.addEventListener("pointermove", moveModalDrag);
   window.addEventListener("pointerup", endModalDrag);
@@ -408,6 +413,17 @@ function closeSettingsModal() {
   fitOpenMobileModals();
 }
 
+function openHelpModal() {
+  closeOverflowMenu();
+  el.helpModal.classList.remove("hidden");
+  fitOpenMobileModals();
+}
+
+function closeHelpModal() {
+  el.helpModal.classList.add("hidden");
+  fitOpenMobileModals();
+}
+
 function renderSettingsThemeChoices() {
   const settings = readJson(STORAGE_KEYS.settings, {});
   const activeTheme = settings.tabTheme && THEME_PRESETS[settings.tabTheme] ? settings.tabTheme : "blue";
@@ -473,6 +489,7 @@ function handleDocumentKeydown(event) {
   closeListMoreMenu();
   closeListEditModal();
   closeSettingsModal();
+  closeHelpModal();
 }
 
 function favoriteIconHtml(id) {
@@ -746,7 +763,8 @@ function fitOpenMobileModals() {
   const openPanels = [
     [el.importModal, el.modalPanel],
     [el.listEditModal, el.listEditPanel],
-    [el.settingsModal, el.settingsPanel]
+    [el.settingsModal, el.settingsPanel],
+    [el.helpModal, el.helpPanel]
   ].filter(([modal, panel]) => modal && panel && !modal.classList.contains("hidden"));
 
   const shouldFit = window.matchMedia("(max-width: 760px)").matches;
@@ -2189,6 +2207,12 @@ async function handleBodyClick(event) {
   const settingsButton = event.target.closest("[data-open-settings]");
   if (settingsButton) {
     openSettingsModal();
+    return;
+  }
+
+  const helpButton = event.target.closest("[data-open-help]");
+  if (helpButton) {
+    openHelpModal();
     return;
   }
 

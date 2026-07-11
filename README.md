@@ -1,4 +1,4 @@
-# Ken's Music App
+# MusicDocs
 
 A simple private/local music helper for Primary music planning, quick lists, cards, links, and uploaded files.
 

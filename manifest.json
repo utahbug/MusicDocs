@@ -1,6 +1,6 @@
 {
-  "name": "Ken's Music App",
-  "short_name": "Ken's Music",
+  "name": "MusicDocs",
+  "short_name": "MusicDocs",
   "description": "A private, local music helper for PDFs, lists, song cards, notes, links, setlists, and favorites.",
   "start_url": "./index.html",
   "scope": "./",
