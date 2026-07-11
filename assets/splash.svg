@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Ken's Music App splash graphic</title>
+  <desc id="desc">A calm blue music book and star graphic.</desc>
+  <rect width="640" height="420" rx="34" fill="#F7FAFB"/>
+  <circle cx="320" cy="205" r="142" fill="#E8F1F5"/>
+  <path d="M204 122c0-18 15-32 33-32h78c25 0 46 20 46 46v185c0 5-6 8-10 5-12-9-27-14-43-14h-71c-18 0-33-15-33-33V122z" fill="#FFFFFF" stroke="#B8CCD4" stroke-width="10"/>
+  <path d="M436 122c0-18-15-32-33-32h-78c-25 0-46 20-46 46v185c0 5 6 8 10 5 12-9 27-14 43-14h71c18 0 33-15 33-33V122z" fill="#FFFFFF" stroke="#B8CCD4" stroke-width="10"/>
+  <path d="M320 119v192" stroke="#2F6378" stroke-width="10" stroke-linecap="round"/>
+  <path d="M244 158h64M244 198h64M244 238h44M396 158h-64M396 198h-64M396 238h-44" stroke="#5C6B70" stroke-width="10" stroke-linecap="round"/>
+  <path d="M320 42l20 48 52 5-39 34 12 51-45-27-45 27 12-51-39-34 52-5 20-48z" fill="#A8874A"/>
+  <circle cx="166" cy="108" r="11" fill="#2F6378"/>
+  <circle cx="475" cy="291" r="11" fill="#2F6378"/>
+  <path d="M142 278c32-18 68-18 100 0M398 278c32-18 68-18 100 0" stroke="#2F6378" stroke-width="9" stroke-linecap="round"/>
+</svg>
