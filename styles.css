@@ -16,16 +16,6 @@ button { cursor: pointer; }
 
 .sr-only { clip: rect(0px, 0px, 0px, 0px); border: 0px; height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 1px; }
 
-.splash-screen { align-items: center; background: var(--bg); display: flex; inset: 0px; justify-content: center; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); position: fixed; z-index: 500; }
-
-.splash-screen.splash-exit { opacity: 0; pointer-events: none; transition: opacity 180ms ease; }
-
-.splash-panel { align-items: center; display: grid; gap: 18px; justify-items: center; text-align: center; }
-
-.splash-panel h1 { color: var(--ink); font-size: clamp(2rem, 8vw, 4rem); font-weight: 800; }
-
-.splash-image { display: block; height: min(38vh, 300px); max-width: min(76vw, 420px); object-fit: contain; width: auto; }
-
 .app-shell { min-height: 100vh; padding-bottom: 18px; }
 
 .app-header { align-items: center; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: max(12px, env(safe-area-inset-top)) clamp(14px, 4vw, 32px) 10px; }
@@ -47,6 +37,10 @@ h3 { font-size: 1.1rem; line-height: 1.2; margin-bottom: 5px; }
 .eyebrow { color: var(--muted); font-size: 0.78rem; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
 
 .main-nav { background: var(--surface); border-bottom: 1px solid var(--line); display: flex; gap: 6px; overflow: visible; padding: 6px clamp(12px, 4vw, 32px); position: sticky; top: 0px; z-index: 25; }
+
+body.pdf-open { --pdf-nav-space: calc(58px + env(safe-area-inset-bottom)); overflow: hidden; }
+
+body.pdf-open .main-nav { border-bottom: 0px; border-top: 1px solid var(--line); bottom: 0px; left: 0px; overflow-x: auto; overflow-y: visible; padding-bottom: max(6px, env(safe-area-inset-bottom)); position: fixed; right: 0px; top: auto; z-index: 35; }
 
 .nav-button, .primary-button, .secondary-button, .icon-button { align-items: center; border-radius: var(--radius); border: 1px solid var(--line); display: inline-flex; justify-content: center; min-height: 40px; padding: 8px 12px; text-decoration: none; touch-action: manipulation; }
 
@@ -136,7 +130,7 @@ textarea { resize: vertical; }
 
 .rich-toolbar { display: flex; flex-wrap: wrap; gap: 5px; }
 
-.rich-toolbar button { background: var(--accent-soft); border: 1px solid var(--line); border-radius: 6px; color: var(--ink); font-weight: 750; min-height: 36px; min-width: 38px; padding: 5px 9px; }
+.rich-toolbar button { background: var(--accent-soft); border: 1px solid var(--line); border-radius: 6px; color: var(--ink); font-weight: 750; min-height: 32px; min-width: 34px; padding: 4px 8px; }
 
 .rich-toolbar button:hover, .rich-toolbar button:focus-visible { background: var(--accent-hover); color: var(--accent-strong); }
 
@@ -144,15 +138,21 @@ textarea { resize: vertical; }
 
 .rich-toolbar button.is-active:hover, .rich-toolbar button.is-active:focus-visible, .rich-toolbar button[aria-pressed="true"]:hover, .rich-toolbar button[aria-pressed="true"]:focus-visible { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--surface); }
 
-.toolbar-icon { display: inline-block; height: 20px; position: relative; width: 22px; }
+.strikeout-icon { display: inline-block; font-weight: 850; line-height: 1; position: relative; }
 
-.bullet-list-icon::before { content: "•\A•\A•"; font-size: 0.72rem; left: 0px; line-height: 0.55; position: absolute; top: 2px; white-space: pre; }
+.strikeout-icon span { position: relative; z-index: 1; }
 
-.bullet-list-icon::after, .numbered-list-icon::after { background: currentcolor; box-shadow: 0 7px 0 currentcolor, 0 14px 0 currentcolor; content: ""; height: 2px; left: 9px; position: absolute; top: 3px; width: 13px; }
+.strikeout-icon::after { background: currentcolor; content: ""; height: 2px; left: -4px; opacity: 0.65; position: absolute; right: -4px; top: 56%; transform: rotate(-6deg); z-index: 0; }
 
-.numbered-list-icon::before { content: "1\A2\A3"; font-size: 0.58rem; font-weight: 800; left: 0px; line-height: 0.8; position: absolute; top: 0px; white-space: pre; }
+.toolbar-icon { display: inline-block; height: 18px; position: relative; width: 22px; }
 
-.photo-icon { border: 2px solid currentcolor; border-radius: 3px; height: 17px; margin-top: 1px; width: 21px; }
+.bullet-list-icon::before { background: currentcolor; border-radius: 999px; box-shadow: 0 7px 0 currentcolor, 0 14px 0 currentcolor; content: ""; height: 4px; left: 2px; position: absolute; top: 2px; width: 4px; }
+
+.bullet-list-icon::after, .numbered-list-icon::after { background: currentcolor; box-shadow: 0 7px 0 currentcolor, 0 14px 0 currentcolor; content: ""; height: 2px; left: 11px; position: absolute; top: 3px; width: 12px; }
+
+.numbered-list-icon::before { content: "1\A 2\A 3"; font-size: 0.48rem; font-weight: 850; left: 1px; line-height: 0.95; position: absolute; top: 1px; white-space: pre; }
+
+.photo-icon { border: 2px solid currentcolor; border-radius: 3px; height: 15px; margin-top: 1px; width: 19px; }
 
 .photo-icon::before { background: currentcolor; border-radius: 2px 2px 0px 0px; content: ""; height: 4px; left: 3px; position: absolute; top: -5px; width: 8px; }
 
@@ -160,13 +160,23 @@ textarea { resize: vertical; }
 
 .rich-card-editor, .rich-card-content { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; font-size: clamp(1rem, 4vw, 1.14rem); font-weight: 500; line-height: 1.55; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
 
-.rich-card-editor { background: var(--surface); min-height: 160px; outline: none; }
+.rich-card-editor { background: var(--surface); height: 118px; min-height: 88px; outline: none; overflow: auto; resize: vertical; }
 
 .rich-card-editor:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-hover); }
 
 .rich-card-content { margin-top: 0px; }
 
 .rich-card-preview { max-height: 320px; }
+
+.rich-card-editor img, .rich-card-content img { border: 1px solid var(--line); border-radius: 6px; display: block; height: auto; margin: 8px 0px; max-width: 100%; }
+
+.rich-card-editor img { cursor: pointer; }
+
+.rich-card-editor img[data-card-image-size="small"], .rich-card-content img[data-card-image-size="small"] { width: min(42%, 240px); }
+
+.rich-card-editor img[data-card-image-size="medium"], .rich-card-content img[data-card-image-size="medium"] { width: min(72%, 520px); }
+
+.rich-card-editor img[data-card-image-size="large"], .rich-card-content img[data-card-image-size="large"] { width: 100%; }
 
 .rich-card-editor table, .rich-card-content table { border-collapse: collapse; margin: 6px 0px; min-width: min(100%, 260px); white-space: normal; }
 
@@ -574,6 +584,8 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .pdf-viewer { background: var(--accent-soft); display: grid; grid-template-rows: auto 1fr; height: 100dvh; inset: 0px; position: fixed; z-index: 20; }
 
+body.pdf-open .pdf-viewer { bottom: var(--pdf-nav-space); height: auto; }
+
 .pdf-toolbar { align-items: center; background: var(--surface); border-bottom: 1px solid var(--line); display: grid; gap: 8px; grid-template-columns: minmax(0px, 1fr) auto; padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) 6px max(8px, env(safe-area-inset-left)); }
 
 .pdf-title-wrap { min-width: 0px; text-align: center; }
@@ -588,9 +600,11 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .pdf-page-button:hover, .pdf-page-button:focus-visible { background: var(--accent-hover); color: var(--accent-strong); }
 
-.pdf-stage { align-items: center; display: flex; justify-content: center; min-height: 0px; overflow: hidden; padding: 12px; position: relative; touch-action: pan-y; }
+.pdf-stage { align-items: flex-start; display: flex; justify-content: center; min-height: 0px; overflow: hidden; padding: 4px 12px 12px; position: relative; touch-action: none; }
 
-.pdf-canvas { background: var(--surface); box-shadow: var(--shadow-pdf); display: block; max-height: 100%; max-width: 100%; }
+.pdf-canvas { background: var(--surface); box-shadow: var(--shadow-pdf); display: block; max-height: 100%; max-width: 100%; transform-origin: top center; will-change: transform; }
+
+.pdf-canvas.is-zoomed { cursor: grab; }
 
 .pdf-tap-zone { background: transparent; border: 0px; bottom: 0px; min-height: 100%; opacity: 1; padding: 0px; position: absolute; top: 0px; width: 50%; z-index: 2; }
 
@@ -612,7 +626,6 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
   .nav-button { font-size: 0.88rem; min-height: 38px; padding: 6px 9px; white-space: nowrap; }
   .nav-icon-button { min-width: 38px; padding-inline: 8px; }
   .main-content { overflow-x: clip; padding: 12px 12px; }
-  .rich-toolbar [data-rich-command="table"] { display: none; }
   .overflow-menu { max-height: min(62dvh, 340px); min-width: min(210px, calc(100vw - 18px)); }
   .section-heading { align-items: stretch; display: grid; }
   .compact-toolbar { display: grid; grid-template-columns: 1fr 1fr; }
@@ -626,7 +639,7 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
   .modal-heading { cursor: default; margin: -10px -10px 2px; padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); width: calc(100% + 20px); }
   .modal-action-buttons { flex: 0 0 auto; min-width: 0px; }
   .rich-toolbar { max-width: 100%; overflow: hidden; }
-  .rich-toolbar button { flex: 0 0 44px; min-height: 44px; min-width: 44px; padding: 0px; width: 44px; }
+  .rich-toolbar button { flex: 0 0 40px; min-height: 40px; min-width: 40px; padding: 0px; width: 40px; }
   .form-grid { grid-template-columns: 1fr; }
   .danger-button { justify-self: start; }
   .editor-grid { grid-template-columns: 1fr; }
@@ -674,5 +687,5 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 @media (orientation: landscape) and (max-height: 560px) {
   .pdf-toolbar { grid-template-columns: 1fr auto; padding-bottom: 8px; padding-top: 8px; }
   .pdf-button-row { grid-column: auto; }
-  .pdf-stage { padding: 8px; }
+  .pdf-stage { padding: 3px 8px 8px; }
 }

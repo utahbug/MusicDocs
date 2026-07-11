@@ -19,7 +19,7 @@ const STORAGE_KEYS = {
 const IMPORT_DB_NAME = "primaryMusicHelper.imports";
 const IMPORT_DB_VERSION = 1;
 const PDF_STORE_NAME = "pdfFiles";
-const RICH_TOGGLE_COMMANDS = ["bold", "italic", "underline", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
+const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
 
 const BUILT_IN_LINKS = [];
 
@@ -37,6 +37,7 @@ const state = {
   importContext: "library",
   importReturnSection: "",
   modalDrag: null,
+  cardEditorRange: null,
   activeSection: "library",
   previousSection: "library",
   activeListId: "",
@@ -64,7 +65,19 @@ const state = {
     rendering: false,
     pendingPage: null,
     touchStartX: 0,
-    touchStartY: 0
+    touchStartY: 0,
+    touchMode: "",
+    touchMoved: false,
+    touchStartDistance: 0,
+    touchStartCenterX: 0,
+    touchStartCenterY: 0,
+    touchStartZoom: 1,
+    touchStartPanX: 0,
+    touchStartPanY: 0,
+    zoom: 1,
+    panX: 0,
+    panY: 0,
+    suppressClick: false
   }
 };
 
@@ -81,13 +94,10 @@ async function init() {
   setupInitialSelections();
   renderAll();
   openInitialSection();
-  setupSplash();
   setupServiceWorker();
 }
 
 function collectElements() {
-  el.splashScreen = document.getElementById("splashScreen");
-  el.splashContinueButton = document.getElementById("splashContinueButton");
   el.appShell = document.getElementById("appShell");
   el.homeTitleButton = document.getElementById("homeTitleButton");
   el.navButtons = Array.from(document.querySelectorAll(".nav-button"));
@@ -163,6 +173,7 @@ function collectElements() {
   el.importPdfFileName = document.getElementById("importPdfFileName");
   el.importCardContent = document.getElementById("importCardContent");
   el.importCardEditor = document.getElementById("importCardEditor");
+  el.inlineCardImageInput = document.getElementById("inlineCardImageInput");
   el.importPlainContent = document.getElementById("importPlainContent");
   el.richCardContentRow = document.getElementById("richCardContentRow");
   el.plainCardContentRow = document.getElementById("plainCardContentRow");
@@ -204,10 +215,6 @@ function collectElements() {
 }
 
 function wireEvents() {
-  el.splashContinueButton.addEventListener("click", hideSplash);
-  el.splashScreen.addEventListener("click", (event) => {
-    if (event.target === el.splashScreen) hideSplash();
-  });
   el.homeTitleButton.addEventListener("click", goHome);
 
   el.navButtons.forEach((button) => {
@@ -240,11 +247,13 @@ function wireEvents() {
     fillTitleFromPdfFile();
   });
   el.importCardImage.addEventListener("change", () => updateFilePickerName(el.importCardImage, el.importCardImageName));
+  el.inlineCardImageInput.addEventListener("change", handleInlineCardImageSelected);
   el.cardFormatToolbar.addEventListener("mousedown", (event) => event.preventDefault());
   el.cardFormatToolbar.addEventListener("click", handleRichToolbarClick);
   ["keyup", "mouseup", "focus", "input"].forEach((eventName) => {
     el.importCardEditor.addEventListener(eventName, updateRichToolbarState);
   });
+  el.importCardEditor.addEventListener("click", handleCardEditorClick);
   el.importCardEditor.addEventListener("input", syncCardEditorToHiddenField);
   el.importForm.addEventListener("submit", handleImportSubmit);
   el.listEditCloseButton.addEventListener("click", closeListEditModal);
@@ -286,11 +295,13 @@ function wireEvents() {
   el.pdfPrevButton.addEventListener("click", previousPdfPage);
   el.pdfNextButton.addEventListener("click", nextPdfPage);
 
-  el.pdfTapLeft.addEventListener("click", previousPdfPage);
-  el.pdfTapRight.addEventListener("click", nextPdfPage);
+  el.pdfTapLeft.addEventListener("click", (event) => handlePdfTapZoneClick(event, "previous"));
+  el.pdfTapRight.addEventListener("click", (event) => handlePdfTapZoneClick(event, "next"));
 
-  el.pdfStage.addEventListener("touchstart", handlePdfTouchStart, { passive: true });
-  el.pdfStage.addEventListener("touchend", handlePdfTouchEnd, { passive: true });
+  el.pdfStage.addEventListener("touchstart", handlePdfTouchStart, { passive: false });
+  el.pdfStage.addEventListener("touchmove", handlePdfTouchMove, { passive: false });
+  el.pdfStage.addEventListener("touchend", handlePdfTouchEnd, { passive: false });
+  el.pdfStage.addEventListener("touchcancel", handlePdfTouchEnd, { passive: false });
   window.addEventListener("hashchange", showSectionFromHash);
   const handleViewportChange = debounce(() => {
     if (!el.pdfViewer.classList.contains("hidden") && state.currentPdf.doc) {
@@ -350,26 +361,10 @@ function closeListMoreMenu() {
 }
 
 function handleDocumentKeydown(event) {
-  if (!el.splashScreen.classList.contains("hidden") && (event.key === "Escape" || event.key === "Enter")) {
-    hideSplash();
-    return;
-  }
   if (event.key !== "Escape") return;
   closeOverflowMenu();
   closeListMoreMenu();
   closeListEditModal();
-}
-
-function setupSplash() {
-  window.setTimeout(hideSplash, 1600);
-}
-
-function hideSplash() {
-  if (!el.splashScreen || el.splashScreen.classList.contains("hidden") || el.splashScreen.classList.contains("splash-exit")) return;
-  el.splashScreen.classList.add("splash-exit");
-  window.setTimeout(() => {
-    el.splashScreen.classList.add("hidden");
-  }, 200);
 }
 
 function favoriteIconHtml(id) {
@@ -838,20 +833,112 @@ function handleRichToolbarClick(event) {
 
   const command = button.dataset.richCommand;
   if (command === "photo") {
-    el.importCardImage.click();
+    saveCardEditorSelection();
+    el.inlineCardImageInput.click();
     return;
   }
 
   el.importCardEditor.focus();
-
-  if (command === "table") {
-    document.execCommand("insertHTML", false, cardTableHtml());
-  } else {
-    document.execCommand(command, false, null);
-  }
-
+  document.execCommand(command, false, null);
   syncCardEditorToHiddenField();
   updateRichToolbarState();
+}
+
+function handleCardEditorClick(event) {
+  const image = event.target.closest("img");
+  if (!image || !el.importCardEditor.contains(image)) return;
+  cycleCardImageSize(image);
+  syncCardEditorToHiddenField();
+}
+
+function cycleCardImageSize(image) {
+  const sizes = ["small", "medium", "large"];
+  const current = image.dataset.cardImageSize || "medium";
+  const next = sizes[(sizes.indexOf(current) + 1) % sizes.length] || "medium";
+  image.dataset.cardImageSize = next;
+  image.title = `Tap to resize (${next})`;
+  setImportStatus(`Photo size: ${next}. Tap the photo again to change size.`);
+}
+
+async function handleInlineCardImageSelected(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const dataUrl = await imageFileToCardDataUrl(file);
+    insertCardEditorHtml(`<img src="${escapeHtml(dataUrl)}" alt="" data-card-image-size="medium" title="Tap to resize"><div><br></div>`);
+    syncCardEditorToHiddenField();
+    updateRichToolbarState();
+  } catch {
+    setImportStatus("That photo could not be inserted into the card text.", true);
+  } finally {
+    event.target.value = "";
+  }
+}
+
+function saveCardEditorSelection() {
+  const selection = window.getSelection();
+  if (!selection?.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  if (!el.importCardEditor.contains(range.commonAncestorContainer) && range.commonAncestorContainer !== el.importCardEditor) return;
+  state.cardEditorRange = range.cloneRange();
+}
+
+function insertCardEditorHtml(html) {
+  el.importCardEditor.focus();
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  if (state.cardEditorRange) {
+    selection.addRange(state.cardEditorRange);
+  } else {
+    const range = document.createRange();
+    range.selectNodeContents(el.importCardEditor);
+    range.collapse(false);
+    selection.addRange(range);
+  }
+  document.execCommand("insertHTML", false, html);
+  saveCardEditorSelection();
+}
+
+function imageFileToCardDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("Not an image."));
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      try {
+        const maxEdge = 1000;
+        const scale = Math.min(1, maxEdge / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+        canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+        canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      } catch {
+        URL.revokeObjectURL(url);
+        readFileAsDataUrl(file).then(resolve, reject);
+      }
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      readFileAsDataUrl(file).then(resolve, reject);
+    };
+    image.src = url;
+  });
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("File could not be read."));
+    reader.readAsDataURL(file);
+  });
 }
 
 function syncCardEditorToHiddenField() {
@@ -864,6 +951,8 @@ function updateRichToolbarState() {
   const hasEditorSelection = selection?.rangeCount
     ? el.importCardEditor.contains(selection.anchorNode) || selection.anchorNode === el.importCardEditor
     : document.activeElement === el.importCardEditor;
+
+  if (hasEditorSelection) saveCardEditorSelection();
 
   el.cardFormatToolbar.querySelectorAll("[data-rich-command]").forEach((button) => {
     const command = button.dataset.richCommand;
@@ -881,18 +970,6 @@ function updateRichToolbarState() {
   });
 }
 
-function cardTableHtml() {
-  return `
-    <table>
-      <tbody>
-        <tr><td><br></td><td><br></td></tr>
-        <tr><td><br></td><td><br></td></tr>
-      </tbody>
-    </table>
-    <p><br></p>
-  `;
-}
-
 function plainCardLinesToHtml(lines = []) {
   return (lines || [])
     .map((line) => line ? `<div>${escapeHtml(line)}</div>` : "<div><br></div>")
@@ -902,7 +979,7 @@ function plainCardLinesToHtml(lines = []) {
 function sanitizeCardHtml(html = "") {
   const template = document.createElement("template");
   template.innerHTML = html || "";
-  const allowedTags = new Set(["B", "STRONG", "I", "EM", "U", "S", "STRIKE", "BR", "DIV", "P", "SPAN", "TABLE", "TBODY", "THEAD", "TR", "TD", "TH", "UL", "OL", "LI"]);
+  const allowedTags = new Set(["B", "STRONG", "I", "EM", "U", "S", "STRIKE", "BR", "DIV", "P", "SPAN", "TABLE", "TBODY", "THEAD", "TR", "TD", "TH", "UL", "OL", "LI", "IMG"]);
   const allowedAttrs = new Set(["colspan", "rowspan"]);
 
   function cleanNode(node) {
@@ -919,6 +996,22 @@ function sanitizeCardHtml(html = "") {
     const clean = document.createElement(tagName.toLowerCase());
     Array.from(node.attributes || []).forEach((attr) => {
       const name = attr.name.toLowerCase();
+      if (tagName === "IMG" && name === "src" && /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(attr.value)) {
+        clean.setAttribute("src", attr.value);
+        return;
+      }
+      if (tagName === "IMG" && name === "alt") {
+        clean.setAttribute("alt", attr.value);
+        return;
+      }
+      if (tagName === "IMG" && name === "data-card-image-size" && ["small", "medium", "large"].includes(attr.value)) {
+        clean.setAttribute("data-card-image-size", attr.value);
+        return;
+      }
+      if (tagName === "IMG" && name === "title") {
+        clean.setAttribute("title", attr.value);
+        return;
+      }
       if (allowedAttrs.has(name)) clean.setAttribute(name, attr.value);
     });
     Array.from(node.childNodes).forEach((child) => clean.appendChild(cleanNode(child)));
@@ -2495,10 +2588,12 @@ async function openPdf(item) {
   state.currentPdf.objectUrl = null;
   state.currentPdf.pageNumber = 1;
   state.currentPdf.pageCount = 0;
+  resetPdfZoom();
   el.pdfTitle.textContent = item.title;
   el.pdfPageStatus.textContent = "Loading";
   el.pdfCanvas.classList.add("hidden");
   showPdfMessage("Loading PDF...");
+  document.body.classList.add("pdf-open");
   el.pdfViewer.classList.remove("hidden");
 
   if (!window.pdfjsLib) {
@@ -2513,6 +2608,7 @@ async function openPdf(item) {
     state.currentPdf.doc = await loadingTask.promise;
     state.currentPdf.pageCount = state.currentPdf.doc.numPages;
     state.currentPdf.pageNumber = clamp(state.currentPdf.pageNumber, 1, state.currentPdf.pageCount);
+    resetPdfZoom();
     await renderPdfPage(state.currentPdf.pageNumber);
     savePdfPage();
     rememberOpened(item, state.currentPdf.pageNumber);
@@ -2591,6 +2687,7 @@ async function renderPdfPage(pageNumber) {
     canvas.style.width = `${Math.floor(viewport.width)}px`;
     canvas.style.height = `${Math.floor(viewport.height)}px`;
     context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
+    applyPdfTransform();
 
     await page.render({ canvasContext: context, viewport }).promise;
     state.currentPdf.pageNumber = pageNumber;
@@ -2622,38 +2719,194 @@ function updatePdfStatus() {
 
 function previousPdfPage() {
   if (!state.currentPdf.doc || state.currentPdf.pageNumber <= 1) return;
+  resetPdfZoom();
   renderPdfPage(state.currentPdf.pageNumber - 1);
 }
 
 function nextPdfPage() {
   if (!state.currentPdf.doc || state.currentPdf.pageNumber >= state.currentPdf.pageCount) return;
+  resetPdfZoom();
   renderPdfPage(state.currentPdf.pageNumber + 1);
 }
 
 function closePdfViewer() {
   el.pdfViewer.classList.add("hidden");
+  document.body.classList.remove("pdf-open");
+  resetPdfZoom();
   releasePdfObjectUrl();
   state.currentPdf.doc = null;
   state.currentPdf.item = null;
 }
 
+function handlePdfTapZoneClick(event, direction) {
+  if (state.currentPdf.suppressClick) {
+    event.preventDefault();
+    state.currentPdf.suppressClick = false;
+    return;
+  }
+  if (direction === "previous") {
+    previousPdfPage();
+  } else {
+    nextPdfPage();
+  }
+}
+
 function handlePdfTouchStart(event) {
-  const touch = event.changedTouches[0];
+  if (event.touches.length === 2) {
+    event.preventDefault();
+    const center = getTouchCenter(event.touches);
+    state.currentPdf.touchMode = "pinch";
+    state.currentPdf.touchMoved = true;
+    state.currentPdf.touchStartDistance = getTouchDistance(event.touches);
+    state.currentPdf.touchStartCenterX = center.x;
+    state.currentPdf.touchStartCenterY = center.y;
+    state.currentPdf.touchStartZoom = state.currentPdf.zoom;
+    state.currentPdf.touchStartPanX = state.currentPdf.panX;
+    state.currentPdf.touchStartPanY = state.currentPdf.panY;
+    return;
+  }
+
+  const touch = event.touches[0];
+  state.currentPdf.touchMode = state.currentPdf.zoom > 1.02 ? "pan" : "tap";
+  state.currentPdf.touchMoved = false;
   state.currentPdf.touchStartX = touch.clientX;
   state.currentPdf.touchStartY = touch.clientY;
+  state.currentPdf.touchStartPanX = state.currentPdf.panX;
+  state.currentPdf.touchStartPanY = state.currentPdf.panY;
+}
+
+function handlePdfTouchMove(event) {
+  if (state.currentPdf.touchMode === "pinch" && event.touches.length >= 2) {
+    event.preventDefault();
+    const distance = getTouchDistance(event.touches);
+    const center = getTouchCenter(event.touches);
+    const ratio = distance / Math.max(state.currentPdf.touchStartDistance, 1);
+    state.currentPdf.zoom = clamp(state.currentPdf.touchStartZoom * ratio, 1, 4);
+    state.currentPdf.panX = state.currentPdf.touchStartPanX + (center.x - state.currentPdf.touchStartCenterX);
+    state.currentPdf.panY = state.currentPdf.touchStartPanY + (center.y - state.currentPdf.touchStartCenterY);
+    state.currentPdf.touchMoved = true;
+    applyPdfTransform();
+    return;
+  }
+
+  if (state.currentPdf.touchMode === "pan" && event.touches.length === 1) {
+    event.preventDefault();
+    const touch = event.touches[0];
+    const dx = touch.clientX - state.currentPdf.touchStartX;
+    const dy = touch.clientY - state.currentPdf.touchStartY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) state.currentPdf.touchMoved = true;
+    state.currentPdf.panX = state.currentPdf.touchStartPanX + dx;
+    state.currentPdf.panY = state.currentPdf.touchStartPanY + dy;
+    applyPdfTransform();
+  }
 }
 
 function handlePdfTouchEnd(event) {
+  if (state.currentPdf.touchMode === "pinch") {
+    event.preventDefault();
+    if (event.touches.length >= 2) return;
+    suppressNextPdfClick();
+    finishPdfGesture();
+    return;
+  }
+
   const touch = event.changedTouches[0];
   const dx = touch.clientX - state.currentPdf.touchStartX;
   const dy = touch.clientY - state.currentPdf.touchStartY;
-  if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+  const moved = state.currentPdf.touchMoved || Math.abs(dx) > 10 || Math.abs(dy) > 10;
 
-  if (dx < 0) {
-    nextPdfPage();
-  } else {
-    previousPdfPage();
+  if (state.currentPdf.touchMode === "pan") {
+    if (moved) {
+      event.preventDefault();
+      suppressNextPdfClick();
+    }
+    finishPdfGesture();
+    return;
   }
+
+  if (Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy)) {
+    event.preventDefault();
+    suppressNextPdfClick();
+    if (dx < 0) {
+      nextPdfPage();
+    } else {
+      previousPdfPage();
+    }
+    return;
+  }
+
+  finishPdfGesture();
+}
+
+function finishPdfGesture() {
+  if (state.currentPdf.zoom <= 1.02) {
+    resetPdfZoom();
+  } else {
+    clampPdfPan();
+    applyPdfTransform();
+  }
+  state.currentPdf.touchMode = "";
+  state.currentPdf.touchMoved = false;
+}
+
+function suppressNextPdfClick() {
+  state.currentPdf.suppressClick = true;
+  window.setTimeout(() => {
+    state.currentPdf.suppressClick = false;
+  }, 250);
+}
+
+function getTouchDistance(touches) {
+  const first = touches[0];
+  const second = touches[1];
+  return Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY);
+}
+
+function getTouchCenter(touches) {
+  const first = touches[0];
+  const second = touches[1];
+  return {
+    x: (first.clientX + second.clientX) / 2,
+    y: (first.clientY + second.clientY) / 2
+  };
+}
+
+function resetPdfZoom() {
+  if (!state.currentPdf) return;
+  state.currentPdf.zoom = 1;
+  state.currentPdf.panX = 0;
+  state.currentPdf.panY = 0;
+  state.currentPdf.touchMode = "";
+  state.currentPdf.touchMoved = false;
+  applyPdfTransform();
+}
+
+function applyPdfTransform() {
+  if (!el.pdfCanvas) return;
+  clampPdfPan();
+  const { panX, panY, zoom } = state.currentPdf;
+  el.pdfCanvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  el.pdfCanvas.classList.toggle("is-zoomed", zoom > 1.02);
+}
+
+function clampPdfPan() {
+  if (!el.pdfCanvas || state.currentPdf.zoom <= 1.02) {
+    state.currentPdf.panX = 0;
+    state.currentPdf.panY = 0;
+    return;
+  }
+
+  const stageBox = el.pdfStage.getBoundingClientRect();
+  const canvasWidth = el.pdfCanvas.offsetWidth || stageBox.width;
+  const canvasHeight = el.pdfCanvas.offsetHeight || stageBox.height;
+  const scaledWidth = canvasWidth * state.currentPdf.zoom;
+  const scaledHeight = canvasHeight * state.currentPdf.zoom;
+  const extraX = Math.max((scaledWidth - stageBox.width) / 2 + 48, 0);
+  const maxPanY = 48;
+  const minPanY = -Math.max(scaledHeight - stageBox.height + 48, 0);
+
+  state.currentPdf.panX = clamp(state.currentPdf.panX, -extraX, extraX);
+  state.currentPdf.panY = clamp(state.currentPdf.panY, minPanY, maxPanY);
 }
 
 function toggleFavorite(id) {

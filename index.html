@@ -11,20 +11,11 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/icon.svg">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=list-shell-cleanup-1">
+    <link rel="stylesheet" href="styles.css?v=pdf-pinch-1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
-    <script src="script.js?v=list-shell-cleanup-1" defer></script>
+    <script src="script.js?v=pdf-pinch-1" defer></script>
   </head>
   <body>
-    <section id="splashScreen" class="splash-screen" aria-label="Welcome">
-      <div class="splash-panel">
-        <!-- Replace assets/splash.png with another image using the same filename to change this splash graphic. -->
-        <img class="splash-image" src="assets/splash.png" alt="">
-        <h1>Ken's Music App</h1>
-        <button id="splashContinueButton" class="primary-button" type="button">Open</button>
-      </div>
-    </section>
-
     <div id="appShell" class="app-shell">
       <header class="app-header">
         <div>
@@ -230,13 +221,12 @@
               <div id="cardFormatToolbar" class="rich-toolbar" aria-label="Card text formatting">
                 <button type="button" data-rich-command="bold" aria-label="Bold" title="Bold" aria-pressed="false"><strong>B</strong></button>
                 <button type="button" data-rich-command="italic" aria-label="Italic" title="Italic" aria-pressed="false"><em>I</em></button>
-                <button type="button" data-rich-command="underline" aria-label="Underline" title="Underline" aria-pressed="false"><u>U</u></button>
-                <button type="button" data-rich-command="strikeThrough" aria-label="Strikeout" title="Strikeout" aria-pressed="false"><s>S</s></button>
-                <button type="button" data-rich-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list" aria-pressed="false"><span class="toolbar-icon bullet-list-icon" aria-hidden="true"></span></button>
+                <button type="button" data-rich-command="strikeThrough" aria-label="Strikeout" title="Strikeout" aria-pressed="false"><span class="strikeout-icon" aria-hidden="true"><span>S</span></span></button>
                 <button type="button" data-rich-command="insertOrderedList" aria-label="Numbered list" title="Numbered list" aria-pressed="false"><span class="toolbar-icon numbered-list-icon" aria-hidden="true"></span></button>
-                <button type="button" data-rich-command="table" aria-label="Insert table" title="Insert table">Table</button>
+                <button type="button" data-rich-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list" aria-pressed="false"><span class="toolbar-icon bullet-list-icon" aria-hidden="true"></span></button>
                 <button type="button" data-rich-command="photo" aria-label="Insert photo" title="Insert photo"><span class="toolbar-icon photo-icon" aria-hidden="true"></span></button>
               </div>
+              <input id="inlineCardImageInput" class="sr-only" type="file" accept="image/*" aria-label="Insert photo into card text">
               <div id="importCardEditor" class="rich-card-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Card text"></div>
               <textarea id="importCardContent" class="hidden" rows="10"></textarea>
             </div>

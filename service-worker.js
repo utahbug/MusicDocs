@@ -1,13 +1,12 @@
-const CACHE_NAME = "primary-music-helper-shell-v83";
+const CACHE_NAME = "primary-music-helper-shell-v91";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=list-shell-cleanup-1",
-  "./script.js?v=list-shell-cleanup-1",
+  "./styles.css?v=pdf-pinch-1",
+  "./script.js?v=pdf-pinch-1",
   "./library.json",
   "./manifest.json",
-  "./assets/icon.svg",
-  "./assets/splash.png"
+  "./assets/icon.svg"
 ];
 
 self.addEventListener("install", (event) => {
