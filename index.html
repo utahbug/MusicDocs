@@ -11,9 +11,9 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/icon.svg">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=pdf-pinch-1">
+    <link rel="stylesheet" href="styles.css?v=settings-theme-1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
-    <script src="script.js?v=pdf-pinch-1" defer></script>
+    <script src="script.js?v=settings-theme-1" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -45,7 +45,7 @@
             <button id="exportBackupButton" type="button" role="menuitem">Export data + files</button>
             <button id="importBackupButton" type="button" role="menuitem">Import data + files</button>
             <span class="menu-separator" aria-hidden="true"></span>
-            <button type="button" role="menuitem" data-menu-message="Settings can be added here later.">Settings</button>
+            <button type="button" role="menuitem" data-open-settings>Settings</button>
             <button type="button" role="menuitem" data-menu-message="Ken's Music App keeps your music private on this device. Use Export data + files and Import data + files to intentionally move lists, favorites, links, cards, metadata, and uploaded PDFs/images. Treat exports as private if they include personal or copyrighted files.">Help</button>
             <button type="button" role="menuitem" data-menu-message="Ken's Music App is a private, local music helper for quick Primary music reference.">About</button>
           </div>
@@ -323,6 +323,25 @@
             <div id="listEditResults" class="picker-results"></div>
           </section>
         </form>
+      </div>
+    </div>
+
+    <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div id="settingsPanel" class="modal-panel settings-panel">
+        <div class="import-form">
+          <div class="modal-heading">
+            <button id="settingsCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
+            <h2 id="settingsTitle">Settings</h2>
+          </div>
+
+          <section class="settings-section" aria-label="Tab color">
+            <div class="picker-heading">
+              <strong>Tab color</strong>
+            </div>
+            <div id="settingsThemeChoices" class="theme-choice-grid"></div>
+            <p class="quick-meta">This changes the active tab and main accent color on this device.</p>
+          </section>
+        </div>
       </div>
     </div>
   </body>

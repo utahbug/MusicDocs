@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   pdfPages: "primaryMusicHelper.pdfPages",
   quickIndexes: "primaryMusicHelper.quickIndexes",
   recents: "primaryMusicHelper.recents",
+  settings: "primaryMusicHelper.settings",
   setlists: "primaryMusicHelper.setlists",
   quickChecks: "primaryMusicHelper.quickChecks"
 };
@@ -22,6 +23,57 @@ const PDF_STORE_NAME = "pdfFiles";
 const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
 
 const BUILT_IN_LINKS = [];
+
+const THEME_PRESETS = {
+  blue: {
+    label: "Blue",
+    primary: "#2B5F9E",
+    dark: "#214A78",
+    light: "#EAF2FB",
+    hover: "#D8E7F7",
+    border: "#B7CCE0"
+  },
+  teal: {
+    label: "Teal",
+    primary: "#046983",
+    dark: "#03576D",
+    light: "#E6F2F5",
+    hover: "#D2E7ED",
+    border: "#B6CCD4"
+  },
+  slate: {
+    label: "Slate",
+    primary: "#4D6573",
+    dark: "#3C505C",
+    light: "#EDF3F5",
+    hover: "#DCE8EC",
+    border: "#BCCBD0"
+  },
+  green: {
+    label: "Green",
+    primary: "#4D7358",
+    dark: "#3D5B46",
+    light: "#EDF5EF",
+    hover: "#DCEBDD",
+    border: "#BED1C2"
+  },
+  burgundy: {
+    label: "Burgundy",
+    primary: "#7B3F4A",
+    dark: "#62333C",
+    light: "#F6EAEC",
+    hover: "#EBD7DB",
+    border: "#D2B8BE"
+  },
+  gold: {
+    label: "Gold",
+    primary: "#8B6F35",
+    dark: "#70592A",
+    light: "#F7F1E5",
+    hover: "#ECE0C7",
+    border: "#D5C39B"
+  }
+};
 
 const state = {
   data: { items: [], quickIndexes: [], setlists: [] },
@@ -87,6 +139,7 @@ document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   collectElements();
+  applyAppSettings();
   wireEvents();
   configurePdfJs();
   await loadLibrary();
@@ -212,6 +265,11 @@ function collectElements() {
   el.listEditSearch = document.getElementById("listEditSearch");
   el.listEditStatus = document.getElementById("listEditStatus");
   el.listEditResults = document.getElementById("listEditResults");
+
+  el.settingsModal = document.getElementById("settingsModal");
+  el.settingsPanel = document.getElementById("settingsPanel");
+  el.settingsCloseButton = document.getElementById("settingsCloseButton");
+  el.settingsThemeChoices = document.getElementById("settingsThemeChoices");
 }
 
 function wireEvents() {
@@ -258,6 +316,8 @@ function wireEvents() {
   el.importForm.addEventListener("submit", handleImportSubmit);
   el.listEditCloseButton.addEventListener("click", closeListEditModal);
   el.listEditForm.addEventListener("submit", saveListEditModal);
+  el.settingsCloseButton.addEventListener("click", closeSettingsModal);
+  el.settingsThemeChoices.addEventListener("change", handleSettingsThemeChange);
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
   window.addEventListener("pointermove", moveModalDrag);
   window.addEventListener("pointerup", endModalDrag);
@@ -336,6 +396,53 @@ function closeOverflowMenu({ restoreActive = true } = {}) {
   }
 }
 
+function openSettingsModal() {
+  renderSettingsThemeChoices();
+  closeOverflowMenu();
+  el.settingsModal.classList.remove("hidden");
+  fitOpenMobileModals();
+}
+
+function closeSettingsModal() {
+  el.settingsModal.classList.add("hidden");
+  fitOpenMobileModals();
+}
+
+function renderSettingsThemeChoices() {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  const activeTheme = settings.tabTheme && THEME_PRESETS[settings.tabTheme] ? settings.tabTheme : "blue";
+  el.settingsThemeChoices.innerHTML = Object.entries(THEME_PRESETS).map(([key, theme]) => `
+    <label class="theme-choice">
+      <input type="radio" name="tabTheme" value="${escapeHtml(key)}" ${key === activeTheme ? "checked" : ""}>
+      <span class="theme-swatch" style="--swatch-color: ${escapeHtml(theme.primary)}" aria-hidden="true"></span>
+      <span>${escapeHtml(theme.label)}</span>
+    </label>
+  `).join("");
+}
+
+function handleSettingsThemeChange(event) {
+  if (event.target.name !== "tabTheme") return;
+  const tabTheme = THEME_PRESETS[event.target.value] ? event.target.value : "blue";
+  const settings = {
+    ...readJson(STORAGE_KEYS.settings, {}),
+    tabTheme
+  };
+  writeJson(STORAGE_KEYS.settings, settings);
+  applyAppSettings(settings);
+}
+
+function applyAppSettings(settings = readJson(STORAGE_KEYS.settings, {})) {
+  const themeName = settings.tabTheme && THEME_PRESETS[settings.tabTheme] ? settings.tabTheme : "blue";
+  const theme = THEME_PRESETS[themeName];
+  const root = document.documentElement;
+  root.style.setProperty("--color-primary", theme.primary);
+  root.style.setProperty("--color-primary-dark", theme.dark);
+  root.style.setProperty("--color-primary-light", theme.light);
+  root.style.setProperty("--color-primary-hover", theme.hover);
+  root.style.setProperty("--color-border", theme.border);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme.primary);
+}
+
 function clearNavHighlight() {
   el.navButtons.forEach((button) => button.classList.remove("active"));
 }
@@ -365,6 +472,7 @@ function handleDocumentKeydown(event) {
   closeOverflowMenu();
   closeListMoreMenu();
   closeListEditModal();
+  closeSettingsModal();
 }
 
 function favoriteIconHtml(id) {
@@ -637,7 +745,8 @@ function clearModalPanelLayout(panel) {
 function fitOpenMobileModals() {
   const openPanels = [
     [el.importModal, el.modalPanel],
-    [el.listEditModal, el.listEditPanel]
+    [el.listEditModal, el.listEditPanel],
+    [el.settingsModal, el.settingsPanel]
   ].filter(([modal, panel]) => modal && panel && !modal.classList.contains("hidden"));
 
   const shouldFit = window.matchMedia("(max-width: 760px)").matches;
@@ -711,9 +820,9 @@ function applyImportContext() {
   el.importDeleteButton.classList.toggle("hidden", !editing || !isUserCreatedItem(state.editingItemId));
 
   el.importCategoryRow.classList.toggle("hidden", linkOnly);
-  el.importBookRow.classList.toggle("hidden", linkOnly || cardOnly);
+  el.importBookRow.classList.add("hidden");
   el.importComposerRow.classList.toggle("hidden", linkOnly || cardOnly);
-  el.importPageRow.classList.toggle("hidden", linkOnly || cardOnly);
+  el.importPageRow.classList.add("hidden");
   el.importTagsRow.classList.toggle("hidden", linkOnly || cardOnly);
   el.importNotesRow.classList.toggle("hidden", false);
 
@@ -2074,6 +2183,12 @@ async function handleBodyClick(event) {
   const menuSectionButton = event.target.closest("[data-menu-section]");
   if (menuSectionButton) {
     showSection(menuSectionButton.dataset.menuSection);
+    return;
+  }
+
+  const settingsButton = event.target.closest("[data-open-settings]");
+  if (settingsButton) {
+    openSettingsModal();
     return;
   }
 
@@ -3505,7 +3620,8 @@ async function exportBackup() {
       lastOpened: readJson(STORAGE_KEYS.lastOpened, null),
       quickChecks: readJson(STORAGE_KEYS.quickChecks, {}),
       pdfPages: readJson(STORAGE_KEYS.pdfPages, {}),
-      recents: readJson(STORAGE_KEYS.recents, [])
+      recents: readJson(STORAGE_KEYS.recents, []),
+      settings: readJson(STORAGE_KEYS.settings, {})
     };
     const fileIds = collectLocalFileIds(data);
     const { files, missingFileIds } = await collectBackupFiles(fileIds);
@@ -3567,6 +3683,7 @@ function importBackupFromFile(event) {
       writeJson(STORAGE_KEYS.quickChecks, data.quickChecks || {});
       writeJson(STORAGE_KEYS.pdfPages, data.pdfPages || {});
       writeJson(STORAGE_KEYS.recents, data.recents || []);
+      writeJson(STORAGE_KEYS.settings, data.settings || {});
       window.location.reload();
     } catch {
       window.alert("That app data file could not be imported.");
