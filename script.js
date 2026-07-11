@@ -459,7 +459,7 @@ function loadLocalState() {
 function loadUnifiedLists() {
   const savedLists = readJson(STORAGE_KEYS.lists, null);
   if (Array.isArray(savedLists) && savedLists.length) {
-    return normalizeLists(savedLists);
+    return pruneOldEmptyListShells(normalizeLists(savedLists), true);
   }
 
   const quickChecks = readJson(STORAGE_KEYS.quickChecks, {});
@@ -506,6 +506,7 @@ function normalizeLists(lists) {
       id: String(list.id),
       title: list.title || "Untitled List",
       showCheckboxes: Boolean(list.showCheckboxes),
+      userCreated: Boolean(list.userCreated || list.createdEmpty),
       entries: (list.entries || list.items || [])
         .filter((entry) => entry?.itemId)
         .map((entry) => ({
@@ -519,6 +520,16 @@ function normalizeLists(lists) {
     }));
 
   return normalized;
+}
+
+function pruneOldEmptyListShells(lists, persist = false) {
+  if (state.itemsById.size) return lists;
+
+  const pruned = lists.filter((list) => (list.entries || []).length || list.userCreated);
+  if (persist && pruned.length !== lists.length) {
+    writeJson(STORAGE_KEYS.lists, pruned);
+  }
+  return pruned;
 }
 
 function setupInitialSelections() {
@@ -1688,7 +1699,7 @@ function getResolvedListEntries(list) {
 
 function cleanupListEntries() {
   let changed = false;
-  state.lists.forEach((list) => {
+  state.lists = state.lists.filter((list) => {
     let listChanged = false;
     const original = list.entries || [];
     const seen = new Set();
@@ -1701,11 +1712,15 @@ function cleanupListEntries() {
         return;
       }
       const itemExists = state.itemsById.has(itemId);
-      if (itemExists && seen.has(itemId)) {
+      if (!itemExists) {
         listChanged = true;
         return;
       }
-      if (itemExists) seen.add(itemId);
+      if (seen.has(itemId)) {
+        listChanged = true;
+        return;
+      }
+      seen.add(itemId);
       if (itemId === entry.itemId) {
         cleaned.push(entry);
       } else {
@@ -1718,9 +1733,21 @@ function cleanupListEntries() {
       list.entries = cleaned;
       changed = true;
     }
+
+    if (original.length && !cleaned.length && !list.userCreated) {
+      changed = true;
+      return false;
+    }
+
+    return true;
   });
 
-  if (changed) saveLists();
+  if (changed) {
+    if (state.activeListId && !state.lists.some((list) => list.id === state.activeListId)) {
+      state.activeListId = state.lists[0]?.id || "";
+    }
+    saveLists();
+  }
 }
 
 function createListRow(entry, list) {
@@ -2914,6 +2941,7 @@ function createList(title = "New List", entries = []) {
     id: createLocalListId("list"),
     title,
     showCheckboxes: false,
+    userCreated: true,
     entries
   };
   state.lists.push(list);
