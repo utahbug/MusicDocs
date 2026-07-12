@@ -23,6 +23,8 @@ const IMPORT_DB_VERSION = 1;
 const PDF_STORE_NAME = "pdfFiles";
 const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
 const FAVORITE_DIVIDER_PREFIX = "favorite-divider:";
+const FILE_ITEM_TYPES = new Set(["pdf", "image", "note", "index"]);
+const LIBRARY_CONTENT_TYPES = new Set(["pdf", "image", "note", "index", "card", "link"]);
 
 const BUILT_IN_LINKS = [];
 
@@ -1742,7 +1744,7 @@ function showSection(sectionName) {
 
 function renderLibrary() {
   const query = el.librarySearch.value;
-  const fileItems = state.data.items.filter((item) => item.type !== "card" && item.type !== "link");
+  const fileItems = state.data.items.filter(isFileItem);
   const filtered = filterItems(fileItems, query);
   renderItemList(el.libraryContent, sortLibraryItems(filtered, el.librarySort.value), { compact: true, compactAction: "edit" });
 }
@@ -1789,12 +1791,13 @@ function renderItemList(container, items, options = {}) {
 function createItemCard(item, options = {}) {
   const article = document.createElement("article");
   const deleteAction = itemDeleteActionHtml(item);
+  const title = itemDisplayTitle(item);
   article.className = `${options.compact ? "item-card compact-item-card" : "item-card"}${deleteAction ? " swipe-row" : ""}${options.reorderFavorites ? " favorite-reorder-row" : ""}`;
   article.dataset.id = item.id;
   if (options.reorderFavorites) article.dataset.favoriteRow = item.id;
   if (options.compact) {
     const reorderHandle = options.reorderFavorites
-      ? `<button class="favorite-drag-handle" type="button" data-favorite-drag="${escapeHtml(item.id)}" aria-label="Drag to reorder ${escapeHtml(item.title)}" title="Drag to reorder"><span aria-hidden="true"></span></button>`
+      ? `<button class="favorite-drag-handle" type="button" data-favorite-drag="${escapeHtml(item.id)}" aria-label="Drag to reorder ${escapeHtml(title)}" title="Drag to reorder"><span aria-hidden="true"></span></button>`
       : "";
     article.innerHTML = `
       ${deleteAction}
@@ -1816,12 +1819,12 @@ function createItemCard(item, options = {}) {
         ${state.favorites.has(item.id) ? "★" : "☆"}
       </button>
       <button class="item-open" type="button" data-open="${escapeHtml(item.id)}">
-        <h3>${escapeHtml(item.title)} <span class="type-pill">${escapeHtml(item.type)}</span></h3>
+        <h3>${escapeHtml(title)} <span class="type-pill">${escapeHtml(item.type)}</span></h3>
         ${metaHtml(item)}
         ${item.notes ? `<p class="item-notes">${escapeHtml(item.notes)}</p>` : ""}
         ${tagsHtml(item.tags)}
       </button>
-      <button class="icon-button info-button" type="button" data-detail="${escapeHtml(item.id)}" aria-label="Show info for ${escapeHtml(item.title)}">
+      <button class="icon-button info-button" type="button" data-detail="${escapeHtml(item.id)}" aria-label="Show info for ${escapeHtml(title)}">
         Info
       </button>
     </div>
@@ -1832,24 +1835,25 @@ function createItemCard(item, options = {}) {
 
 function itemDeleteActionHtml(item) {
   if (!isUserCreatedItem(item.id)) return "";
-  return `<button class="swipe-delete-action" type="button" data-swipe-delete-item="${escapeHtml(item.id)}" aria-label="Delete ${escapeHtml(item.title)}" title="Delete">&#128465;</button>`;
+  return `<button class="swipe-delete-action" type="button" data-swipe-delete-item="${escapeHtml(item.id)}" aria-label="Delete ${escapeHtml(itemDisplayTitle(item))}" title="Delete">&#128465;</button>`;
 }
 
 function compactItemRowHtml(item, options = {}) {
   const meta = compactLibraryMetaText(item);
+  const title = itemDisplayTitle(item);
   const compactAction = options.compactAction === "edit"
     ? `
-    <button class="icon-button info-button compact-info-button" type="button" data-edit-item="${escapeHtml(item.id)}" aria-label="Edit ${escapeHtml(item.title)}" title="Edit">
+    <button class="icon-button info-button compact-info-button" type="button" data-edit-item="${escapeHtml(item.id)}" aria-label="Edit ${escapeHtml(title)}" title="Edit">
       &#9998;
     </button>`
     : `
-    <button class="icon-button info-button compact-info-button" type="button" data-detail="${escapeHtml(item.id)}" aria-label="Show info for ${escapeHtml(item.title)}" title="Info">
+    <button class="icon-button info-button compact-info-button" type="button" data-detail="${escapeHtml(item.id)}" aria-label="Show info for ${escapeHtml(title)}" title="Info">
       i
     </button>`;
   return `
     <button class="item-open compact-item-open" type="button" data-open="${escapeHtml(item.id)}">
       <span class="compact-item-line">
-        <span class="compact-title">${escapeHtml(item.title)}</span>
+        <span class="compact-title">${escapeHtml(title)}</span>
         ${meta ? `<span class="compact-meta">${escapeHtml(meta)}</span>` : ""}
       </span>
     </button>
@@ -2132,7 +2136,7 @@ function updateListPickerOptions(listId = state.activeListId) {
   const query = document.getElementById("listPickerSearch")?.value || "";
   const category = normalize(document.getElementById("listPickerCategory")?.value || "");
   const items = state.data.items
-    .filter((item) => item.type !== "card" && item.type !== "link")
+    .filter(isFileItem)
     .filter((item) => matchesQuery(item, query))
     .filter((item) => !category || normalize(item.category).includes(category))
     .sort(compareTitle)
@@ -3408,7 +3412,7 @@ function renderListEditResults() {
   const query = el.listEditSearch.value || "";
   const existingIds = new Set((list.entries || []).map((entry) => entry.itemId));
   const items = state.data.items
-    .filter((item) => item.type !== "note" && item.type !== "index")
+    .filter(isLibraryContentItem)
     .filter((item) => matchesQuery(item, query))
     .sort(compareTitle)
     .slice(0, 80);
@@ -3422,7 +3426,7 @@ function renderListEditResults() {
     <label class="checklist-row">
       <input class="setlist-check" type="checkbox" data-list-modal-check="${escapeHtml(item.id)}" ${existingIds.has(item.id) ? "checked" : ""}>
       <span class="checklist-main">
-        <span class="picker-title">${escapeHtml(item.title)}</span>
+        <span class="picker-title">${escapeHtml(itemDisplayTitle(item))}</span>
         <small>${escapeHtml(compactMetaText(item))}</small>
       </span>
       <span class="type-pill compact-type">${escapeHtml(item.type)}</span>
@@ -3593,6 +3597,19 @@ function filterItems(items, query) {
   return (items || []).filter((item) => matchesQuery(item, query));
 }
 
+function isFileItem(item) {
+  return Boolean(item?.id && FILE_ITEM_TYPES.has(item.type));
+}
+
+function isLibraryContentItem(item) {
+  return Boolean(item?.id && LIBRARY_CONTENT_TYPES.has(item.type));
+}
+
+function itemDisplayTitle(item) {
+  const title = item?.title || item?.fileName || item?.imageFileName || item?.url || "Untitled";
+  return String(title).trim() || "Untitled";
+}
+
 function matchesQuery(item, query) {
   const normalizedQuery = normalize(query);
   if (!normalizedQuery) return true;
@@ -3658,7 +3675,7 @@ function librarySortValue(item, mode) {
   if (mode === "book") return item.book || "";
   if (mode === "composer") return item.composer || "";
   if (mode === "tag") return (item.tags || []).join(", ");
-  return item.title || "";
+  return itemDisplayTitle(item);
 }
 
 function sortQuickEntries(entries, mode) {
@@ -3673,7 +3690,7 @@ function sortQuickEntries(entries, mode) {
 }
 
 function compareTitle(a, b) {
-  return (a.title || "").localeCompare(b.title || "");
+  return itemDisplayTitle(a).localeCompare(itemDisplayTitle(b));
 }
 
 function comparePageThenTitle(a, b) {
