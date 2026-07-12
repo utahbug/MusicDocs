@@ -12,9 +12,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=files-list-filter-1">
+    <link rel="stylesheet" href="styles.css?v=settings-menu-position-1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
-    <script src="script.js?v=files-list-filter-1" defer></script>
+    <script src="script.js?v=settings-menu-position-1" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -43,6 +43,7 @@
             <button id="exportBackupButton" type="button" role="menuitem">Export data + files</button>
             <button id="importBackupButton" type="button" role="menuitem">Import data + files</button>
             <span class="menu-separator" aria-hidden="true"></span>
+            <button type="button" role="menuitem" data-refresh-app>Refresh app</button>
             <button type="button" role="menuitem" data-open-settings>Settings</button>
             <button type="button" role="menuitem" data-open-help>Help</button>
             <button type="button" role="menuitem" data-open-about>About</button>
@@ -139,14 +140,12 @@
 
     <section id="pdfViewer" class="pdf-viewer hidden" aria-label="PDF viewer">
       <header class="pdf-toolbar">
+        <button id="pdfPrevButton" class="icon-button pdf-page-button" type="button" aria-label="Previous page" title="Previous page">&lt;</button>
         <div class="pdf-title-wrap">
           <h2 id="pdfTitle">PDF</h2>
           <p id="pdfPageStatus">Page 1 of 1</p>
         </div>
-        <div class="pdf-button-row">
-          <button id="pdfPrevButton" class="icon-button pdf-page-button" type="button" aria-label="Previous page" title="Previous page">&lt;</button>
-          <button id="pdfNextButton" class="icon-button pdf-page-button" type="button" aria-label="Next page" title="Next page">&gt;</button>
-        </div>
+        <button id="pdfNextButton" class="icon-button pdf-page-button" type="button" aria-label="Next page" title="Next page">&gt;</button>
       </header>
       <div id="pdfStage" class="pdf-stage">
         <div id="pdfLoading" class="pdf-message">Loading PDF...</div>
@@ -339,6 +338,14 @@
             </div>
             <div id="settingsThemeChoices" class="theme-choice-grid"></div>
             <p class="quick-meta">This changes the active tab and main accent color on this device.</p>
+          </section>
+
+          <section class="settings-section" aria-label="Menu placement">
+            <div class="picker-heading">
+              <strong>Menu placement</strong>
+            </div>
+            <div id="settingsMenuPlacement" class="menu-placement-grid"></div>
+            <p class="quick-meta">The PDF viewer keeps its current bottom menu placement.</p>
           </section>
         </div>
       </div>

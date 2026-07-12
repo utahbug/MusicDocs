@@ -25,6 +25,14 @@ const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnordere
 const FAVORITE_DIVIDER_PREFIX = "favorite-divider:";
 const FILE_ITEM_TYPES = new Set(["pdf", "image", "note", "index"]);
 const LIBRARY_CONTENT_TYPES = new Set(["pdf", "image", "note", "index", "card", "link"]);
+const MENU_POSITION_SECTIONS = [
+  { id: "favorites", label: "Favorites" },
+  { id: "lists", label: "Lists" },
+  { id: "library", label: "Files" },
+  { id: "cards", label: "Cards" },
+  { id: "links", label: "Links" },
+  { id: "search", label: "Search" }
+];
 
 const BUILT_IN_LINKS = [];
 
@@ -68,6 +76,14 @@ const THEME_PRESETS = {
     light: "#F6EAEC",
     hover: "#EBD7DB",
     border: "#D2B8BE"
+  },
+  pink: {
+    label: "Pink",
+    primary: "#B64F7C",
+    dark: "#923E64",
+    light: "#F8EAF1",
+    hover: "#F0D3E1",
+    border: "#DDB7C9"
   },
   gold: {
     label: "Gold",
@@ -275,6 +291,7 @@ function collectElements() {
   el.settingsPanel = document.getElementById("settingsPanel");
   el.settingsCloseButton = document.getElementById("settingsCloseButton");
   el.settingsThemeChoices = document.getElementById("settingsThemeChoices");
+  el.settingsMenuPlacement = document.getElementById("settingsMenuPlacement");
 
   el.helpModal = document.getElementById("helpModal");
   el.helpPanel = document.getElementById("helpPanel");
@@ -332,6 +349,8 @@ function wireEvents() {
   el.listEditForm.addEventListener("submit", saveListEditModal);
   el.settingsCloseButton.addEventListener("click", closeSettingsModal);
   el.settingsThemeChoices.addEventListener("change", handleSettingsThemeChange);
+  el.settingsMenuPlacement.addEventListener("change", handleSettingsMenuPlacementChange);
+  el.settingsMenuPlacement.addEventListener("click", handleSettingsMenuPlacementClick);
   el.helpCloseButton.addEventListener("click", closeHelpModal);
   el.aboutCloseButton.addEventListener("click", closeAboutModal);
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
@@ -414,6 +433,7 @@ function closeOverflowMenu({ restoreActive = true } = {}) {
 
 function openSettingsModal() {
   renderSettingsThemeChoices();
+  renderSettingsMenuPlacementChoices();
   closeOverflowMenu();
   el.settingsModal.classList.remove("hidden");
   fitOpenMobileModals();
@@ -446,6 +466,33 @@ function closeAboutModal() {
   fitOpenMobileModals();
 }
 
+async function refreshAppShell() {
+  closeOverflowMenu();
+  closeListMoreMenu();
+
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter((key) => key.startsWith("primary-music-helper-shell"))
+          .map((key) => caches.delete(key))
+      );
+    }
+
+    if (navigator.serviceWorker) {
+      const registration = await navigator.serviceWorker.getRegistration();
+      await registration?.update();
+    }
+  } catch {
+    // Refresh should still reload the page even if cache cleanup is unavailable.
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("refresh", Date.now().toString(36));
+  window.location.replace(url.toString());
+}
+
 function renderSettingsThemeChoices() {
   const settings = readJson(STORAGE_KEYS.settings, {});
   const activeTheme = settings.tabTheme && THEME_PRESETS[settings.tabTheme] ? settings.tabTheme : "blue";
@@ -469,6 +516,63 @@ function handleSettingsThemeChange(event) {
   applyAppSettings(settings);
 }
 
+function renderSettingsMenuPlacementChoices() {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  const menuPlacement = normalizeMenuPlacement(settings.menuPlacement);
+  el.settingsMenuPlacement.innerHTML = `
+    <div class="menu-placement-actions">
+      <button class="secondary-button" type="button" data-menu-position-all="top">All top</button>
+      <button class="secondary-button" type="button" data-menu-position-all="bottom">All bottom</button>
+    </div>
+    ${MENU_POSITION_SECTIONS.map((section) => `
+      <label class="menu-placement-row">
+        <span>${escapeHtml(section.label)}</span>
+        <select data-menu-position="${escapeHtml(section.id)}" aria-label="${escapeHtml(section.label)} menu placement">
+          <option value="top" ${menuPlacement[section.id] === "top" ? "selected" : ""}>Top</option>
+          <option value="bottom" ${menuPlacement[section.id] === "bottom" ? "selected" : ""}>Bottom</option>
+        </select>
+      </label>
+    `).join("")}
+  `;
+}
+
+function handleSettingsMenuPlacementChange(event) {
+  const section = event.target.dataset.menuPosition;
+  if (!section) return;
+
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  const menuPlacement = normalizeMenuPlacement(settings.menuPlacement);
+  menuPlacement[section] = event.target.value === "bottom" ? "bottom" : "top";
+  saveMenuPlacementSettings(settings, menuPlacement);
+}
+
+function handleSettingsMenuPlacementClick(event) {
+  const allButton = event.target.closest("[data-menu-position-all]");
+  if (!allButton) return;
+
+  const position = allButton.dataset.menuPositionAll === "bottom" ? "bottom" : "top";
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  const menuPlacement = Object.fromEntries(MENU_POSITION_SECTIONS.map((section) => [section.id, position]));
+  saveMenuPlacementSettings(settings, menuPlacement);
+  renderSettingsMenuPlacementChoices();
+}
+
+function saveMenuPlacementSettings(settings, menuPlacement) {
+  const nextSettings = {
+    ...settings,
+    menuPlacement
+  };
+  writeJson(STORAGE_KEYS.settings, nextSettings);
+  applyAppSettings(nextSettings);
+}
+
+function normalizeMenuPlacement(menuPlacement = {}) {
+  return Object.fromEntries(MENU_POSITION_SECTIONS.map((section) => [
+    section.id,
+    menuPlacement[section.id] === "bottom" ? "bottom" : "top"
+  ]));
+}
+
 function applyAppSettings(settings = readJson(STORAGE_KEYS.settings, {})) {
   const themeName = settings.tabTheme && THEME_PRESETS[settings.tabTheme] ? settings.tabTheme : "blue";
   const theme = THEME_PRESETS[themeName];
@@ -479,6 +583,15 @@ function applyAppSettings(settings = readJson(STORAGE_KEYS.settings, {})) {
   root.style.setProperty("--color-primary-hover", theme.hover);
   root.style.setProperty("--color-border", theme.border);
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme.primary);
+  updateNavPlacement();
+}
+
+function updateNavPlacement(sectionName = state.activeSection) {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  const menuPlacement = normalizeMenuPlacement(settings.menuPlacement);
+  const section = sectionName === "detail" ? state.previousSection : sectionName;
+  const position = menuPlacement[section] === "bottom" ? "bottom" : "top";
+  document.body.classList.toggle("nav-bottom", position === "bottom");
 }
 
 function clearNavHighlight() {
@@ -1740,6 +1853,8 @@ function showSection(sectionName) {
     state.activeSection = sectionName;
     window.location.hash = sectionName;
   }
+
+  updateNavPlacement(sectionName);
 }
 
 function renderLibrary() {
@@ -2304,6 +2419,12 @@ async function handleBodyClick(event) {
   const settingsButton = event.target.closest("[data-open-settings]");
   if (settingsButton) {
     openSettingsModal();
+    return;
+  }
+
+  const refreshAppButton = event.target.closest("[data-refresh-app]");
+  if (refreshAppButton) {
+    await refreshAppShell();
     return;
   }
 
@@ -3008,8 +3129,8 @@ function handlePdfTapZoneClick(event, direction) {
   }
 
   const stageBox = el.pdfStage.getBoundingClientRect();
-  const tappedTopThird = event.clientY <= stageBox.top + stageBox.height / 3;
-  if (tappedTopThird) {
+  const tappedTopQuarter = event.clientY <= stageBox.top + stageBox.height / 4;
+  if (tappedTopQuarter) {
     event.preventDefault();
     if (direction === "previous") {
       firstPdfPage();
