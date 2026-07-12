@@ -670,6 +670,18 @@ body.pdf-open .pdf-viewer { bottom: var(--pdf-nav-space); height: auto; }
 
 .pdf-tap-right { right: 0px; }
 
+.pdf-tap-zone::before { align-items: center; background: color-mix(in srgb, var(--accent-soft) 78%, var(--surface)); border: 1px solid color-mix(in srgb, var(--line) 78%, transparent); border-radius: 999px; color: color-mix(in srgb, var(--accent-strong) 72%, transparent); content: ""; display: inline-flex; font-size: 0.78rem; font-weight: 800; height: 24px; justify-content: center; line-height: 1; opacity: 0.72; pointer-events: none; position: absolute; top: 8px; width: 32px; }
+
+.pdf-tap-left::before { content: "|<"; left: max(4px, env(safe-area-inset-left)); }
+
+.pdf-tap-right::before { content: ">|"; right: max(4px, env(safe-area-inset-right)); }
+
+.pdf-tap-zone::after { background: color-mix(in srgb, var(--accent) 8%, transparent); bottom: 0px; content: ""; opacity: 0.62; pointer-events: none; position: absolute; top: 25%; width: 8px; }
+
+.pdf-tap-left::after { left: 0px; }
+
+.pdf-tap-right::after { right: 0px; }
+
 .pdf-tap-zone:active { background: var(--tap-feedback); }
 
 .pdf-tap-zone:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent-hover); outline-offset: 2px; }

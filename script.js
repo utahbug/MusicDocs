@@ -4,6 +4,7 @@ const PDFJS_VERSION = "3.11.174";
 const PDFJS_WORKER_URL = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.js`;
 
 const STORAGE_KEYS = {
+  deletedItems: "primaryMusicHelper.deletedItems",
   favorites: "primaryMusicHelper.favorites",
   importedItems: "primaryMusicHelper.importedItems",
   itemEdits: "primaryMusicHelper.itemEdits",
@@ -687,7 +688,7 @@ async function loadLibrary() {
       ...(state.data.items || []),
       ...BUILT_IN_LINKS,
       ...getImportedItems()
-    ];
+    ].filter((item) => item?.id && !deletedItemIds().has(item.id));
     state.data.items = applyLocalItemEdits(baseItems);
     state.itemsById = new Map(state.data.items.map((item) => [item.id, item]));
   } catch (error) {
@@ -997,7 +998,7 @@ function applyImportContext() {
   el.importSaveButton.innerHTML = "&#10003;";
   el.importSaveButton.setAttribute("aria-label", editing ? "Save changes" : "Save");
   el.importSaveButton.title = editing ? "Save changes" : "Save";
-  el.importDeleteButton.classList.toggle("hidden", !editing || !isUserCreatedItem(state.editingItemId));
+  el.importDeleteButton.classList.toggle("hidden", !editing || !isDeletableItem(state.editingItemId));
 
   el.importCategoryRow.classList.toggle("hidden", linkOnly);
   el.importBookRow.classList.add("hidden");
@@ -1078,7 +1079,7 @@ function prefillImportForm(item) {
   el.importSaveButton.title = "Save changes";
   el.importType.value = item.type === "link" ? "link" : item.type;
   el.importType.disabled = true;
-  el.importTitleField.value = item.title || "";
+  el.importTitleField.value = normalizeVisibleText(item.title);
   el.importCategory.value = item.category || "";
   el.importBook.value = item.book || "";
   el.importComposer.value = item.composer || "";
@@ -1329,7 +1330,7 @@ async function handleImportSubmit(event) {
     let item;
     if (state.editingItemId) {
       item = state.itemsById.get(state.editingItemId);
-      const editedFields = buildEditableFieldsFromForm(item.type, item.title || "Untitled Item");
+      const editedFields = buildEditableFieldsFromForm(item.type, itemDisplayTitle(item));
       if (item.type === "card") {
         await addCardImageFromForm(state.editingItemId, editedFields);
       }
@@ -1484,19 +1485,33 @@ async function saveImportedItem(item) {
 
 function getImportedItems() {
   return readJson(STORAGE_KEYS.importedItems, [])
-    .filter((item) => item && item.id && item.title && item.type);
+    .filter((item) => item && item.id && item.type);
 }
 
 function isUserCreatedItem(itemId) {
   return getImportedItems().some((item) => item.id === itemId);
 }
 
+function isDeletableItem(itemId) {
+  return Boolean(itemId && state.itemsById.has(itemId));
+}
+
+function deletedItemIds() {
+  return new Set(readJson(STORAGE_KEYS.deletedItems, []));
+}
+
 function applyLocalItemEdits(items) {
   const edits = readJson(STORAGE_KEYS.itemEdits, {});
   return items.map((item) => {
     const itemEdits = edits[item.id];
-    return itemEdits ? { ...item, ...itemEdits, id: item.id, type: item.type } : item;
+    return itemEdits ? { ...item, ...sanitizeItemEdits(itemEdits), id: item.id, type: item.type } : item;
   });
+}
+
+function sanitizeItemEdits(itemEdits) {
+  const clean = { ...itemEdits };
+  if ("title" in clean && !normalizeVisibleText(clean.title)) delete clean.title;
+  return clean;
 }
 
 function saveItemEdit(itemId, editedFields) {
@@ -1523,7 +1538,7 @@ async function handleDeleteItemFromForm() {
 
 async function confirmAndDeleteItem(itemId, options = {}) {
   const item = state.itemsById.get(itemId);
-  if (!item || !isUserCreatedItem(itemId)) {
+  if (!item || !isDeletableItem(itemId)) {
     closeSwipeRows();
     return;
   }
@@ -1557,10 +1572,16 @@ async function deleteUserItem(itemId) {
   const item = state.itemsById.get(itemId);
   if (!item) return;
 
-  await Promise.all([
-    removeLocalFile(item.fileId),
-    removeLocalFile(item.imageFileId)
-  ]);
+  if (isUserCreatedItem(itemId)) {
+    await Promise.all([
+      removeLocalFile(item.fileId),
+      removeLocalFile(item.imageFileId)
+    ]);
+  } else {
+    const deletedIds = deletedItemIds();
+    deletedIds.add(itemId);
+    writeJson(STORAGE_KEYS.deletedItems, Array.from(deletedIds));
+  }
 
   const imported = getImportedItems().filter((candidate) => candidate.id !== itemId);
   writeJson(STORAGE_KEYS.importedItems, imported);
@@ -1949,7 +1970,7 @@ function createItemCard(item, options = {}) {
 }
 
 function itemDeleteActionHtml(item) {
-  if (!isUserCreatedItem(item.id)) return "";
+  if (!isDeletableItem(item.id)) return "";
   return `<button class="swipe-delete-action" type="button" data-swipe-delete-item="${escapeHtml(item.id)}" aria-label="Delete ${escapeHtml(itemDisplayTitle(item))}" title="Delete">&#128465;</button>`;
 }
 
@@ -2056,6 +2077,7 @@ function renderInlineListItems(list) {
   return `
     <div class="inline-list-items">
       ${entries.map((entry) => {
+        const title = itemDisplayTitle(entry.item);
         const page = entry.page || entry.item.page;
         const favorite = state.favorites.has(entry.item.id);
         const meta = [
@@ -2065,14 +2087,14 @@ function renderInlineListItems(list) {
         ].filter(Boolean).join(" - ");
         return `
           <div class="inline-list-row">
-            <button class="icon-button favorite-toggle inline-list-favorite ${favorite ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(entry.item.id)}" aria-label="Toggle favorite for ${escapeHtml(entry.item.title)}" title="Toggle favorite">
+            <button class="icon-button favorite-toggle inline-list-favorite ${favorite ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(entry.item.id)}" aria-label="Toggle favorite for ${escapeHtml(title)}" title="Toggle favorite">
               ${favorite ? "&#9733;" : "&#9734;"}
             </button>
             <button class="inline-list-item" type="button" data-open="${escapeHtml(entry.item.id)}">
-              <span class="compact-title">${escapeHtml(entry.item.title)}</span>
+              <span class="compact-title">${escapeHtml(title)}</span>
               ${meta ? `<span class="compact-meta">${escapeHtml(meta)}</span>` : ""}
             </button>
-            <button class="icon-button inline-list-edit-button" type="button" data-edit-item="${escapeHtml(entry.item.id)}" data-edit-context="lists" aria-label="Edit ${escapeHtml(entry.item.title)}" title="Edit item">&#9998;</button>
+            <button class="icon-button inline-list-edit-button" type="button" data-edit-item="${escapeHtml(entry.item.id)}" data-edit-context="lists" aria-label="Edit ${escapeHtml(title)}" title="Edit item">&#9998;</button>
           </div>
         `;
       }).join("")}
@@ -2142,6 +2164,7 @@ function cleanupListEntries() {
 
 function createListRow(entry, list) {
   const showChecks = Boolean(list.showCheckboxes);
+  const title = itemDisplayTitle(entry.item);
   const page = entry.page || entry.item.page;
   const book = entry.book || entry.item.book;
   const note = entry.notes || entry.item.notes || "";
@@ -2150,7 +2173,7 @@ function createListRow(entry, list) {
   row.dataset.id = entry.item.id;
 
   const checkboxHtml = showChecks
-    ? `<input class="quick-check" type="checkbox" data-list-check="${escapeHtml(list.id)}:${entry.manualIndex}" ${entry.checked ? "checked" : ""} aria-label="Mark ${escapeHtml(entry.item.title)}">`
+    ? `<input class="quick-check" type="checkbox" data-list-check="${escapeHtml(list.id)}:${entry.manualIndex}" ${entry.checked ? "checked" : ""} aria-label="Mark ${escapeHtml(title)}">`
     : "";
   const editActions = state.listEditMode
     ? `
@@ -2163,19 +2186,19 @@ function createListRow(entry, list) {
     : "";
   const infoAction = state.listEditMode
     ? `
-      <button class="icon-button info-button" type="button" data-detail="${escapeHtml(entry.item.id)}" aria-label="Show info for ${escapeHtml(entry.item.title)}" title="Info">
+      <button class="icon-button info-button" type="button" data-detail="${escapeHtml(entry.item.id)}" aria-label="Show info for ${escapeHtml(title)}" title="Info">
         i
       </button>
     `
     : "";
 
   row.innerHTML = `
-    <button class="swipe-delete-action" type="button" data-swipe-remove-list="${escapeHtml(list.id)}:${entry.manualIndex}" aria-label="Remove ${escapeHtml(entry.item.title)} from this list" title="Remove from list">&#128465;</button>
+    <button class="swipe-delete-action" type="button" data-swipe-remove-list="${escapeHtml(list.id)}:${entry.manualIndex}" aria-label="Remove ${escapeHtml(title)} from this list" title="Remove from list">&#128465;</button>
     <div class="swipe-content list-row-content">
       ${checkboxHtml}
       <button class="quick-main" type="button" data-open="${escapeHtml(entry.item.id)}">
         <div class="quick-line">
-          <span class="quick-title">${entry.order ? `<span class="quick-order">${escapeHtml(String(entry.order))}</span>` : ""}${escapeHtml(entry.item.title)}</span>
+          <span class="quick-title">${entry.order ? `<span class="quick-order">${escapeHtml(String(entry.order))}</span>` : ""}${escapeHtml(title)}</span>
           <span class="quick-page">${page ? `p. ${escapeHtml(String(page))}` : ""}</span>
         </div>
         <div class="quick-meta">
@@ -2262,13 +2285,16 @@ function updateListPickerOptions(listId = state.activeListId) {
     return;
   }
 
-  results.innerHTML = items.map((item) => `
-    <button class="picker-row" type="button" data-add-list="${escapeHtml(listId)}" data-picker-item="${escapeHtml(item.id)}">
-      <span class="picker-title">${escapeHtml(item.title)}</span>
-      <small>${escapeHtml(compactMetaText(item))}</small>
-      <span class="picker-add">Add</span>
-    </button>
-  `).join("");
+  results.innerHTML = items.map((item) => {
+    const title = itemDisplayTitle(item);
+    return `
+      <button class="picker-row" type="button" data-add-list="${escapeHtml(listId)}" data-picker-item="${escapeHtml(item.id)}">
+        <span class="picker-title">${escapeHtml(title)}</span>
+        <small>${escapeHtml(compactMetaText(item))}</small>
+        <span class="picker-add">Add</span>
+      </button>
+    `;
+  }).join("");
 }
 
 function renderCards() {
@@ -2286,6 +2312,7 @@ function renderCardPreviews() {
   }
 
   cards.forEach((card) => {
+    const title = itemDisplayTitle(card);
     const article = document.createElement("article");
     const deleteAction = itemDeleteActionHtml(card);
     article.className = `song-card-preview${deleteAction ? " swipe-row" : ""}`;
@@ -2294,7 +2321,7 @@ function renderCardPreviews() {
       <div class="swipe-content song-card-preview-content">
         <div class="card-actions">
           <button class="item-open" type="button" data-detail="${escapeHtml(card.id)}">
-            <h3>${escapeHtml(card.title)}</h3>
+            <h3>${escapeHtml(title)}</h3>
             ${card.key ? `<p class="quick-meta">Key: ${escapeHtml(card.key)}</p>` : ""}
           </button>
           <button class="icon-button favorite-toggle ${state.favorites.has(card.id) ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(card.id)}" aria-label="Toggle favorite">
@@ -2874,9 +2901,10 @@ function openDetail(id) {
 }
 
 function detailHtml(item) {
+  const title = itemDisplayTitle(item);
   const favorite = state.favorites.has(item.id);
   const editAction = `<button class="secondary-button" type="button" data-edit-item="${escapeHtml(item.id)}">Edit</button>`;
-  const deleteAction = isUserCreatedItem(item.id)
+  const deleteAction = isDeletableItem(item.id)
     ? `<button class="icon-button danger-icon" type="button" data-delete-item="${escapeHtml(item.id)}" aria-label="Delete" title="Delete">&#128465;</button>`
     : "";
   const favoriteAction = `
@@ -2886,7 +2914,7 @@ function detailHtml(item) {
   `;
   const compactHeader = `
     <div class="compact-detail-header">
-      <span id="detailTitle" class="compact-detail-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
+      <span id="detailTitle" class="compact-detail-title" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
       <span class="type-pill compact-type">${escapeHtml(item.type)}</span>
       ${favoriteAction}
       ${deleteAction}
@@ -2899,9 +2927,9 @@ function detailHtml(item) {
   `;
 
   if (item.type === "card") {
-    const visibleTitle = item.title && item.title !== "Untitled Song Card" && item.title !== "Untitled Card";
+    const visibleTitle = title && title !== "Untitled Song Card" && title !== "Untitled Card";
     const cardTitle = visibleTitle
-      ? `<span id="detailTitle" class="compact-detail-title">${escapeHtml(item.title)}</span>`
+      ? `<span id="detailTitle" class="compact-detail-title">${escapeHtml(title)}</span>`
       : `<span id="detailTitle" class="sr-only">Card</span>`;
     return `
       <article class="detail-card card-detail-card">
@@ -2981,7 +3009,7 @@ function cardContentHtml(item, options = {}) {
 function localImageSlotHtml(item) {
   const fileId = item.imageFileId || item.fileId;
   return `
-    <div class="song-card-image" data-image-file-id="${escapeHtml(fileId)}" data-image-alt="${escapeHtml(item.title)} image">
+    <div class="song-card-image" data-image-file-id="${escapeHtml(fileId)}" data-image-alt="${escapeHtml(itemDisplayTitle(item))} image">
       <p class="quick-meta">Loading image...</p>
     </div>
   `;
@@ -2995,7 +3023,7 @@ async function openPdf(item) {
   state.currentPdf.pageNumber = 1;
   state.currentPdf.pageCount = 0;
   resetPdfZoom();
-  el.pdfTitle.textContent = item.title;
+  el.pdfTitle.textContent = itemDisplayTitle(item);
   el.pdfPageStatus.textContent = "Loading";
   el.pdfCanvas.classList.add("hidden");
   showPdfMessage("Loading PDF...");
@@ -3540,6 +3568,7 @@ function renderListEditItems(list) {
   }
 
   el.listEditItems.innerHTML = entries.map((entry) => {
+    const title = itemDisplayTitle(entry.item);
     const page = entry.page || entry.item.page;
     const meta = [
       page ? `p. ${page}` : "",
@@ -3550,14 +3579,14 @@ function renderListEditItems(list) {
     return `
       <div class="list-edit-item-row">
         <div class="list-edit-item-main">
-          <span class="compact-title">${escapeHtml(entry.item.title)}</span>
+          <span class="compact-title">${escapeHtml(title)}</span>
           ${meta ? `<span class="compact-meta">${escapeHtml(meta)}</span>` : ""}
         </div>
         <div class="list-edit-item-actions">
-          <button class="icon-button" type="button" data-edit-item="${escapeHtml(entry.item.id)}" data-edit-context="lists" aria-label="Edit ${escapeHtml(entry.item.title)}" title="Edit item">&#9998;</button>
-          <button class="icon-button" type="button" data-list-modal-move="${value}:up" aria-label="Move ${escapeHtml(entry.item.title)} up" title="Move up">&#8593;</button>
-          <button class="icon-button" type="button" data-list-modal-move="${value}:down" aria-label="Move ${escapeHtml(entry.item.title)} down" title="Move down">&#8595;</button>
-          <button class="icon-button remove-button" type="button" data-list-modal-remove="${value}" aria-label="Remove ${escapeHtml(entry.item.title)} from list" title="Remove from list">&times;</button>
+          <button class="icon-button" type="button" data-edit-item="${escapeHtml(entry.item.id)}" data-edit-context="lists" aria-label="Edit ${escapeHtml(title)}" title="Edit item">&#9998;</button>
+          <button class="icon-button" type="button" data-list-modal-move="${value}:up" aria-label="Move ${escapeHtml(title)} up" title="Move up">&#8593;</button>
+          <button class="icon-button" type="button" data-list-modal-move="${value}:down" aria-label="Move ${escapeHtml(title)} down" title="Move down">&#8595;</button>
+          <button class="icon-button remove-button" type="button" data-list-modal-remove="${value}" aria-label="Remove ${escapeHtml(title)} from list" title="Remove from list">&times;</button>
         </div>
       </div>
     `;
@@ -3600,11 +3629,11 @@ function toggleListItemFromModal(itemId, checked) {
   if (checked) {
     addItemToList(state.editingListId, itemId);
     const item = state.itemsById.get(itemId);
-    el.listEditStatus.textContent = item ? `Added ${item.title}.` : "Added item.";
+    el.listEditStatus.textContent = item ? `Added ${itemDisplayTitle(item)}.` : "Added item.";
   } else {
     removeListItemByItemId(state.editingListId, itemId);
     const item = state.itemsById.get(itemId);
-    el.listEditStatus.textContent = item ? `Removed ${item.title}.` : "Removed item.";
+    el.listEditStatus.textContent = item ? `Removed ${itemDisplayTitle(item)}.` : "Removed item.";
   }
   renderListEditModal();
 }
@@ -3695,7 +3724,7 @@ function addItemToList(listId, itemId, pageValue = "") {
   const page = Number(pageValue);
   if (page) entry.page = page;
   list.entries.push(entry);
-  state.listPickerMessage = item ? `Added ${item.title}.` : "Added item.";
+  state.listPickerMessage = item ? `Added ${itemDisplayTitle(item)}.` : "Added item.";
   const pageInput = document.getElementById("listPickerPage");
   if (pageInput) pageInput.value = "";
   saveLists();
@@ -3766,8 +3795,27 @@ function isLibraryContentItem(item) {
 }
 
 function itemDisplayTitle(item) {
-  const title = item?.title || item?.fileName || item?.imageFileName || item?.url || "Untitled";
-  return String(title).trim() || "Untitled";
+  const candidates = [
+    item?.title,
+    item?.fileName,
+    item?.imageFileName,
+    item?.url,
+    titleFromId(item?.id)
+  ];
+  for (const candidate of candidates) {
+    const title = normalizeVisibleText(candidate);
+    if (title) return title;
+  }
+  return "Untitled";
+}
+
+function normalizeVisibleText(value) {
+  return String(value ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+}
+
+function titleFromId(id) {
+  const text = normalizeVisibleText(id).replace(/[-_]+/g, " ");
+  return text ? text.replace(/\b\w/g, (letter) => letter.toUpperCase()) : "";
 }
 
 function matchesQuery(item, query) {
@@ -3778,6 +3826,7 @@ function matchesQuery(item, query) {
 
 function searchableText(item) {
   return normalize([
+    itemDisplayTitle(item),
     item.title,
     item.type,
     item.category,
@@ -3915,7 +3964,7 @@ function libraryOptionsHtml() {
   return state.data.items
     .slice()
     .sort(compareTitle)
-    .map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.title)} (${escapeHtml(item.type)})</option>`)
+    .map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(itemDisplayTitle(item))} (${escapeHtml(item.type)})</option>`)
     .join("");
 }
 
@@ -3970,7 +4019,8 @@ async function exportBackup() {
       pdfPages: readJson(STORAGE_KEYS.pdfPages, {}),
       recents: readJson(STORAGE_KEYS.recents, []),
       settings: readJson(STORAGE_KEYS.settings, {}),
-      starterFavorites: readJson(STORAGE_KEYS.starterFavorites, [])
+      starterFavorites: readJson(STORAGE_KEYS.starterFavorites, []),
+      deletedItems: readJson(STORAGE_KEYS.deletedItems, [])
     };
     const fileIds = collectLocalFileIds(data);
     const { files, missingFileIds } = await collectBackupFiles(fileIds);
@@ -4034,6 +4084,7 @@ function importBackupFromFile(event) {
       writeJson(STORAGE_KEYS.recents, data.recents || []);
       writeJson(STORAGE_KEYS.settings, data.settings || {});
       writeJson(STORAGE_KEYS.starterFavorites, data.starterFavorites || []);
+      writeJson(STORAGE_KEYS.deletedItems, data.deletedItems || []);
       window.location.reload();
     } catch {
       window.alert("That app data file could not be imported.");
