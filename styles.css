@@ -536,9 +536,11 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 #importStatus { order: 8; }
 
-.modal[data-item-type="card"] .form-grid, .modal[data-item-type="link"] .form-grid { order: 2; }
+.modal[data-item-type="card"] #cardImportFields { order: 2; }
 
-.modal[data-item-type="card"] #cardImportFields, .modal[data-item-type="link"] #linkImportFields { order: 3; }
+.modal[data-item-type="card"] .form-grid, .modal[data-item-type="link"] .form-grid { order: 3; }
+
+.modal[data-item-type="link"] #linkImportFields { order: 3; }
 
 .editor-panel { background: var(--surface-strong); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 10px; margin-bottom: 10px; padding: 10px; }
 
