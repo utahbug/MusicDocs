@@ -2318,7 +2318,9 @@ function renderLinks() {
 
 function renderFavorites() {
   const favoriteRows = getFavoriteRows();
+  const favoriteItemCount = favoriteRows.filter((row) => row.kind === "item").length;
   el.favoritesReorderButton.classList.toggle("hidden", !favoriteRows.length);
+  el.favoriteDividerAddButton.classList.toggle("hidden", favoriteItemCount < 3);
   el.favoritesReorderButton.classList.toggle("active-tool", state.favoriteReorderMode);
   el.favoritesReorderButton.setAttribute("aria-pressed", state.favoriteReorderMode ? "true" : "false");
   if (!favoriteRows.length) {
@@ -2332,11 +2334,46 @@ function renderFavorites() {
 }
 
 function getFavoriteRows() {
-  return Array.from(state.favorites).map((id) => {
+  const rows = Array.from(state.favorites).map((id) => {
     if (isFavoriteDividerId(id)) return { kind: "divider", id };
     const item = state.itemsById.get(id);
     return item ? { kind: "item", item } : null;
   }).filter(Boolean);
+  return cleanupFavoriteRows(rows);
+}
+
+function cleanupFavoriteRows(rows) {
+  const cleanedRows = [];
+  let changed = false;
+  let previousWasDivider = true;
+
+  rows.forEach((row) => {
+    if (row.kind === "divider") {
+      if (previousWasDivider) {
+        changed = true;
+        return;
+      }
+      cleanedRows.push(row);
+      previousWasDivider = true;
+      return;
+    }
+
+    cleanedRows.push(row);
+    previousWasDivider = false;
+  });
+
+  while (cleanedRows.length && cleanedRows[cleanedRows.length - 1].kind === "divider") {
+    cleanedRows.pop();
+    changed = true;
+  }
+
+  if (changed) {
+    const cleanedIds = cleanedRows.map((row) => row.kind === "divider" ? row.id : row.item.id);
+    state.favorites = new Set(cleanedIds);
+    writeJson(STORAGE_KEYS.favorites, cleanedIds);
+  }
+
+  return cleanedRows;
 }
 
 function renderFavoriteRows(rows) {
@@ -3324,6 +3361,8 @@ function toggleFavorite(id) {
 }
 
 function addFavoriteDivider() {
+  const favoriteItemCount = getFavoriteRows().filter((row) => row.kind === "item").length;
+  if (favoriteItemCount < 3) return;
   const id = `${FAVORITE_DIVIDER_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   state.favorites.add(id);
   state.favoriteReorderMode = true;

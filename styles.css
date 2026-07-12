@@ -110,7 +110,11 @@ body.pdf-open .main-nav { border-bottom: 0px; border-top: 1px solid var(--line);
 
 label { color: var(--muted); display: grid; font-size: 0.8rem; font-weight: 700; gap: 4px; }
 
-input[type="search"], input[type="text"], input[type="number"], input[type="url"], input[type="file"], textarea, select { appearance: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-size: 1rem; max-width: 100%; min-height: 42px; min-width: 0px; padding: 8px 10px; width: 100%; }
+input[type="search"], input[type="text"], input[type="number"], input[type="url"], input[type="file"], textarea, select { appearance: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-size: 1rem; font-weight: 400; max-width: 100%; min-height: 42px; min-width: 0px; padding: 8px 10px; width: 100%; }
+
+input, textarea, select, .modal-panel input, .modal-panel textarea, .modal-panel select {
+  font-weight: 400 !important;
+}
 
 textarea { resize: vertical; }
 
@@ -152,7 +156,7 @@ textarea { resize: vertical; }
 
 .photo-icon::after { border: 2px solid currentcolor; border-radius: 999px; content: ""; height: 6px; left: 5px; position: absolute; top: 4px; width: 6px; }
 
-.rich-card-editor, .rich-card-content { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; font-size: clamp(1rem, 4vw, 1.14rem); font-weight: 500; line-height: 1.55; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
+.rich-card-editor, .rich-card-content { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; font-size: clamp(1rem, 4vw, 1.14rem); font-weight: 400; line-height: 1.55; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
 
 .rich-card-editor { background: var(--surface); height: 72px; min-height: 56px; outline: none; overflow: auto; resize: vertical; }
 
@@ -506,7 +510,7 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .file-picker-button { flex: 0 0 auto; min-height: 34px; padding: 5px 10px; }
 
-.file-picker-name { color: var(--ink); flex: 1 1 auto; font-size: 1rem; font-weight: 700; min-width: 0px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-picker-name { color: var(--ink); flex: 1 1 auto; font-size: 1rem; font-weight: 400; min-width: 0px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .form-grid { display: grid; gap: 8px; grid-template-columns: 1fr; }
 
@@ -600,13 +604,11 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .help-topic h3 { color: var(--accent-strong); font-size: 0.95rem; margin-bottom: 0px; }
 
-.help-topic ul { margin: 0px; padding-left: 20px; }
+.help-topic ul { margin: 0px; padding-left: 14px; }
 
-.help-topic li { color: var(--ink); font-size: 0.95rem; line-height: 1.35; margin: 2px 0px; }
+.help-topic li { color: var(--ink); font-size: 0.95rem; line-height: 1.35; list-style: none; margin: 2px 0px; position: relative; }
 
-.help-arrow-item { list-style: none; position: relative; }
-
-.help-arrow-item::before { color: var(--accent-strong); content: "\203A"; font-size: 0.9em; font-weight: 800; left: -14px; position: absolute; top: 0.02em; }
+.help-topic li::before { color: var(--accent-strong); content: "\203A"; font-size: 0.9em; font-weight: 800; left: -14px; position: absolute; top: 0.02em; }
 
 .about-modal { align-items: center; }
 
