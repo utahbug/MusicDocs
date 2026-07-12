@@ -1,1 +1,425 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#2B5F9E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="MusicDocs">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>MusicDocs</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/icon.svg">
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-title-1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="script.js?v=musicdocs-title-1" defer></script>
+  </head>
+  <body>
+    <div id="appShell" class="app-shell">
+      <header class="app-header">
+        <div>
+          <h1>
+            <button id="homeTitleButton" class="app-title-button" type="button" aria-label="Go to Favorites" title="Go to Favorites">MusicDocs</button>
+          </h1>
+        </div>
+      </header>
 
+      <nav class="main-nav" aria-label="Main sections">
+        <button class="nav-button nav-icon-button" type="button" data-section="favorites" aria-label="Favorites" title="Favorites">
+          <span class="star-icon-mark" aria-hidden="true">&#9733;</span>
+          <span class="sr-only">Favorites</span>
+        </button>
+        <button class="nav-button" type="button" data-section="lists" aria-label="Lists" title="Lists">Lists</button>
+        <button class="nav-button active" type="button" data-section="library" aria-label="Files" title="Files">Files</button>
+        <button class="nav-button" type="button" data-section="cards" aria-label="Cards" title="Cards">Cards</button>
+        <button class="nav-button nav-icon-button" type="button" data-section="links" aria-label="Links" title="Links">
+          <span class="link-icon-mark" aria-hidden="true"></span>
+          <span class="sr-only">Links</span>
+        </button>
+        <div class="overflow-wrap nav-overflow-wrap">
+          <button id="overflowMenuButton" class="nav-button nav-icon-button" type="button" aria-label="More" title="More" aria-expanded="false" aria-controls="overflowMenu">&hellip;</button>
+          <div id="overflowMenu" class="overflow-menu hidden" role="menu" aria-label="More">
+            <button type="button" role="menuitem" data-menu-section="search">Search</button>
+            <span class="menu-separator" aria-hidden="true"></span>
+            <button id="exportBackupButton" type="button" role="menuitem">Export data + files</button>
+            <button id="importBackupButton" type="button" role="menuitem">Import data + files</button>
+            <span class="menu-separator" aria-hidden="true"></span>
+            <button type="button" role="menuitem" data-open-settings>Settings</button>
+            <button type="button" role="menuitem" data-open-help>Help</button>
+            <button type="button" role="menuitem" data-menu-message="@copyright 2026 by Ken Roberts.">About</button>
+          </div>
+          <input id="backupFileInput" class="hidden" type="file" accept="application/json,.json">
+        </div>
+      </nav>
+
+      <main class="main-content">
+        <section id="librarySection" class="view active" data-view="library" aria-label="Files">
+          <div class="toolbar compact-topbar files-toolbar">
+            <label class="search-field">
+              <span>Search files</span>
+              <input id="librarySearch" type="search" autocomplete="off" placeholder="Title, book, composer, category, note">
+            </label>
+            <label class="files-sort-field">
+              <span>Sort</span>
+              <select id="librarySort" aria-label="Sort files">
+                <option value="alpha">Alphabetical</option>
+                <option value="category">Category / Genre</option>
+                <option value="book">Source / Book</option>
+                <option value="composer">Composer / Arranger</option>
+                <option value="tag">Tag</option>
+              </select>
+            </label>
+          </div>
+          <button id="libraryTopAddButton" class="top-add-button file-add-button" type="button" aria-label="Add file" title="Add file">+</button>
+          <div id="libraryContent" class="stack"></div>
+          <button id="libraryAddButton" class="top-add-button label-add-button file-add-button bottom-file-add-button" type="button" aria-label="Add file" title="Add file">Add File +</button>
+        </section>
+
+        <section id="listsSection" class="view" data-view="lists" aria-label="Lists">
+          <button id="listTopAddButton" class="top-add-button" type="button" aria-label="New list" title="New list">+</button>
+          <label class="compact-select hidden">
+            <span>List</span>
+            <select id="listSelect"></select>
+          </label>
+          <div id="listTabs" class="list-tabs" role="listbox" aria-label="Saved lists"></div>
+          <div class="toolbar compact-topbar lists-toolbar">
+            <button id="listEditButton" class="icon-button hidden" type="button" aria-label="Edit list" title="Edit list">&#9998;</button>
+            <div class="overflow-wrap list-overflow-wrap">
+              <button id="listMoreButton" class="icon-button" type="button" aria-label="List options" title="List options" aria-expanded="false" aria-controls="listMoreMenu">&hellip;</button>
+              <div id="listMoreMenu" class="overflow-menu hidden" role="menu" aria-label="List options">
+                <button type="button" role="menuitem" data-new-list>New list</button>
+                <button type="button" role="menuitem" data-duplicate-active-list>Duplicate list</button>
+                <button type="button" role="menuitem" data-delete-active-list>Delete list</button>
+                <button type="button" role="menuitem" data-toggle-active-list-checkboxes>Show/hide checkboxes</button>
+              </div>
+            </div>
+          </div>
+          <div id="listEditorPanel" class="editor-panel hidden"></div>
+          <div id="listContent" class="quick-list"></div>
+          <button id="listItemAddButton" class="top-add-button list-item-add-button" type="button" aria-label="Add file to this list" title="Add file to this list">+</button>
+          <div id="listPickerPanel" class="editor-panel hidden"></div>
+        </section>
+
+        <section id="cardsSection" class="view" data-view="cards" aria-label="Cards">
+          <button id="cardTopAddButton" class="top-add-button card-label-add-button" type="button" aria-label="Add card" title="Add card">+</button>
+          <div id="cardsContent" class="cards-grid"></div>
+          <button id="cardAddButton" class="top-add-button label-add-button card-label-add-button bottom-card-add-button" type="button" aria-label="Add card" title="Add card">Add Card +</button>
+        </section>
+
+        <section id="linksSection" class="view" data-view="links" aria-label="Links">
+          <button id="linkTopAddButton" class="top-add-button link-add-button" type="button" aria-label="Add link" title="Add link">+</button>
+          <div id="linksContent" class="stack"></div>
+          <button id="linkAddButton" class="top-add-button label-add-button link-add-button bottom-link-add-button" type="button" aria-label="Add link" title="Add link">Add Link +</button>
+        </section>
+
+        <section id="favoritesSection" class="view" data-view="favorites" aria-label="Favorites">
+          <div class="favorites-topbar">
+            <button id="favoritesReorderButton" class="icon-button favorites-reorder-button" type="button" aria-label="Reorder favorites" title="Reorder favorites" aria-pressed="false">
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <div id="favoritesContent" class="stack"></div>
+        </section>
+
+        <section id="searchSection" class="view" data-view="search" aria-labelledby="searchTitle">
+          <div class="toolbar">
+            <label class="search-field">
+              <span>Search all content</span>
+              <input id="globalSearch" type="search" autocomplete="off" placeholder="Title, book, composer, category, link, note">
+            </label>
+          </div>
+          <div id="searchContent" class="stack"></div>
+        </section>
+
+        <section id="detailSection" class="view detail-view" data-view="detail" aria-labelledby="detailTitle">
+          <div id="detailContent"></div>
+        </section>
+      </main>
+    </div>
+
+    <section id="pdfViewer" class="pdf-viewer hidden" aria-label="PDF viewer">
+      <header class="pdf-toolbar">
+        <div class="pdf-title-wrap">
+          <h2 id="pdfTitle">PDF</h2>
+          <p id="pdfPageStatus">Page 1 of 1</p>
+        </div>
+        <div class="pdf-button-row">
+          <button id="pdfPrevButton" class="icon-button pdf-page-button" type="button" aria-label="Previous page" title="Previous page">&lt;</button>
+          <button id="pdfNextButton" class="icon-button pdf-page-button" type="button" aria-label="Next page" title="Next page">&gt;</button>
+        </div>
+      </header>
+      <div id="pdfStage" class="pdf-stage">
+        <div id="pdfLoading" class="pdf-message">Loading PDF...</div>
+        <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+        <button id="pdfTapLeft" class="pdf-tap-zone pdf-tap-left" type="button" aria-label="Previous page"></button>
+        <button id="pdfTapRight" class="pdf-tap-zone pdf-tap-right" type="button" aria-label="Next page"></button>
+      </div>
+    </section>
+
+    <template id="emptyStateTemplate">
+      <div class="empty-state">
+        <p>No items found.</p>
+      </div>
+    </template>
+
+    <div id="importModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+      <div id="modalPanel" class="modal-panel">
+        <form id="importForm" class="import-form">
+          <div id="modalHeading" class="modal-heading">
+            <button id="importCloseButton" class="icon-button form-close-button" type="button" aria-label="Cancel" title="Cancel">&times;</button>
+            <h2 id="importTitle">Add item</h2>
+            <div class="modal-action-buttons">
+              <button id="importDeleteButton" class="icon-button danger-icon hidden" type="button" aria-label="Delete" title="Delete">&#128465;</button>
+              <button id="importSaveButton" class="icon-button primary-icon" type="submit" aria-label="Save" title="Save">&#10003;</button>
+            </div>
+          </div>
+
+          <label id="importTitleRow">
+            <span id="importTitleLabel">Title</span>
+            <input id="importTitleField" type="text" autocomplete="off">
+          </label>
+
+          <label id="importPageRow">
+            <span>Page</span>
+            <input id="importPage" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" size="5" autocomplete="off">
+          </label>
+
+          <div id="pdfImportFields" class="type-fields">
+            <div class="file-picker-field">
+              <span id="importFileLabel" class="file-picker-label">PDF, photo, or image</span>
+              <input id="importPdfFile" class="sr-only" type="file" accept="application/pdf,.pdf,image/*">
+              <div class="file-picker-row">
+                <label class="secondary-button file-picker-button" for="importPdfFile">Select File</label>
+                <span id="importPdfFileName" class="file-picker-name">No file selected</span>
+              </div>
+            </div>
+          </div>
+
+          <label id="importTypeRow">
+            <span>Type</span>
+            <select id="importType">
+              <option value="pdf">PDF sheet music or document</option>
+              <option value="image">Photo / image</option>
+              <option value="card">Text / chord song card</option>
+              <option value="link">Online music link</option>
+              <option value="note">Note / plan</option>
+              <option value="index">Book page reference</option>
+            </select>
+          </label>
+
+          <div id="cardImportFields" class="type-fields hidden">
+            <div id="importCardImageRow" class="file-picker-field">
+              <input id="importCardImage" class="sr-only" type="file" accept="image/*" aria-label="Select card image file">
+              <div class="file-picker-row">
+                <label class="secondary-button file-picker-button" for="importCardImage">Select File</label>
+                <span id="importCardImageName" class="file-picker-name">No file selected</span>
+              </div>
+            </div>
+            <div id="richCardContentRow" class="rich-card-row">
+              <span>Card text</span>
+              <div id="cardFormatToolbar" class="rich-toolbar" aria-label="Card text formatting">
+                <button type="button" data-rich-command="bold" aria-label="Bold" title="Bold" aria-pressed="false"><strong>B</strong></button>
+                <button type="button" data-rich-command="italic" aria-label="Italic" title="Italic" aria-pressed="false"><em>I</em></button>
+                <button type="button" data-rich-command="strikeThrough" aria-label="Strikeout" title="Strikeout" aria-pressed="false"><span class="strikeout-icon" aria-hidden="true"><span>S</span></span></button>
+                <button type="button" data-rich-command="insertOrderedList" aria-label="Numbered list" title="Numbered list" aria-pressed="false"><span class="toolbar-icon numbered-list-icon" aria-hidden="true"></span></button>
+                <button type="button" data-rich-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list" aria-pressed="false"><span class="toolbar-icon bullet-list-icon" aria-hidden="true"></span></button>
+                <button type="button" data-rich-command="photo" aria-label="Insert photo" title="Insert photo"><span class="toolbar-icon photo-icon" aria-hidden="true"></span></button>
+              </div>
+              <input id="inlineCardImageInput" class="sr-only" type="file" accept="image/*" aria-label="Insert photo into card text">
+              <div id="importCardEditor" class="rich-card-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Card text"></div>
+              <textarea id="importCardContent" class="hidden" rows="10"></textarea>
+            </div>
+            <label id="plainCardContentRow" class="hidden">
+              <span>Note text</span>
+              <textarea id="importPlainContent" rows="10"></textarea>
+            </label>
+          </div>
+
+          <div id="linkImportFields" class="type-fields hidden">
+            <label>
+              <span>URL</span>
+              <input id="importUrl" type="url" inputmode="url">
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label id="importCategoryRow">
+              <span>Category / Genre</span>
+              <input id="importCategory" type="text" autocomplete="off" list="categorySuggestions">
+            </label>
+            <label id="importBookRow">
+              <span>Source / Book</span>
+              <input id="importBook" type="text" autocomplete="off">
+            </label>
+            <label id="importComposerRow">
+              <span>Composer / Arranger</span>
+              <input id="importComposer" type="text" autocomplete="off">
+            </label>
+          </div>
+
+          <datalist id="categorySuggestions">
+            <option value="Christmas"></option>
+            <option value="Primary"></option>
+            <option value="Hymn"></option>
+            <option value="Choir"></option>
+            <option value="Patriotic"></option>
+            <option value="Birthday"></option>
+            <option value="New Music"></option>
+            <option value="Program"></option>
+            <option value="Not in the Book"></option>
+          </datalist>
+
+          <label id="importTagsRow">
+            <span>Tags</span>
+            <input id="importTags" type="text" autocomplete="off">
+          </label>
+
+          <label id="importNotesRow">
+            <span>Notes</span>
+            <textarea id="importNotes" rows="4"></textarea>
+          </label>
+
+          <p id="importStatus" class="form-status" role="status"></p>
+
+        </form>
+      </div>
+    </div>
+
+    <div id="listEditModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="listEditTitle">
+      <div id="listEditPanel" class="modal-panel list-edit-modal-panel">
+        <form id="listEditForm" class="import-form list-edit-form">
+          <div class="modal-heading">
+            <button id="listEditCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
+            <h2 id="listEditTitle">Edit list</h2>
+            <div class="modal-action-buttons">
+              <button id="listEditSaveButton" class="icon-button primary-icon" type="submit" aria-label="Save" title="Save">&#10003;</button>
+            </div>
+          </div>
+
+          <label>
+            <span>List name</span>
+            <input id="listEditTitleField" type="text" autocomplete="off">
+          </label>
+
+          <section class="list-edit-section" aria-label="Items in this list">
+            <div class="picker-heading">
+              <strong>Items in this list</strong>
+            </div>
+            <div id="listEditItems" class="list-edit-items"></div>
+          </section>
+
+          <section class="list-edit-section" aria-label="Select list contents from Files, Cards, and Links">
+            <div class="picker-heading">
+              <strong>Select items</strong>
+            </div>
+            <div class="editor-grid list-edit-add-grid">
+              <label>
+                <span>Filter</span>
+                <input id="listEditSearch" type="search" autocomplete="off">
+              </label>
+            </div>
+            <p id="listEditStatus" class="quick-meta" role="status"></p>
+            <div id="listEditResults" class="picker-results"></div>
+          </section>
+        </form>
+      </div>
+    </div>
+
+    <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div id="settingsPanel" class="modal-panel settings-panel">
+        <div class="import-form">
+          <div class="modal-heading">
+            <button id="settingsCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
+            <h2 id="settingsTitle">Settings</h2>
+          </div>
+
+          <section class="settings-section" aria-label="Tab color">
+            <div class="picker-heading">
+              <strong>Tab color</strong>
+            </div>
+            <div id="settingsThemeChoices" class="theme-choice-grid"></div>
+            <p class="quick-meta">This changes the active tab and main accent color on this device.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div id="helpModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div id="helpPanel" class="modal-panel help-panel">
+        <div class="import-form">
+          <div class="modal-heading">
+            <button id="helpCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
+            <h2 id="helpTitle">Help</h2>
+          </div>
+
+          <div class="help-topic-grid">
+            <section class="help-topic">
+              <h3>PDF Page Turning</h3>
+              <ul>
+                <li>Tap the right half of the music for next page.</li>
+                <li>Tap the left half of the music for previous page.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Favorites</h3>
+              <ul>
+                <li>Quick-access to often-used selections. Tap a star to add or remove from Favorites.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Lists</h3>
+              <ul>
+                <li>Custom song groups for Sundays, programs, seasons, and requests.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Files</h3>
+              <ul>
+                <li>Your PDFs, photos, and documents.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Cards</h3>
+              <ul>
+                <li>Short text, chord, or image reminders.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Links</h3>
+              <ul>
+                <li>Saved online music resources.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Search</h3>
+              <ul>
+                <li>Find songs, files, cards, notes, and links.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Backup</h3>
+              <ul>
+                <li>Move private app data and files to another device.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Settings</h3>
+              <ul>
+                <li>Personalize simple app preferences.</li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
