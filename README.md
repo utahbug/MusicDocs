@@ -1,5 +1,7 @@
 # MusicDocs
 
+This project is a work in progress. Material that might be under copyright will be removed and prepopulated with public domain material. This project was kept in private mode but might be public for a short time while testing. I'm new to github and may have made mistakes-- I'm working them out.
+
 A simple private/local music helper for Primary music planning, quick lists, cards, links, and uploaded files.
 
 This repository is intended to hold the app shell: HTML, CSS, JavaScript, icons, and starter data. Personal music files and exported data backups should be treated as private.
