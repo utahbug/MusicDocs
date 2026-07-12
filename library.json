@@ -1,5 +1,27 @@
 {
-  "items": [],
+  "items": [
+    {
+      "id": "amazing-grace-ken-roberts",
+      "title": "Amazing Grace",
+      "type": "pdf",
+      "category": "Ken Roberts",
+      "composer": "Ken Roberts",
+      "file": "music/Ken-Roberts/Amazing-Grace-Ken-Roberts.pdf",
+      "tags": ["arrangement", "demo"],
+      "notes": "Starter example arrangement by Ken Roberts."
+    },
+    {
+      "id": "love-at-home-ken-roberts",
+      "title": "Love at Home",
+      "type": "pdf",
+      "category": "Ken Roberts",
+      "composer": "Ken Roberts",
+      "file": "music/Ken-Roberts/Love-at-Home-Ken-Roberts.pdf",
+      "tags": ["arrangement", "demo"],
+      "notes": "Starter example arrangement by Ken Roberts."
+    }
+  ],
+  "favorites": ["amazing-grace-ken-roberts"],
   "quickIndexes": [],
   "setlists": []
 }

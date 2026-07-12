@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   quickIndexes: "primaryMusicHelper.quickIndexes",
   recents: "primaryMusicHelper.recents",
   settings: "primaryMusicHelper.settings",
+  starterFavorites: "primaryMusicHelper.starterFavorites",
   setlists: "primaryMusicHelper.setlists",
   quickChecks: "primaryMusicHelper.quickChecks"
 };
@@ -597,7 +598,28 @@ function loadLocalState() {
   // localStorage keeps private, device-only preferences and planning state.
   // Clearing browser site data resets these values without changing library.json.
   state.favorites = new Set(readJson(STORAGE_KEYS.favorites, []));
+  applyStarterFavorites();
   state.lists = loadUnifiedLists();
+}
+
+function applyStarterFavorites() {
+  const starterFavorites = Array.isArray(state.data.favorites) ? state.data.favorites : [];
+  if (!starterFavorites.length) return;
+
+  const applied = new Set(readJson(STORAGE_KEYS.starterFavorites, []));
+  let favoritesChanged = false;
+  let appliedChanged = false;
+
+  starterFavorites.forEach((id) => {
+    if (applied.has(id) || !state.itemsById.has(id)) return;
+    state.favorites.add(id);
+    applied.add(id);
+    favoritesChanged = true;
+    appliedChanged = true;
+  });
+
+  if (favoritesChanged) writeJson(STORAGE_KEYS.favorites, Array.from(state.favorites));
+  if (appliedChanged) writeJson(STORAGE_KEYS.starterFavorites, Array.from(applied));
 }
 
 function loadUnifiedLists() {
@@ -3770,7 +3792,8 @@ async function exportBackup() {
       quickChecks: readJson(STORAGE_KEYS.quickChecks, {}),
       pdfPages: readJson(STORAGE_KEYS.pdfPages, {}),
       recents: readJson(STORAGE_KEYS.recents, []),
-      settings: readJson(STORAGE_KEYS.settings, {})
+      settings: readJson(STORAGE_KEYS.settings, {}),
+      starterFavorites: readJson(STORAGE_KEYS.starterFavorites, [])
     };
     const fileIds = collectLocalFileIds(data);
     const { files, missingFileIds } = await collectBackupFiles(fileIds);
@@ -3833,6 +3856,7 @@ function importBackupFromFile(event) {
       writeJson(STORAGE_KEYS.pdfPages, data.pdfPages || {});
       writeJson(STORAGE_KEYS.recents, data.recents || []);
       writeJson(STORAGE_KEYS.settings, data.settings || {});
+      writeJson(STORAGE_KEYS.starterFavorites, data.starterFavorites || []);
       window.location.reload();
     } catch {
       window.alert("That app data file could not be imported.");

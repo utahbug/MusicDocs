@@ -1,15 +1,17 @@
-const CACHE_NAME = "primary-music-helper-shell-v118";
+const CACHE_NAME = "primary-music-helper-shell-v119";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=search-blank-1",
-  "./script.js?v=search-blank-1",
+  "./styles.css?v=ken-starter-docs-1",
+  "./script.js?v=ken-starter-docs-1",
   "./library.json",
   "./manifest.json",
   "./assets/icon.svg",
   "./assets/apple-touch-icon.png",
   "./assets/icon-192.png",
-  "./assets/icon-512.png"
+  "./assets/icon-512.png",
+  "./music/Ken-Roberts/Amazing-Grace-Ken-Roberts.pdf",
+  "./music/Ken-Roberts/Love-at-Home-Ken-Roberts.pdf"
 ];
 
 self.addEventListener("install", (event) => {
