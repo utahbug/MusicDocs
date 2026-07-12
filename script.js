@@ -2226,9 +2226,9 @@ function createFavoriteDividerRow(id, options = {}) {
 
   article.innerHTML = `
     <div class="favorite-divider-content${options.reorderFavorites ? " favorite-divider-editing" : ""}">
-      ${removeButton}
       <span class="favorite-divider-line" aria-hidden="true"></span>
       ${reorderHandle}
+      ${removeButton}
     </div>
   `;
   return article;
@@ -2941,14 +2941,28 @@ function updatePdfStatus() {
 
 function previousPdfPage() {
   if (!state.currentPdf.doc || state.currentPdf.pageNumber <= 1) return;
-  resetPdfZoom();
-  renderPdfPage(state.currentPdf.pageNumber - 1);
+  goToPdfPage(state.currentPdf.pageNumber - 1);
 }
 
 function nextPdfPage() {
   if (!state.currentPdf.doc || state.currentPdf.pageNumber >= state.currentPdf.pageCount) return;
+  goToPdfPage(state.currentPdf.pageNumber + 1);
+}
+
+function firstPdfPage() {
+  goToPdfPage(1);
+}
+
+function lastPdfPage() {
+  goToPdfPage(state.currentPdf.pageCount);
+}
+
+function goToPdfPage(pageNumber) {
+  if (!state.currentPdf.doc || !state.currentPdf.pageCount) return;
+  const targetPage = clamp(pageNumber, 1, state.currentPdf.pageCount);
+  if (targetPage === state.currentPdf.pageNumber && !state.currentPdf.rendering) return;
   resetPdfZoom();
-  renderPdfPage(state.currentPdf.pageNumber + 1);
+  renderPdfPage(targetPage);
 }
 
 function closePdfViewer() {
@@ -2966,6 +2980,19 @@ function handlePdfTapZoneClick(event, direction) {
     state.currentPdf.suppressClick = false;
     return;
   }
+
+  const stageBox = el.pdfStage.getBoundingClientRect();
+  const tappedTopThird = event.clientY <= stageBox.top + stageBox.height / 3;
+  if (tappedTopThird) {
+    event.preventDefault();
+    if (direction === "previous") {
+      firstPdfPage();
+    } else {
+      lastPdfPage();
+    }
+    return;
+  }
+
   if (direction === "previous") {
     previousPdfPage();
   } else {
