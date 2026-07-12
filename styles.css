@@ -56,14 +56,6 @@ body.pdf-open .main-nav { border-bottom: 0px; border-top: 1px solid var(--line);
 
 .star-icon-mark { display: inline-block; font-size: 1.1rem; line-height: 1; }
 
-.link-icon-mark { display: inline-block; height: 18px; position: relative; width: 22px; }
-
-.link-icon-mark::before, .link-icon-mark::after { border: 2px solid currentcolor; border-radius: 999px; content: ""; height: 8px; position: absolute; top: 4px; transform: rotate(-28deg); width: 12px; }
-
-.link-icon-mark::before { left: 1px; }
-
-.link-icon-mark::after { right: 1px; }
-
 .primary-button { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 700; }
 
 .primary-button:hover, .primary-button:focus-visible, .active-tool { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--surface); }
@@ -124,7 +116,9 @@ textarea { resize: vertical; }
 
 #importCardContent { min-height: 132px; }
 
-#importNotes { min-height: 76px; }
+#importNotes { min-height: 42px; }
+
+.modal[data-item-type="link"] #importNotes { height: 86px; min-height: 86px; }
 
 .rich-card-row { color: var(--muted); display: grid; font-size: 0.8rem; font-weight: 700; gap: 6px; }
 
@@ -160,7 +154,7 @@ textarea { resize: vertical; }
 
 .rich-card-editor, .rich-card-content { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; font-size: clamp(1rem, 4vw, 1.14rem); font-weight: 500; line-height: 1.55; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
 
-.rich-card-editor { background: var(--surface); height: 118px; min-height: 88px; outline: none; overflow: auto; resize: vertical; }
+.rich-card-editor { background: var(--surface); height: 72px; min-height: 56px; outline: none; overflow: auto; resize: vertical; }
 
 .rich-card-editor:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-hover); }
 
@@ -205,7 +199,7 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .list-item-add-button { margin: 6px 0px 8px; }
 
-.bottom-file-add-button, .bottom-card-add-button, .bottom-link-add-button, .list-item-add-button { display: flex; margin-left: auto; margin-right: 0px; }
+.bottom-file-add-button, .bottom-card-add-button, .bottom-link-add-button, .bottom-favorite-divider-button, .list-item-add-button { display: flex; margin-left: auto; margin-right: 0px; }
 
 .list-tabs { border-top: 1px solid var(--line); display: grid; gap: 0px; margin: 0px 0px 10px; }
 
@@ -235,7 +229,7 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .inline-list-items { background: var(--surface); border-top: 1px solid var(--line); display: grid; margin-left: 18px; }
 
-.inline-list-row { align-items: stretch; border-bottom: 1px solid var(--line); display: grid; gap: 4px; grid-template-columns: minmax(0px, 1fr) 36px; min-width: 0px; }
+.inline-list-row { align-items: stretch; border-bottom: 1px solid var(--line); display: grid; gap: 4px; grid-template-columns: 34px minmax(0px, 1fr) 36px; min-width: 0px; }
 
 .inline-list-row:last-child { border-bottom: 0px; }
 
@@ -246,6 +240,8 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 .inline-list-item:hover, .inline-list-item:focus-visible, .inline-list-edit-button:hover, .inline-list-edit-button:focus-visible { background: var(--accent-soft); }
 
 .inline-list-edit-button { align-self: stretch; background: transparent; border-color: transparent; color: var(--muted); font-size: 0.86rem; min-height: 42px; min-width: 36px; padding: 0px; }
+
+.inline-list-favorite { align-self: stretch; font-size: 1.02rem; min-height: 42px; min-width: 34px; }
 
 .inline-list-empty { color: var(--muted); font-size: 0.92rem; padding: 10px 8px; }
 
@@ -303,6 +299,20 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 .favorites-reorder-button { background: transparent; border-color: transparent; color: var(--muted); min-height: 36px; min-width: 38px; padding: 0px; }
 
 .favorites-reorder-button span { background: linear-gradient(currentColor, currentColor) 0px 1px / 22px 3px no-repeat, linear-gradient(currentColor, currentColor) 0px 8px / 22px 3px no-repeat, linear-gradient(currentColor, currentColor) 0px 15px / 22px 3px no-repeat; border-radius: 999px; display: block; height: 19px; opacity: 0.65; width: 22px; }
+
+.favorite-divider-add-button { margin-top: 8px; }
+
+.favorite-divider-row { background: transparent; border-bottom: 1px solid var(--line); min-height: 34px; }
+
+.favorite-divider-content { align-items: center; display: grid; grid-template-columns: minmax(0px, 1fr); min-height: 34px; padding: 0px 8px 0px 42px; }
+
+.favorite-divider-editing { grid-template-columns: 34px minmax(0px, 1fr) 38px; padding-left: 0px; }
+
+.favorite-divider-line { border-top: 1px solid var(--line); display: block; width: 100%; }
+
+.favorite-divider-remove { align-self: stretch; background: transparent; border-color: transparent; color: var(--muted); font-size: 1.1rem; min-height: 34px; min-width: 34px; padding: 0px; }
+
+.favorite-divider-remove:hover, .favorite-divider-remove:focus-visible { background: var(--accent-hover); color: var(--accent-strong); }
 
 .list-row.swipe-row { display: block; padding: 0px; }
 
@@ -583,6 +593,18 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 .help-topic ul { margin: 0px; padding-left: 20px; }
 
 .help-topic li { color: var(--ink); font-size: 0.95rem; line-height: 1.35; margin: 2px 0px; }
+
+.help-arrow-item { list-style: none; position: relative; }
+
+.help-arrow-item::before { color: var(--accent-strong); content: "\203A"; font-size: 0.9em; font-weight: 800; left: -14px; position: absolute; top: 0.02em; }
+
+.about-modal { align-items: center; }
+
+.about-panel { align-items: center; display: grid; justify-items: center; max-height: none; max-width: min(420px, calc(100vw - 32px)); min-height: 170px; min-width: min(320px, calc(100vw - 32px)); overflow: visible; padding: 28px 22px; position: relative; resize: none; text-align: center; width: min(420px, calc(100vw - 32px)); }
+
+.about-close-button { position: absolute; right: 10px; top: 10px; }
+
+.about-text { font-size: 1.05rem; margin: 0px; text-align: center; }
 
 .checklist-row { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); display: grid; gap: 8px; grid-template-columns: auto minmax(0px, 1fr) auto; min-height: 46px; padding: 8px 10px; }
 

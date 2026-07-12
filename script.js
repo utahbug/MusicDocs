@@ -21,6 +21,7 @@ const IMPORT_DB_NAME = "primaryMusicHelper.imports";
 const IMPORT_DB_VERSION = 1;
 const PDF_STORE_NAME = "pdfFiles";
 const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
+const FAVORITE_DIVIDER_PREFIX = "favorite-divider:";
 
 const BUILT_IN_LINKS = [];
 
@@ -195,6 +196,7 @@ function collectElements() {
   el.linkAddButton = document.getElementById("linkAddButton");
   el.favoritesContent = document.getElementById("favoritesContent");
   el.favoritesReorderButton = document.getElementById("favoritesReorderButton");
+  el.favoriteDividerAddButton = document.getElementById("favoriteDividerAddButton");
   el.globalSearch = document.getElementById("globalSearch");
   el.searchContent = document.getElementById("searchContent");
 
@@ -274,6 +276,10 @@ function collectElements() {
   el.helpModal = document.getElementById("helpModal");
   el.helpPanel = document.getElementById("helpPanel");
   el.helpCloseButton = document.getElementById("helpCloseButton");
+
+  el.aboutModal = document.getElementById("aboutModal");
+  el.aboutPanel = document.getElementById("aboutPanel");
+  el.aboutCloseButton = document.getElementById("aboutCloseButton");
 }
 
 function wireEvents() {
@@ -290,6 +296,7 @@ function wireEvents() {
   el.linkAddButton.addEventListener("click", () => openImportModal(null, "link", "links"));
   el.linkTopAddButton.addEventListener("click", () => openImportModal(null, "link", "links"));
   el.favoritesReorderButton.addEventListener("click", toggleFavoriteReorderMode);
+  el.favoriteDividerAddButton.addEventListener("click", addFavoriteDivider);
   el.overflowMenuButton.addEventListener("click", toggleOverflowMenu);
   el.listMoreButton.addEventListener("click", toggleListMoreMenu);
   el.exportBackupButton.addEventListener("click", () => {
@@ -323,6 +330,7 @@ function wireEvents() {
   el.settingsCloseButton.addEventListener("click", closeSettingsModal);
   el.settingsThemeChoices.addEventListener("change", handleSettingsThemeChange);
   el.helpCloseButton.addEventListener("click", closeHelpModal);
+  el.aboutCloseButton.addEventListener("click", closeAboutModal);
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
   window.addEventListener("pointermove", moveModalDrag);
   window.addEventListener("pointerup", endModalDrag);
@@ -424,6 +432,17 @@ function closeHelpModal() {
   fitOpenMobileModals();
 }
 
+function openAboutModal() {
+  closeOverflowMenu();
+  el.aboutModal.classList.remove("hidden");
+  fitOpenMobileModals();
+}
+
+function closeAboutModal() {
+  el.aboutModal.classList.add("hidden");
+  fitOpenMobileModals();
+}
+
 function renderSettingsThemeChoices() {
   const settings = readJson(STORAGE_KEYS.settings, {});
   const activeTheme = settings.tabTheme && THEME_PRESETS[settings.tabTheme] ? settings.tabTheme : "blue";
@@ -490,10 +509,15 @@ function handleDocumentKeydown(event) {
   closeListEditModal();
   closeSettingsModal();
   closeHelpModal();
+  closeAboutModal();
 }
 
 function favoriteIconHtml(id) {
   return state.favorites.has(id) ? "&#9733;" : "&#9734;";
+}
+
+function isFavoriteDividerId(id) {
+  return typeof id === "string" && id.startsWith(FAVORITE_DIVIDER_PREFIX);
 }
 
 function setFavoriteIcons(container) {
@@ -764,7 +788,8 @@ function fitOpenMobileModals() {
     [el.importModal, el.modalPanel],
     [el.listEditModal, el.listEditPanel],
     [el.settingsModal, el.settingsPanel],
-    [el.helpModal, el.helpPanel]
+    [el.helpModal, el.helpPanel],
+    [el.aboutModal, el.aboutPanel]
   ].filter(([modal, panel]) => modal && panel && !modal.classList.contains("hidden"));
 
   const shouldFit = window.matchMedia("(max-width: 760px)").matches;
@@ -1891,6 +1916,7 @@ function renderInlineListItems(list) {
     <div class="inline-list-items">
       ${entries.map((entry) => {
         const page = entry.page || entry.item.page;
+        const favorite = state.favorites.has(entry.item.id);
         const meta = [
           page ? `p. ${page}` : "",
           entry.item.book || entry.item.category || "",
@@ -1898,6 +1924,9 @@ function renderInlineListItems(list) {
         ].filter(Boolean).join(" - ");
         return `
           <div class="inline-list-row">
+            <button class="icon-button favorite-toggle inline-list-favorite ${favorite ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(entry.item.id)}" aria-label="Toggle favorite for ${escapeHtml(entry.item.title)}" title="Toggle favorite">
+              ${favorite ? "&#9733;" : "&#9734;"}
+            </button>
             <button class="inline-list-item" type="button" data-open="${escapeHtml(entry.item.id)}">
               <span class="compact-title">${escapeHtml(entry.item.title)}</span>
               ${meta ? `<span class="compact-meta">${escapeHtml(meta)}</span>` : ""}
@@ -2147,20 +2176,62 @@ function renderLinks() {
 }
 
 function renderFavorites() {
-  const favoriteItems = Array.from(state.favorites)
-    .map((id) => state.itemsById.get(id))
-    .filter(Boolean);
-  el.favoritesReorderButton.classList.toggle("hidden", !favoriteItems.length);
+  const favoriteRows = getFavoriteRows();
+  el.favoritesReorderButton.classList.toggle("hidden", !favoriteRows.length);
   el.favoritesReorderButton.classList.toggle("active-tool", state.favoriteReorderMode);
   el.favoritesReorderButton.setAttribute("aria-pressed", state.favoriteReorderMode ? "true" : "false");
-  if (!favoriteItems.length) {
+  if (!favoriteRows.length) {
     el.favoritesContent.classList.remove("compact-index-list");
     el.favoritesContent.classList.remove("favorite-list");
     el.favoritesContent.classList.remove("favorite-reorder-list");
     el.favoritesContent.innerHTML = `<div class="empty-state compact-empty"><p>No favorites yet.</p></div>`;
     return;
   }
-  renderItemList(el.favoritesContent, favoriteItems, { compact: true, favoriteList: true, reorderFavorites: state.favoriteReorderMode });
+  renderFavoriteRows(favoriteRows);
+}
+
+function getFavoriteRows() {
+  return Array.from(state.favorites).map((id) => {
+    if (isFavoriteDividerId(id)) return { kind: "divider", id };
+    const item = state.itemsById.get(id);
+    return item ? { kind: "item", item } : null;
+  }).filter(Boolean);
+}
+
+function renderFavoriteRows(rows) {
+  el.favoritesContent.innerHTML = "";
+  el.favoritesContent.classList.add("compact-index-list", "favorite-list");
+  el.favoritesContent.classList.toggle("favorite-reorder-list", state.favoriteReorderMode);
+  rows.forEach((row) => {
+    if (row.kind === "divider") {
+      el.favoritesContent.appendChild(createFavoriteDividerRow(row.id, { reorderFavorites: state.favoriteReorderMode }));
+      return;
+    }
+    el.favoritesContent.appendChild(createItemCard(row.item, { compact: true, favoriteList: true, reorderFavorites: state.favoriteReorderMode }));
+  });
+}
+
+function createFavoriteDividerRow(id, options = {}) {
+  const article = document.createElement("article");
+  article.className = `favorite-divider-row${options.reorderFavorites ? " favorite-reorder-row" : ""}`;
+  article.dataset.id = id;
+  if (options.reorderFavorites) article.dataset.favoriteRow = id;
+
+  const removeButton = options.reorderFavorites
+    ? `<button class="icon-button favorite-divider-remove" type="button" data-remove-favorite-divider="${escapeHtml(id)}" aria-label="Remove divider" title="Remove divider">&times;</button>`
+    : "";
+  const reorderHandle = options.reorderFavorites
+    ? `<button class="favorite-drag-handle" type="button" data-favorite-drag="${escapeHtml(id)}" aria-label="Drag divider to reorder" title="Drag to reorder"><span aria-hidden="true"></span></button>`
+    : "";
+
+  article.innerHTML = `
+    <div class="favorite-divider-content${options.reorderFavorites ? " favorite-divider-editing" : ""}">
+      ${removeButton}
+      <span class="favorite-divider-line" aria-hidden="true"></span>
+      ${reorderHandle}
+    </div>
+  `;
+  return article;
 }
 
 function toggleFavoriteReorderMode() {
@@ -2216,6 +2287,12 @@ async function handleBodyClick(event) {
     return;
   }
 
+  const aboutButton = event.target.closest("[data-open-about]");
+  if (aboutButton) {
+    openAboutModal();
+    return;
+  }
+
   const menuMessageButton = event.target.closest("[data-menu-message]");
   if (menuMessageButton) {
     window.alert(menuMessageButton.dataset.menuMessage);
@@ -2232,6 +2309,12 @@ async function handleBodyClick(event) {
   const swipeRemoveListButton = event.target.closest("[data-swipe-remove-list]");
   if (swipeRemoveListButton) {
     confirmAndRemoveListItem(swipeRemoveListButton.dataset.swipeRemoveList);
+    return;
+  }
+
+  const removeFavoriteDividerButton = event.target.closest("[data-remove-favorite-divider]");
+  if (removeFavoriteDividerButton) {
+    removeFavoriteDivider(removeFavoriteDividerButton.dataset.removeFavoriteDivider);
     return;
   }
 
@@ -3066,6 +3149,21 @@ function toggleFavorite(id) {
   }
 }
 
+function addFavoriteDivider() {
+  const id = `${FAVORITE_DIVIDER_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  state.favorites.add(id);
+  state.favoriteReorderMode = true;
+  writeJson(STORAGE_KEYS.favorites, Array.from(state.favorites));
+  renderFavorites();
+}
+
+function removeFavoriteDivider(id) {
+  if (!isFavoriteDividerId(id)) return;
+  state.favorites.delete(id);
+  writeJson(STORAGE_KEYS.favorites, Array.from(state.favorites));
+  renderFavorites();
+}
+
 function saveFavoriteOrder(orderedIds) {
   const nextIds = [];
   orderedIds.forEach((id) => {
@@ -3215,7 +3313,7 @@ function renderListEditModal() {
   }
 
   el.listEditTitle.textContent = "Edit list";
-  el.listEditTitleField.value = list.title || "Untitled List";
+  el.listEditTitleField.value = list.title || "";
   renderListEditItems(list);
   renderListEditResults();
 }
@@ -3328,7 +3426,7 @@ function updateListCheckboxes(listId, checked) {
   renderLists();
 }
 
-function createList(title = "New List", entries = []) {
+function createList(title = "", entries = []) {
   const list = {
     id: createLocalListId("list"),
     title,
