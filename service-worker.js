@@ -1,11 +1,12 @@
-const CACHE_NAME = "primary-music-helper-shell-v136";
+const CACHE_NAME = "primary-music-helper-shell-v149";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=bottom-more-menu-fix-1",
-  "./script.js?v=bottom-more-menu-fix-1",
+  "./styles.css?v=default-favorites-1",
+  "./script.js?v=default-favorites-1",
   "./library.json",
   "./manifest.json",
+  "./favicon.ico",
   "./assets/icon.svg",
   "./assets/apple-touch-icon.png",
   "./assets/icon-192.png",

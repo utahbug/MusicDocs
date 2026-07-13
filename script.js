@@ -15,6 +15,7 @@ const STORAGE_KEYS = {
   recents: "primaryMusicHelper.recents",
   settings: "primaryMusicHelper.settings",
   starterFavorites: "primaryMusicHelper.starterFavorites",
+  starterLists: "primaryMusicHelper.starterLists",
   setlists: "primaryMusicHelper.setlists",
   quickChecks: "primaryMusicHelper.quickChecks"
 };
@@ -26,16 +27,93 @@ const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnordere
 const FAVORITE_DIVIDER_PREFIX = "favorite-divider:";
 const FILE_ITEM_TYPES = new Set(["pdf", "image", "note", "index"]);
 const LIBRARY_CONTENT_TYPES = new Set(["pdf", "image", "note", "index", "card", "link"]);
-const MENU_POSITION_SECTIONS = [
-  { id: "favorites", label: "Favorites" },
-  { id: "lists", label: "Lists" },
-  { id: "library", label: "Files" },
-  { id: "cards", label: "Cards" },
-  { id: "links", label: "Links" },
-  { id: "search", label: "Search" }
-];
 
 const BUILT_IN_LINKS = [];
+
+const DEFAULT_LIBRARY_DATA = {
+  items: [
+    {
+      id: "amazing-grace-ken-roberts",
+      title: "Amazing Grace",
+      type: "pdf",
+      category: "Ken Roberts",
+      composer: "Ken Roberts",
+      file: "music/Ken-Roberts/Amazing-Grace-Ken-Roberts.pdf",
+      tags: ["arrangement", "demo"],
+      notes: "Starter example arrangement by Ken Roberts."
+    },
+    {
+      id: "love-at-home-ken-roberts",
+      title: "Love at Home",
+      type: "pdf",
+      category: "Ken Roberts",
+      composer: "Ken Roberts",
+      file: "music/Ken-Roberts/Love-at-Home-Ken-Roberts.pdf",
+      tags: ["arrangement", "demo"],
+      notes: "Starter example arrangement by Ken Roberts."
+    },
+    {
+      id: "lds-hymnal",
+      title: "Hymnal",
+      type: "link",
+      category: "LDS Library",
+      url: "https://www.churchofjesuschrist.org/media/music/collections/hymns?lang=eng",
+      tags: ["church", "music", "hymns"],
+      notes: "Official Church hymn collection."
+    },
+    {
+      id: "lds-new-hymns",
+      title: "New Hymns",
+      type: "link",
+      category: "LDS Library",
+      url: "https://www.churchofjesuschrist.org/media/music/collections/hymns-for-home-and-church?lang=eng",
+      tags: ["church", "music", "hymns"],
+      notes: "Official Hymns for Home and Church collection."
+    },
+    {
+      id: "lds-childrens-songbook",
+      title: "Children's Songbook",
+      type: "link",
+      category: "LDS Library",
+      url: "https://www.churchofjesuschrist.org/media/music/collections/childrens-songbook?lang=eng",
+      tags: ["church", "music", "children"],
+      notes: "Official Children's Songbook collection."
+    },
+    {
+      id: "lds-music-and-children",
+      title: "Music and Children",
+      type: "link",
+      category: "LDS Library",
+      url: "https://www.churchofjesuschrist.org/media/music/collections/featured-music-for-children?lang=eng",
+      tags: ["church", "music", "children"],
+      notes: "Official featured music for children collection."
+    },
+    {
+      id: "lds-choir-and-voice",
+      title: "Choir and Voice",
+      type: "link",
+      category: "LDS Library",
+      url: "https://www.churchofjesuschrist.org/media/music/music-for-choir-and-voice?lang=eng",
+      tags: ["church", "music", "choir", "voice"],
+      notes: "Official Church choir and voice music page."
+    }
+  ],
+  favorites: ["amazing-grace-ken-roberts"],
+  quickIndexes: [],
+  setlists: [
+    {
+      id: "lds-library",
+      title: "LDS Library",
+      items: [
+        { itemId: "lds-hymnal" },
+        { itemId: "lds-new-hymns" },
+        { itemId: "lds-childrens-songbook" },
+        { itemId: "lds-music-and-children" },
+        { itemId: "lds-choir-and-voice" }
+      ]
+    }
+  ]
+};
 
 const THEME_PRESETS = {
   blue: {
@@ -292,7 +370,6 @@ function collectElements() {
   el.settingsPanel = document.getElementById("settingsPanel");
   el.settingsCloseButton = document.getElementById("settingsCloseButton");
   el.settingsThemeChoices = document.getElementById("settingsThemeChoices");
-  el.settingsMenuPlacement = document.getElementById("settingsMenuPlacement");
 
   el.helpModal = document.getElementById("helpModal");
   el.helpPanel = document.getElementById("helpPanel");
@@ -350,8 +427,6 @@ function wireEvents() {
   el.listEditForm.addEventListener("submit", saveListEditModal);
   el.settingsCloseButton.addEventListener("click", closeSettingsModal);
   el.settingsThemeChoices.addEventListener("change", handleSettingsThemeChange);
-  el.settingsMenuPlacement.addEventListener("change", handleSettingsMenuPlacementChange);
-  el.settingsMenuPlacement.addEventListener("click", handleSettingsMenuPlacementClick);
   el.helpCloseButton.addEventListener("click", closeHelpModal);
   el.aboutCloseButton.addEventListener("click", closeAboutModal);
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
@@ -434,7 +509,6 @@ function closeOverflowMenu({ restoreActive = true } = {}) {
 
 function openSettingsModal() {
   renderSettingsThemeChoices();
-  renderSettingsMenuPlacementChoices();
   closeOverflowMenu();
   el.settingsModal.classList.remove("hidden");
   fitOpenMobileModals();
@@ -517,63 +591,6 @@ function handleSettingsThemeChange(event) {
   applyAppSettings(settings);
 }
 
-function renderSettingsMenuPlacementChoices() {
-  const settings = readJson(STORAGE_KEYS.settings, {});
-  const menuPlacement = normalizeMenuPlacement(settings.menuPlacement);
-  el.settingsMenuPlacement.innerHTML = `
-    <div class="menu-placement-actions">
-      <button class="secondary-button" type="button" data-menu-position-all="top">All top</button>
-      <button class="secondary-button" type="button" data-menu-position-all="bottom">All bottom</button>
-    </div>
-    ${MENU_POSITION_SECTIONS.map((section) => `
-      <label class="menu-placement-row">
-        <span>${escapeHtml(section.label)}</span>
-        <select data-menu-position="${escapeHtml(section.id)}" aria-label="${escapeHtml(section.label)} menu placement">
-          <option value="top" ${menuPlacement[section.id] === "top" ? "selected" : ""}>Top</option>
-          <option value="bottom" ${menuPlacement[section.id] === "bottom" ? "selected" : ""}>Bottom</option>
-        </select>
-      </label>
-    `).join("")}
-  `;
-}
-
-function handleSettingsMenuPlacementChange(event) {
-  const section = event.target.dataset.menuPosition;
-  if (!section) return;
-
-  const settings = readJson(STORAGE_KEYS.settings, {});
-  const menuPlacement = normalizeMenuPlacement(settings.menuPlacement);
-  menuPlacement[section] = event.target.value === "bottom" ? "bottom" : "top";
-  saveMenuPlacementSettings(settings, menuPlacement);
-}
-
-function handleSettingsMenuPlacementClick(event) {
-  const allButton = event.target.closest("[data-menu-position-all]");
-  if (!allButton) return;
-
-  const position = allButton.dataset.menuPositionAll === "bottom" ? "bottom" : "top";
-  const settings = readJson(STORAGE_KEYS.settings, {});
-  const menuPlacement = Object.fromEntries(MENU_POSITION_SECTIONS.map((section) => [section.id, position]));
-  saveMenuPlacementSettings(settings, menuPlacement);
-  renderSettingsMenuPlacementChoices();
-}
-
-function saveMenuPlacementSettings(settings, menuPlacement) {
-  const nextSettings = {
-    ...settings,
-    menuPlacement
-  };
-  writeJson(STORAGE_KEYS.settings, nextSettings);
-  applyAppSettings(nextSettings);
-}
-
-function normalizeMenuPlacement(menuPlacement = {}) {
-  return Object.fromEntries(MENU_POSITION_SECTIONS.map((section) => [
-    section.id,
-    menuPlacement[section.id] === "bottom" ? "bottom" : "top"
-  ]));
-}
-
 function applyAppSettings(settings = readJson(STORAGE_KEYS.settings, {})) {
   const themeName = settings.tabTheme && THEME_PRESETS[settings.tabTheme] ? settings.tabTheme : "blue";
   const theme = THEME_PRESETS[themeName];
@@ -587,12 +604,13 @@ function applyAppSettings(settings = readJson(STORAGE_KEYS.settings, {})) {
   updateNavPlacement();
 }
 
-function updateNavPlacement(sectionName = state.activeSection) {
+function updateNavPlacement() {
+  document.body.classList.remove("nav-bottom");
   const settings = readJson(STORAGE_KEYS.settings, {});
-  const menuPlacement = normalizeMenuPlacement(settings.menuPlacement);
-  const section = sectionName === "detail" ? state.previousSection : sectionName;
-  const position = menuPlacement[section] === "bottom" ? "bottom" : "top";
-  document.body.classList.toggle("nav-bottom", position === "bottom");
+  if (settings.menuPlacement) {
+    const { menuPlacement, ...nextSettings } = settings;
+    writeJson(STORAGE_KEYS.settings, nextSettings);
+  }
 }
 
 function clearNavHighlight() {
@@ -678,22 +696,28 @@ function configurePdfJs() {
 }
 
 async function loadLibrary() {
+  let libraryData = null;
   try {
     const response = await fetch("library.json", { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`library.json returned ${response.status}`);
     }
-    state.data = await response.json();
-    const baseItems = [
-      ...(state.data.items || []),
-      ...BUILT_IN_LINKS,
-      ...getImportedItems()
-    ].filter((item) => item?.id && !deletedItemIds().has(item.id));
-    state.data.items = applyLocalItemEdits(baseItems);
-    state.itemsById = new Map(state.data.items.map((item) => [item.id, item]));
+    libraryData = await response.json();
   } catch (error) {
-    showLoadError(error);
+    // Some browsers block fetch("library.json") when index.html is opened directly
+    // from a folder. Keep a small starter copy here so extracted ZIPs still work.
+    libraryData = cloneData(DEFAULT_LIBRARY_DATA);
   }
+
+  state.data = libraryData || cloneData(DEFAULT_LIBRARY_DATA);
+  const importedItems = cleanupImportedItemDuplicates();
+  const baseItems = [
+    ...(state.data.items || []),
+    ...BUILT_IN_LINKS,
+    ...importedItems
+  ].filter((item) => item?.id && !deletedItemIds().has(item.id));
+  state.data.items = applyLocalItemEdits(baseItems);
+  state.itemsById = new Map(state.data.items.map((item) => [item.id, item]));
 }
 
 function showLoadError(error) {
@@ -741,7 +765,7 @@ function applyStarterFavorites() {
 function loadUnifiedLists() {
   const savedLists = readJson(STORAGE_KEYS.lists, null);
   if (Array.isArray(savedLists) && savedLists.length) {
-    return pruneOldEmptyListShells(normalizeLists(savedLists), true);
+    return syncStarterLists(pruneOldEmptyListShells(normalizeLists(savedLists), true));
   }
 
   const quickChecks = readJson(STORAGE_KEYS.quickChecks, {});
@@ -776,9 +800,77 @@ function loadUnifiedLists() {
     }))
   ];
 
-  const lists = normalizeLists(migrated);
+  const lists = syncStarterLists(normalizeLists(migrated));
   writeJson(STORAGE_KEYS.lists, lists);
   return lists;
+}
+
+function syncStarterLists(lists) {
+  const starterLists = starterUnifiedLists();
+  if (!starterLists.length) return lists;
+
+  const applied = new Set(readJson(STORAGE_KEYS.starterLists, []));
+  const listById = new Map(lists.map((list) => [list.id, list]));
+  let listsChanged = false;
+  let appliedChanged = false;
+
+  starterLists.forEach((starter) => {
+    const starterEntries = (starter.entries || []).filter((entry) => state.itemsById.has(entry.itemId));
+    if (applied.has(starter.id) || !starterEntries.length) return;
+
+    const existing = listById.get(starter.id);
+    if (existing) {
+      const existingItems = new Set((existing.entries || []).map((entry) => entry.itemId));
+      starterEntries.forEach((entry) => {
+        if (existingItems.has(entry.itemId)) return;
+        existing.entries.push({ ...entry });
+        listsChanged = true;
+      });
+    } else {
+      const merged = { ...starter, entries: starterEntries.map((entry) => ({ ...entry })) };
+      lists.push(merged);
+      listById.set(merged.id, merged);
+      listsChanged = true;
+    }
+
+    applied.add(starter.id);
+    appliedChanged = true;
+  });
+
+  if (appliedChanged) writeJson(STORAGE_KEYS.starterLists, Array.from(applied));
+  if (listsChanged) writeJson(STORAGE_KEYS.lists, lists);
+  return lists;
+}
+
+function starterUnifiedLists() {
+  return normalizeLists([
+    ...(state.data.quickIndexes || []).map((list) => ({
+      id: `quick-${list.id}`,
+      title: list.title || "Untitled List",
+      showCheckboxes: Boolean(list.showCheckboxes),
+      entries: (list.entries || []).map((entry) => ({
+        itemId: entry.itemId,
+        page: entry.page || null,
+        book: entry.book || "",
+        notes: entry.notes || "",
+        order: entry.order || null,
+        checked: Boolean(entry.checked)
+      }))
+    })),
+    ...(state.data.setlists || []).map((list) => ({
+      id: `setlist-${list.id}`,
+      title: list.title || "Untitled List",
+      showCheckboxes: Boolean(list.showCheckboxes),
+      entries: (list.items || []).map((entry) => ({
+        itemId: entry.itemId,
+        page: entry.page || null,
+        book: entry.book || "",
+        notes: entry.notes || "",
+        order: entry.order || null,
+        checked: Boolean(entry.checked)
+      }))
+    }))
+  ]);
 }
 
 function normalizeLists(lists) {
@@ -839,8 +931,7 @@ function populateSelect(select, options) {
 
 function openInitialSection() {
   if (!showSectionFromHash()) {
-    const phoneFirstSection = window.matchMedia("(max-width: 760px)").matches ? "lists" : "library";
-    showSection(phoneFirstSection);
+    showSection("favorites");
   }
 }
 
@@ -1366,15 +1457,21 @@ async function buildImportedItemFromForm() {
     if (!file) {
       throw new Error(type === "image" ? "Select or take a photo before saving." : "Select a PDF file before saving.");
     }
-    await storeLocalFile(item.id, file);
-    item.fileId = item.id;
     item.fileName = file.name;
     item.fileMime = file.type;
     item.fileSize = file.size;
+    if (findDuplicateImportedItem(item)) {
+      throw new Error("That file already appears in the app.");
+    }
+    await storeLocalFile(item.id, file);
+    item.fileId = item.id;
     return item;
   }
 
   if (type === "card") {
+    if (findDuplicateImportedItem(item)) {
+      throw new Error("That card already appears in the app.");
+    }
     await addCardImageFromForm(item.id, item);
   }
 
@@ -1477,6 +1574,9 @@ function detectImportFileType(file, selectedType) {
 
 async function saveImportedItem(item) {
   const imported = getImportedItems();
+  if (findDuplicateImportedItem(item, imported)) {
+    throw new Error("That item already appears in the app.");
+  }
   imported.push(item);
   writeJson(STORAGE_KEYS.importedItems, imported);
   state.data.items.push(item);
@@ -1486,6 +1586,151 @@ async function saveImportedItem(item) {
 function getImportedItems() {
   return readJson(STORAGE_KEYS.importedItems, [])
     .filter((item) => item && item.id && item.type);
+}
+
+function cleanupImportedItemDuplicates() {
+  const imported = getImportedItems();
+  const seen = new Map();
+  const duplicateMap = new Map();
+  const cleaned = [];
+
+  imported.forEach((item) => {
+    const key = importedItemDuplicateKey(item);
+    if (!key) {
+      cleaned.push(item);
+      return;
+    }
+
+    const existing = seen.get(key);
+    if (existing) {
+      duplicateMap.set(item.id, existing.id);
+      return;
+    }
+
+    seen.set(key, item);
+    cleaned.push(item);
+  });
+
+  if (!duplicateMap.size) return imported;
+
+  writeJson(STORAGE_KEYS.importedItems, cleaned);
+  remapDuplicateItemReferences(duplicateMap);
+  return cleaned;
+}
+
+function findDuplicateImportedItem(item, imported = getImportedItems()) {
+  const key = importedItemDuplicateKey(item);
+  if (!key) return null;
+  return imported.find((candidate) => candidate.id !== item.id && importedItemDuplicateKey(candidate) === key) || null;
+}
+
+function importedItemDuplicateKey(item) {
+  if (!item?.type) return "";
+  const title = normalize(item.title);
+  if (!title) return "";
+
+  if (item.type === "pdf" || item.type === "image") {
+    const fileName = normalize(item.fileName || item.imageFileName || item.file || "");
+    const fileSize = item.fileSize || item.imageSize || "";
+    if (!fileName || !fileSize) return "";
+    return [item.type, title, fileName, fileSize, normalize(item.fileMime || item.imageMime || "")].join("|");
+  }
+
+  if (item.type === "link") {
+    const url = normalize(item.url || "");
+    return url ? [item.type, title, url].join("|") : "";
+  }
+
+  if (item.type === "card") {
+    const cardText = normalize(item.cardHtml || (item.content || []).join("\n"));
+    return cardText ? [item.type, title, cardText].join("|") : "";
+  }
+
+  if (item.type === "note") {
+    const body = normalize(item.body || item.notes || "");
+    return body ? [item.type, title, body].join("|") : "";
+  }
+
+  return "";
+}
+
+function remapDuplicateItemReferences(duplicateMap) {
+  const duplicateIds = new Set(duplicateMap.keys());
+
+  const favorites = readJson(STORAGE_KEYS.favorites, []);
+  if (Array.isArray(favorites)) {
+    const remappedFavorites = [];
+    const seenFavorites = new Set();
+    favorites.forEach((id) => {
+      const nextId = duplicateMap.get(id) || id;
+      if (seenFavorites.has(nextId)) return;
+      seenFavorites.add(nextId);
+      remappedFavorites.push(nextId);
+    });
+    writeJson(STORAGE_KEYS.favorites, remappedFavorites);
+  }
+
+  const remapEntries = (entries = []) => {
+    const seen = new Set();
+    return entries.map((entry) => {
+      const nextId = duplicateMap.get(entry.itemId) || entry.itemId;
+      return nextId === entry.itemId ? entry : { ...entry, itemId: nextId };
+    }).filter((entry) => {
+      if (!entry.itemId || seen.has(entry.itemId)) return false;
+      seen.add(entry.itemId);
+      return true;
+    });
+  };
+
+  const lists = readJson(STORAGE_KEYS.lists, null);
+  if (Array.isArray(lists)) {
+    writeJson(STORAGE_KEYS.lists, lists.map((list) => ({
+      ...list,
+      entries: remapEntries(list.entries || list.items || [])
+    })));
+  }
+
+  const setlists = readJson(STORAGE_KEYS.setlists, null);
+  if (Array.isArray(setlists)) {
+    writeJson(STORAGE_KEYS.setlists, setlists.map((list) => ({
+      ...list,
+      items: remapEntries(list.items || [])
+    })));
+  }
+
+  const recents = readJson(STORAGE_KEYS.recents, []);
+  if (Array.isArray(recents)) {
+    const remappedRecents = [];
+    const seenRecents = new Set();
+    recents.forEach((id) => {
+      const nextId = duplicateMap.get(id) || id;
+      if (seenRecents.has(nextId)) return;
+      seenRecents.add(nextId);
+      remappedRecents.push(nextId);
+    });
+    writeJson(STORAGE_KEYS.recents, remappedRecents);
+  }
+
+  const pages = readJson(STORAGE_KEYS.pdfPages, {});
+  let pagesChanged = false;
+  duplicateMap.forEach((keptId, removedId) => {
+    if (pages[removedId] && !pages[keptId]) pages[keptId] = pages[removedId];
+    if (removedId in pages) {
+      delete pages[removedId];
+      pagesChanged = true;
+    }
+  });
+  if (pagesChanged) writeJson(STORAGE_KEYS.pdfPages, pages);
+
+  const edits = readJson(STORAGE_KEYS.itemEdits, {});
+  let editsChanged = false;
+  duplicateIds.forEach((id) => {
+    if (id in edits) {
+      delete edits[id];
+      editsChanged = true;
+    }
+  });
+  if (editsChanged) writeJson(STORAGE_KEYS.itemEdits, edits);
 }
 
 function isUserCreatedItem(itemId) {
@@ -2163,7 +2408,7 @@ function cleanupListEntries() {
 }
 
 function createListRow(entry, list) {
-  const showChecks = Boolean(list.showCheckboxes);
+  const showChecks = false;
   const title = itemDisplayTitle(entry.item);
   const page = entry.page || entry.item.page;
   const book = entry.book || entry.item.book;
@@ -2389,11 +2634,6 @@ function cleanupFavoriteRows(rows) {
     previousWasDivider = false;
   });
 
-  while (cleanedRows.length && cleanedRows[cleanedRows.length - 1].kind === "divider") {
-    cleanedRows.pop();
-    changed = true;
-  }
-
   if (changed) {
     const cleanedIds = cleanedRows.map((row) => row.kind === "divider" ? row.id : row.item.id);
     state.favorites = new Set(cleanedIds);
@@ -2593,33 +2833,10 @@ async function handleBodyClick(event) {
     return;
   }
 
-  const duplicateActiveListButton = event.target.closest("[data-duplicate-active-list]");
-  if (duplicateActiveListButton) {
-    const active = getActiveList();
-    if (active) duplicateList(active.id);
-    closeListMoreMenu();
-    return;
-  }
-
   const deleteActiveListButton = event.target.closest("[data-delete-active-list]");
   if (deleteActiveListButton) {
     const active = getActiveList();
     if (active) deleteList(active.id);
-    closeListMoreMenu();
-    return;
-  }
-
-  const toggleActiveListCheckboxesButton = event.target.closest("[data-toggle-active-list-checkboxes]");
-  if (toggleActiveListCheckboxesButton) {
-    const active = getActiveList();
-    if (active) updateListCheckboxes(active.id, !active.showCheckboxes);
-    closeListMoreMenu();
-    return;
-  }
-
-  const duplicateListButton = event.target.closest("[data-duplicate-list]");
-  if (duplicateListButton) {
-    duplicateList(duplicateListButton.dataset.duplicateList);
     closeListMoreMenu();
     return;
   }
@@ -2826,12 +3043,6 @@ function handleBodyChange(event) {
   const listTitleInput = event.target.closest("[data-list-title]");
   if (listTitleInput) {
     updateListTitle(listTitleInput.dataset.listTitle, listTitleInput.value);
-    return;
-  }
-
-  const listCheckboxesInput = event.target.closest("[data-list-checkboxes]");
-  if (listCheckboxesInput) {
-    updateListCheckboxes(listCheckboxesInput.dataset.listCheckboxes, listCheckboxesInput.checked);
     return;
   }
 
@@ -3392,9 +3603,11 @@ function addFavoriteDivider() {
   const favoriteItemCount = getFavoriteRows().filter((row) => row.kind === "item").length;
   if (favoriteItemCount < 3) return;
   const id = `${FAVORITE_DIVIDER_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  state.favorites.add(id);
+  const currentIds = Array.from(state.favorites);
+  currentIds.push(id);
+  state.favorites = new Set(currentIds);
   state.favoriteReorderMode = true;
-  writeJson(STORAGE_KEYS.favorites, Array.from(state.favorites));
+  writeJson(STORAGE_KEYS.favorites, currentIds);
   renderFavorites();
 }
 
@@ -3660,14 +3873,6 @@ function saveListTitleFromEditor(listId) {
   renderLists();
 }
 
-function updateListCheckboxes(listId, checked) {
-  const list = state.lists.find((candidate) => candidate.id === listId);
-  if (!list) return;
-  list.showCheckboxes = Boolean(checked);
-  saveLists();
-  renderLists();
-}
-
 function createList(title = "", entries = []) {
   const list = {
     id: createLocalListId("list"),
@@ -3686,18 +3891,6 @@ function createList(title = "", entries = []) {
   state.listPickerMessage = "";
   renderLists();
   openListEditModal(list.id);
-}
-
-function duplicateList(listId) {
-  const source = state.lists.find((candidate) => candidate.id === listId);
-  if (!source) return;
-  const copyEntries = JSON.parse(JSON.stringify(source.entries || []));
-  createList(`${source.title} Copy`, copyEntries);
-  const copy = getActiveList();
-  if (copy) {
-    copy.showCheckboxes = Boolean(source.showCheckboxes);
-    saveLists();
-  }
 }
 
 function deleteList(listId) {
@@ -3997,6 +4190,10 @@ function readJson(key, fallback) {
   }
 }
 
+function cloneData(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
 function writeJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -4020,6 +4217,7 @@ async function exportBackup() {
       recents: readJson(STORAGE_KEYS.recents, []),
       settings: readJson(STORAGE_KEYS.settings, {}),
       starterFavorites: readJson(STORAGE_KEYS.starterFavorites, []),
+      starterLists: readJson(STORAGE_KEYS.starterLists, []),
       deletedItems: readJson(STORAGE_KEYS.deletedItems, [])
     };
     const fileIds = collectLocalFileIds(data);
@@ -4084,6 +4282,7 @@ function importBackupFromFile(event) {
       writeJson(STORAGE_KEYS.recents, data.recents || []);
       writeJson(STORAGE_KEYS.settings, data.settings || {});
       writeJson(STORAGE_KEYS.starterFavorites, data.starterFavorites || []);
+      writeJson(STORAGE_KEYS.starterLists, data.starterLists || []);
       writeJson(STORAGE_KEYS.deletedItems, data.deletedItems || []);
       window.location.reload();
     } catch {

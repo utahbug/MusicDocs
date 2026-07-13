@@ -19,9 +19,66 @@
       "file": "music/Ken-Roberts/Love-at-Home-Ken-Roberts.pdf",
       "tags": ["arrangement", "demo"],
       "notes": "Starter example arrangement by Ken Roberts."
+    },
+    {
+      "id": "lds-hymnal",
+      "title": "Hymnal",
+      "type": "link",
+      "category": "LDS Library",
+      "url": "https://www.churchofjesuschrist.org/media/music/collections/hymns?lang=eng",
+      "tags": ["church", "music", "hymns"],
+      "notes": "Official Church hymn collection."
+    },
+    {
+      "id": "lds-new-hymns",
+      "title": "New Hymns",
+      "type": "link",
+      "category": "LDS Library",
+      "url": "https://www.churchofjesuschrist.org/media/music/collections/hymns-for-home-and-church?lang=eng",
+      "tags": ["church", "music", "hymns"],
+      "notes": "Official Hymns for Home and Church collection."
+    },
+    {
+      "id": "lds-childrens-songbook",
+      "title": "Children's Songbook",
+      "type": "link",
+      "category": "LDS Library",
+      "url": "https://www.churchofjesuschrist.org/media/music/collections/childrens-songbook?lang=eng",
+      "tags": ["church", "music", "children"],
+      "notes": "Official Children's Songbook collection."
+    },
+    {
+      "id": "lds-music-and-children",
+      "title": "Music and Children",
+      "type": "link",
+      "category": "LDS Library",
+      "url": "https://www.churchofjesuschrist.org/media/music/collections/featured-music-for-children?lang=eng",
+      "tags": ["church", "music", "children"],
+      "notes": "Official featured music for children collection."
+    },
+    {
+      "id": "lds-choir-and-voice",
+      "title": "Choir and Voice",
+      "type": "link",
+      "category": "LDS Library",
+      "url": "https://www.churchofjesuschrist.org/media/music/music-for-choir-and-voice?lang=eng",
+      "tags": ["church", "music", "choir", "voice"],
+      "notes": "Official Church choir and voice music page."
     }
   ],
   "favorites": ["amazing-grace-ken-roberts"],
   "quickIndexes": [],
-  "setlists": []
+  "setlists": [
+    {
+      "id": "lds-library",
+      "title": "LDS Library",
+      "items": [
+        { "itemId": "lds-hymnal" },
+        { "itemId": "lds-new-hymns" },
+        { "itemId": "lds-childrens-songbook" },
+        { "itemId": "lds-music-and-children" },
+        { "itemId": "lds-choir-and-voice" }
+      ]
+    }
+  ]
 }

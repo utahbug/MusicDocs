@@ -300,9 +300,10 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .favorites-topbar { display: flex; justify-content: flex-end; margin: 0px 0px 6px; }
 
-.favorites-reorder-button { background: transparent; border-color: transparent; color: var(--muted); min-height: 36px; min-width: 38px; padding: 0px; }
+.favorites-reorder-button { background: transparent; border: 0px; color: var(--accent); cursor: pointer; font: inherit; font-size: 1rem; font-style: italic; font-weight: 400; min-height: 36px; padding: 4px 10px; }
 
-.favorites-reorder-button span { background: linear-gradient(currentColor, currentColor) 0px 1px / 22px 3px no-repeat, linear-gradient(currentColor, currentColor) 0px 8px / 22px 3px no-repeat, linear-gradient(currentColor, currentColor) 0px 15px / 22px 3px no-repeat; border-radius: 999px; display: block; height: 19px; opacity: 0.65; width: 22px; }
+.favorites-reorder-button:hover,
+.favorites-reorder-button:focus-visible { color: var(--accent-strong); outline: 2px solid transparent; }
 
 .favorite-divider-add-button { margin-top: 8px; }
 
@@ -588,14 +589,6 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .theme-swatch { background: var(--swatch-color); border: 1px solid color-mix(in srgb, var(--swatch-color) 80%, var(--surface)); border-radius: 999px; display: inline-block; height: 22px; width: 22px; }
 
-.menu-placement-grid { display: grid; gap: 8px; }
-
-.menu-placement-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.menu-placement-row { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); display: grid; font-size: 0.95rem; font-weight: 700; gap: 10px; grid-template-columns: minmax(0px, 1fr) minmax(105px, 130px); min-height: 46px; padding: 8px 10px; }
-
-.menu-placement-row select { min-height: 38px; }
-
 .help-panel { max-width: 760px; min-width: min(360px, calc(100vw - 32px)); width: min(64vw, 760px); }
 
 .help-topic-grid { display: grid; gap: 10px; }
@@ -609,6 +602,10 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 .help-topic li { color: var(--ink); font-size: 0.95rem; line-height: 1.35; list-style: none; margin: 2px 0px; position: relative; }
 
 .help-topic li::before { color: var(--accent-strong); content: "\203A"; font-size: 0.9em; font-weight: 800; left: -14px; position: absolute; top: 0.02em; }
+
+.help-topic li.help-subitem { margin-left: 18px; }
+
+.help-topic li.help-subitem::before { color: var(--muted); content: "\2022"; font-size: 0.72em; font-weight: 700; top: 0.12em; }
 
 .about-modal { align-items: center; }
 
@@ -755,32 +752,4 @@ body.pdf-open .pdf-viewer { bottom: var(--pdf-nav-space); height: auto; }
 @media (orientation: landscape) and (max-height: 560px) {
   .pdf-toolbar { grid-template-columns: auto minmax(0px, 1fr) auto; padding-bottom: 8px; padding-top: 8px; }
   .pdf-stage { padding: 3px 8px 8px; }
-}
-
-body.nav-bottom:not(.pdf-open) .app-shell {
-  padding-bottom: calc(74px + env(safe-area-inset-bottom));
-}
-
-body.nav-bottom:not(.pdf-open) .main-nav {
-  border-bottom: 0px;
-  border-top: 1px solid var(--line);
-  bottom: 0px;
-  left: 0px;
-  overflow-x: auto;
-  overflow-y: visible;
-  padding-bottom: max(6px, env(safe-area-inset-bottom));
-  position: fixed;
-  right: 0px;
-  top: auto;
-  z-index: 35;
-}
-
-body.nav-bottom:not(.pdf-open) .nav-overflow-wrap .overflow-menu {
-  bottom: calc(100% + 6px);
-  max-height: min(55dvh, 320px);
-  min-width: min(220px, calc(100vw - 16px));
-  position: fixed;
-  right: max(8px, env(safe-area-inset-right));
-  top: auto;
-  z-index: 120;
 }

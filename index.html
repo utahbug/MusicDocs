@@ -9,12 +9,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>MusicDocs</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=bottom-more-menu-fix-1">
+    <link rel="stylesheet" href="styles.css?v=default-favorites-1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
-    <script src="script.js?v=bottom-more-menu-fix-1" defer></script>
+    <script src="script.js?v=default-favorites-1" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -88,9 +90,7 @@
               <button id="listMoreButton" class="icon-button" type="button" aria-label="List options" title="List options" aria-expanded="false" aria-controls="listMoreMenu">&hellip;</button>
               <div id="listMoreMenu" class="overflow-menu hidden" role="menu" aria-label="List options">
                 <button type="button" role="menuitem" data-new-list>New list</button>
-                <button type="button" role="menuitem" data-duplicate-active-list>Duplicate list</button>
-                <button type="button" role="menuitem" data-delete-active-list>Delete list</button>
-                <button type="button" role="menuitem" data-toggle-active-list-checkboxes>Show/hide checkboxes</button>
+                <button type="button" role="menuitem" data-delete-active-list>Delete the selected list</button>
               </div>
             </div>
           </div>
@@ -114,9 +114,7 @@
 
         <section id="favoritesSection" class="view" data-view="favorites" aria-label="Favorites">
           <div class="favorites-topbar">
-            <button id="favoritesReorderButton" class="icon-button favorites-reorder-button" type="button" aria-label="Reorder favorites" title="Reorder favorites" aria-pressed="false">
-              <span aria-hidden="true"></span>
-            </button>
+            <button id="favoritesReorderButton" class="favorites-reorder-button" type="button" aria-label="Rearrange favorites" title="Rearrange favorites" aria-pressed="false">Rearrange</button>
           </div>
           <div id="favoritesContent" class="stack"></div>
           <button id="favoriteDividerAddButton" class="top-add-button label-add-button favorite-divider-add-button bottom-favorite-divider-button" type="button" aria-label="Add spacer" title="Add spacer">Add spacer</button>
@@ -340,13 +338,6 @@
             <p class="quick-meta">This changes the active tab and main accent color on this device.</p>
           </section>
 
-          <section class="settings-section" aria-label="Menu placement">
-            <div class="picker-heading">
-              <strong>Menu placement</strong>
-            </div>
-            <div id="settingsMenuPlacement" class="menu-placement-grid"></div>
-            <p class="quick-meta">The PDF viewer keeps its current bottom menu placement.</p>
-          </section>
         </div>
       </div>
     </div>
@@ -363,9 +354,9 @@
             <section class="help-topic">
               <h3>PDF Page Turning</h3>
               <ul>
-                <li>Flip page by tapping the left or bottom two-thirds of the screen.</li>
-                <li>Tap the top-left to jump to page 1.</li>
-                <li>Tap the top-right to jump to the last page.</li>
+                <li>Flip pages by tapping the left or bottom part of the screen.</li>
+                <li class="help-subitem">Tap the top-left to jump to page 1.</li>
+                <li class="help-subitem">Tap the top-right to jump to the last page.</li>
               </ul>
             </section>
 
@@ -408,7 +399,6 @@
               <h3>Settings</h3>
               <ul>
                 <li>Change tab color.</li>
-                <li>Change menu placement (top/bottom).</li>
               </ul>
             </section>
           </div>
