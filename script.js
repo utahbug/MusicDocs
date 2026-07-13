@@ -251,6 +251,9 @@ async function init() {
 
 function collectElements() {
   el.appShell = document.getElementById("appShell");
+  el.themeDotButton = document.getElementById("themeDotButton");
+  el.themeDotMenu = document.getElementById("themeDotMenu");
+  el.backgroundToggleButton = document.getElementById("backgroundToggleButton");
   el.homeTitleButton = document.getElementById("homeTitleButton");
   el.navButtons = Array.from(document.querySelectorAll(".nav-button"));
   el.overflowMenuButton = document.getElementById("overflowMenuButton");
@@ -381,6 +384,9 @@ function collectElements() {
 }
 
 function wireEvents() {
+  el.themeDotButton.addEventListener("click", toggleThemeDotMenu);
+  el.themeDotMenu.addEventListener("click", handleThemeDotMenuClick);
+  el.backgroundToggleButton.addEventListener("click", toggleBackgroundMode);
   el.homeTitleButton.addEventListener("click", goHome);
 
   el.navButtons.forEach((button) => {
@@ -496,6 +502,7 @@ function toggleOverflowMenu(event) {
   } else {
     closeOverflowMenu();
   }
+  closeThemeDotMenu();
   closeListMoreMenu();
 }
 
@@ -505,6 +512,25 @@ function closeOverflowMenu({ restoreActive = true } = {}) {
   if (restoreActive) {
     setNavHighlight(state.activeSection);
   }
+}
+
+function toggleThemeDotMenu(event) {
+  event?.stopPropagation();
+  const isOpening = el.themeDotMenu.classList.contains("hidden");
+  if (isOpening) {
+    renderThemeDotMenu();
+    el.themeDotMenu.classList.remove("hidden");
+    el.themeDotButton.setAttribute("aria-expanded", "true");
+    closeOverflowMenu();
+    closeListMoreMenu();
+  } else {
+    closeThemeDotMenu();
+  }
+}
+
+function closeThemeDotMenu() {
+  el.themeDotMenu.classList.add("hidden");
+  el.themeDotButton.setAttribute("aria-expanded", "false");
 }
 
 function openSettingsModal() {
@@ -580,15 +606,47 @@ function renderSettingsThemeChoices() {
   `).join("");
 }
 
+function renderThemeDotMenu() {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  const activeTheme = settings.tabTheme && THEME_PRESETS[settings.tabTheme] ? settings.tabTheme : "blue";
+  el.themeDotMenu.innerHTML = Object.entries(THEME_PRESETS).map(([key, theme]) => `
+    <button type="button" role="menuitemradio" aria-checked="${key === activeTheme ? "true" : "false"}" data-theme-dot="${escapeHtml(key)}">
+      <span class="theme-dot-swatch" style="--swatch-color: ${escapeHtml(theme.primary)}" aria-hidden="true"></span>
+      <span>${escapeHtml(theme.label)}</span>
+    </button>
+  `).join("");
+}
+
+function handleThemeDotMenuClick(event) {
+  const button = event.target.closest("[data-theme-dot]");
+  if (!button) return;
+  setTabTheme(button.dataset.themeDot);
+  closeThemeDotMenu();
+}
+
 function handleSettingsThemeChange(event) {
   if (event.target.name !== "tabTheme") return;
-  const tabTheme = THEME_PRESETS[event.target.value] ? event.target.value : "blue";
+  setTabTheme(event.target.value);
+}
+
+function setTabTheme(themeName) {
+  const tabTheme = THEME_PRESETS[themeName] ? themeName : "blue";
   const settings = {
     ...readJson(STORAGE_KEYS.settings, {}),
     tabTheme
   };
   writeJson(STORAGE_KEYS.settings, settings);
   applyAppSettings(settings);
+}
+
+function toggleBackgroundMode() {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  const nextSettings = {
+    ...settings,
+    darkBackground: !settings.darkBackground
+  };
+  writeJson(STORAGE_KEYS.settings, nextSettings);
+  applyAppSettings(nextSettings);
 }
 
 function applyAppSettings(settings = readJson(STORAGE_KEYS.settings, {})) {
@@ -600,8 +658,26 @@ function applyAppSettings(settings = readJson(STORAGE_KEYS.settings, {})) {
   root.style.setProperty("--color-primary-light", theme.light);
   root.style.setProperty("--color-primary-hover", theme.hover);
   root.style.setProperty("--color-border", theme.border);
+  document.body.classList.toggle("dark-background", Boolean(settings.darkBackground));
+  updateThemeDot(themeName, theme);
+  updateBackgroundToggle(Boolean(settings.darkBackground));
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme.primary);
   updateNavPlacement();
+}
+
+function updateThemeDot(themeName, theme) {
+  if (!el.themeDotButton) return;
+  el.themeDotButton.style.setProperty("--active-theme-color", theme.primary);
+  el.themeDotButton.setAttribute("aria-label", `Change tab color. Current color: ${theme.label}`);
+  el.themeDotButton.title = `Change tab color: ${theme.label}`;
+  el.themeDotButton.dataset.activeTheme = themeName;
+}
+
+function updateBackgroundToggle(isDark) {
+  if (!el.backgroundToggleButton) return;
+  el.backgroundToggleButton.setAttribute("aria-pressed", isDark ? "true" : "false");
+  el.backgroundToggleButton.setAttribute("aria-label", isDark ? "Use white background" : "Use black background");
+  el.backgroundToggleButton.title = isDark ? "Use white background" : "Use black background";
 }
 
 function updateNavPlacement() {
@@ -629,6 +705,7 @@ function toggleListMoreMenu(event) {
   const isOpening = el.listMoreMenu.classList.contains("hidden");
   el.listMoreMenu.classList.toggle("hidden", !isOpening);
   el.listMoreButton.setAttribute("aria-expanded", String(isOpening));
+  closeThemeDotMenu();
   closeOverflowMenu();
 }
 
@@ -639,6 +716,7 @@ function closeListMoreMenu() {
 
 function handleDocumentKeydown(event) {
   if (event.key !== "Escape") return;
+  closeThemeDotMenu();
   closeOverflowMenu();
   closeListMoreMenu();
   closeListEditModal();
@@ -2707,6 +2785,10 @@ async function handleBodyClick(event) {
     state.swipe.suppressClick = false;
     event.preventDefault();
     return;
+  }
+
+  if (!event.target.closest(".theme-dot-wrap")) {
+    closeThemeDotMenu();
   }
 
   if (!event.target.closest(".overflow-wrap")) {
