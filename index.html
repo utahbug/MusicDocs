@@ -1,425 +1,1591 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#2B5F9E">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="MusicDocs">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>MusicDocs</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="shortcut icon" href="favicon.ico">
-    <link rel="icon" href="favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
-    <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-    <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=pdf-zone-two-bars-1">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
-    <script src="script.js?v=pdf-zone-two-bars-1" defer></script>
-  </head>
-  <body>
-    <div id="appShell" class="app-shell">
-      <header class="app-header">
-        <div class="app-title-row">
-          <h1>
-            <button id="homeTitleButton" class="app-title-button" type="button" aria-label="Go to Favorites" title="Go to Favorites">MusicDocs</button>
-          </h1>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Utah Counties Practice Map</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="utah-county-quiz-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="Utah Counties">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17201d;
+      --muted: #66736c;
+      --page: #f6f8f5;
+      --surface: #ffffff;
+      --line: #c9d2cb;
+      --county: #eef2eb;
+      --county-hover: #dce9e4;
+      --name-fill: #9fcfc3;
+      --seat-fill: #f3c98c;
+      --all-a: #cfe2bf;
+      --all-b: #b9d9d5;
+      --all-c: #f1d59f;
+      --all-d: #d8c7e6;
+      --accent: #2e766d;
+      --accent-strong: #18584f;
+      --warn: #b85c46;
+      --shadow: 0 18px 60px rgba(26, 40, 35, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(145deg, rgba(46, 118, 109, 0.08), transparent 34%),
+        linear-gradient(315deg, rgba(184, 92, 70, 0.08), transparent 30%),
+        var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 2.6vw, 2.7rem);
+      line-height: 1.02;
+      letter-spacing: 0;
+      font-weight: 760;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      min-height: 42px;
+      padding: 0 16px;
+      color: #ffffff;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(46, 118, 109, 0.16);
+      transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(46, 118, 109, 0.2);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.secondary {
+      color: var(--accent-strong);
+      background: #ffffff;
+      border-color: #b8cec7;
+      box-shadow: none;
+    }
+
+    .btn.secondary:hover {
+      color: #ffffff;
+      background: var(--warn);
+      border-color: var(--warn);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .map-shell,
+    .info-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: var(--shadow);
+    }
+
+    .map-shell {
+      display: grid;
+      align-items: stretch;
+      justify-items: center;
+      min-height: 0;
+      gap: 8px;
+      padding: clamp(10px, 1.8vw, 18px);
+    }
+
+    .map-display {
+      width: min(100%, 760px);
+      min-height: 30px;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 8px;
+      padding: 2px 8px;
+      color: var(--accent-strong);
+      line-height: 1.2;
+    }
+
+    .map-display-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 780;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .map-display-value {
+      font-size: clamp(1rem, 2vw, 1.28rem);
+      font-weight: 780;
+    }
+
+    .map-display-bottom .map-display-value {
+      color: #4a2f22;
+    }
+
+    .map-frame {
+      width: auto;
+      max-width: 100%;
+      height: min(760px, calc(100vh - 160px));
+      min-height: 540px;
+      aspect-ratio: 760 / 920;
+      display: block;
+      border-radius: 6px;
+      background: #fbfcf9;
+      touch-action: manipulation;
+    }
+
+    .county {
+      fill: var(--county);
+      stroke: #6d8176;
+      stroke-width: 1.45;
+      vector-effect: non-scaling-stroke;
+      cursor: pointer;
+      transition: fill 150ms ease, filter 150ms ease;
+    }
+
+    .county:hover,
+    .county:focus-visible {
+      fill: var(--county-hover);
+      filter: brightness(0.99);
+      outline: none;
+    }
+
+    .county[data-state="1"] {
+      fill: var(--name-fill);
+    }
+
+    .county[data-state="2"] {
+      fill: var(--seat-fill);
+    }
+
+    .county[data-all="0"] {
+      fill: var(--all-a);
+    }
+
+    .county[data-all="1"] {
+      fill: var(--all-b);
+    }
+
+    .county[data-all="2"] {
+      fill: var(--all-c);
+    }
+
+    .county[data-all="3"] {
+      fill: var(--all-d);
+    }
+
+    .county-label {
+      pointer-events: none;
+      fill: #111815;
+      stroke: rgba(255, 255, 255, 0.82);
+      stroke-width: 4px;
+      paint-order: stroke fill;
+      text-anchor: middle;
+      font-weight: 760;
+      letter-spacing: 0;
+      dominant-baseline: middle;
+    }
+
+    .county-label .seat-line {
+      font-weight: 650;
+      fill: #2b3430;
+    }
+
+    .county-label.is-seat {
+      fill: #3f241c;
+    }
+
+    .info-panel {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .panel-title {
+      margin: 0 0 14px;
+      font-size: 1rem;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .selection {
+      margin: 0;
+      display: grid;
+      gap: 13px;
+    }
+
+    .selection dt {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .selection dd {
+      margin: 3px 0 0;
+      font-size: 1.3rem;
+      font-weight: 760;
+      min-height: 1.55rem;
+    }
+
+    .county-facts {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.5;
+    }
+
+    .county-facts p {
+      margin: 0;
+    }
+
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      margin-top: 18px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e8f1ee;
+      color: var(--accent-strong);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .all-list {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      max-height: min(42vh, 360px);
+      overflow: auto;
+    }
+
+    .all-list[hidden] {
+      display: none;
+    }
+
+    .all-list ol {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 0;
+      margin: 0;
+    }
+
+    .all-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid #edf1ed;
+      padding-bottom: 7px;
+      font-size: 0.92rem;
+    }
+
+    .all-list span:first-child {
+      font-weight: 720;
+    }
+
+    .all-list span:last-child {
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .source {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.35;
+    }
+
+    .source a {
+      color: var(--accent-strong);
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .info-panel {
+        position: static;
+      }
+
+      .map-frame {
+        width: min(100%, 520px);
+        height: auto;
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        width: min(100% - 20px, 1180px);
+        padding-top: 14px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .controls {
+        justify-content: stretch;
+      }
+
+      .btn {
+        flex: 1 1 130px;
+      }
+
+      .map-shell,
+      .info-panel {
+        border-radius: 6px;
+      }
+    }
+
+    /* Final Utah County Quiz layout */
+    .subtitle { display: none; }
+
+    .desktop-controls {
+      display: none;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 7px;
+    }
+
+    .text-control {
+      min-height: 30px;
+      padding: 3px 12px;
+      border: 1px solid #b8cec7;
+      border-radius: 6px;
+      color: var(--accent-strong);
+      background: rgba(255,255,255,.82);
+      font-size: .86rem;
+      font-style: italic;
+      cursor: pointer;
+    }
+
+    .mobile-controls { display: flex; }
+
+    .map-shell {
+      gap: 2px;
+      grid-template-rows: auto auto auto;
+      align-content: start;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
+    .map-display {
+      justify-content: flex-start;
+      padding-left: 0;
+      padding-right: 0;
+      min-height: 25px;
+    }
+
+    .map-instructions {
+      display: flex;
+      justify-content: flex-start;
+      width: 100%;
+      box-sizing: border-box;
+      padding-left: 3.95%;
+      color: #265c54;
+      font-size: .9rem;
+      font-weight: 700;
+      font-style: italic;
+    }
+
+    .map-frame {
+      aspect-ratio: 760 / 880;
+      align-self: start;
+    }
+
+    .county:focus,
+    .county:focus-visible { outline: none; }
+
+    .county-label {
+      stroke: none;
+      paint-order: normal;
+    }
+
+    .county-label.is-left-aligned { text-anchor: start; }
+
+    .map-notch-readout {
+      pointer-events: none;
+      fill: #265c54;
+      font-size: 15px;
+      text-anchor: start;
+    }
+
+    .map-notch-label {
+      fill: var(--muted);
+      font-size: 11px;
+      font-weight: 780;
+    }
+
+    .map-notch-value {
+      fill: var(--accent-strong);
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .map-notch-label,
+    .map-notch-value {
+      pointer-events: none;
+      text-anchor: start;
+    }
+
+    .mode-display {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin-top: 18px;
+    }
+
+    .mode-label {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .mode-display .mode-pill { margin-top: 0; }
+
+    .map-mode-display {
+      flex-direction: column;
+      align-items: flex-start;
+      width: min(100%, 760px);
+      min-height: 28px;
+      margin-top: 0;
+      box-sizing: border-box;
+      padding: 2px 0 0 3.95%;
+    }
+
+    .displaying-status,
+    .color-legend,
+    .legend-item {
+      display: flex;
+      align-items: center;
+    }
+
+    .displaying-status {
+      gap: 7px;
+    }
+
+    .color-legend {
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 700;
+    }
+
+    .legend-item {
+      gap: 6px;
+    }
+
+    .legend-swatch {
+      width: 15px;
+      height: 15px;
+      border: 1px solid #6d8176;
+      border-radius: 3px;
+    }
+
+    .legend-swatch.county-color { background: var(--name-fill); }
+    .legend-swatch.seat-color { background: var(--seat-fill); }
+
+    .site-footer {
+      margin-top: 18px;
+      padding: 10px 4px 0;
+      color: var(--muted);
+      font-size: .76rem;
+      text-align: center;
+    }
+
+    .county-chronology {
+      margin-top: 18px;
+      padding: clamp(16px, 2.5vw, 26px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .86);
+      box-shadow: var(--shadow);
+    }
+
+    .county-chronology h2,
+    .county-chronology h3 {
+      margin: 0;
+      color: var(--ink);
+    }
+
+    .county-chronology h2 {
+      font-size: 1.2rem;
+    }
+
+    .county-chronology .creation-dates-title {
+      margin-top: 36px;
+    }
+
+    .county-chronology .statehood-title {
+      margin-top: 22px;
+    }
+
+    .statehood-counties-toggle {
+      appearance: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--accent);
+      font: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    .statehood-counties-toggle:hover,
+    .statehood-counties-toggle:focus-visible {
+      color: var(--ink);
+    }
+
+    .statehood-county-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 5px 22px;
+      margin: 10px 0 0;
+      padding: 12px 16px 12px 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(237, 245, 232, .72);
+      list-style-type: disc;
+    }
+
+    .statehood-county-list[hidden] {
+      display: none;
+    }
+
+    .statehood-county-list li {
+      padding-left: 2px;
+    }
+
+    .statehood-county-list li::marker {
+      color: #8fa39c;
+      font-size: .72em;
+    }
+
+    .county-chronology h3 {
+      margin-top: 22px;
+      font-size: 1rem;
+    }
+
+    .chronology-intro,
+    .chronology-note {
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.45;
+    }
+
+    .chronology-intro {
+      margin: 6px 0 14px;
+    }
+
+    .county-history-list,
+    .former-county-list {
+      margin: 0;
+      padding-left: 1.35rem;
+    }
+
+    .former-county-list::marker,
+    .former-county-list li::marker {
+      color: #8fa39c;
+      font-size: .72em;
+    }
+
+    .county-history-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 28px;
+    }
+
+    .county-order-control {
+      margin: 0 0 10px;
+      padding: 0;
+      border: 0;
+      color: var(--accent-strong);
+      background: transparent;
+      font: inherit;
+      font-size: .78rem;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+    }
+
+    .county-order-control:hover,
+    .county-order-control:focus-visible {
+      color: var(--ink);
+    }
+
+    .county-history-list li,
+    .former-county-list li {
+      padding: 7px 0;
+      border-bottom: 1px solid #e7ece8;
+      font-size: .82rem;
+      line-height: 1.38;
+    }
+
+    .county-history-list li {
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid #d8e2de;
+      border-left: 5px solid var(--card-accent, #9db5ad);
+      border-radius: 8px;
+      background: var(--card-tint, rgba(255,255,255,.62));
+    }
+
+    .county-history-toggle {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      width: 100%;
+      padding: 10px 12px;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      font: inherit;
+      line-height: 1.38;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .county-history-toggle:hover,
+    .county-history-toggle:focus-visible {
+      background: rgba(255,255,255,.38);
+    }
+
+    .county-history-toggle:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .county-card-summary {
+      min-width: 0;
+    }
+
+    .county-card-summary .county-origin {
+      display: block;
+      margin-top: 3px;
+    }
+
+    .county-card-chevron {
+      align-self: center;
+      margin-left: 10px;
+      color: var(--accent-strong);
+      font-size: 1rem;
+      transition: transform .18s ease;
+    }
+
+    .county-history-toggle[aria-expanded="true"] .county-card-chevron {
+      transform: rotate(180deg);
+    }
+
+    .county-detail {
+      padding: 14px 18px 14px 24px;
+      border-top: 1px solid #d8e2de;
+      background: var(--card-detail, #f7faf8);
+    }
+
+    .county-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px 18px;
+      margin: 0;
+    }
+
+    .county-detail-grid div {
+      min-width: 0;
+    }
+
+    .county-detail-grid dt {
+      color: var(--muted);
+      font-size: .7rem;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    .county-detail-grid dd {
+      margin: 2px 0 0;
+      color: var(--ink);
+      font-weight: 400;
+    }
+
+    .county-detail-grid .park-detail {
+      grid-column: 1 / -1;
+    }
+
+    .county-history-list time {
+      color: var(--accent-strong);
+      font-weight: 780;
+    }
+
+    .county-origin {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .75rem;
+    }
+
+    .chronology-note {
+      margin: 12px 0 0;
+    }
+
+    .external-resource a {
+      color: var(--accent-strong);
+    }
+
+    .external-resource {
+      margin: 20px 0 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .copyright {
+      margin: 0;
+    }
+
+    @keyframes county-flip-one {
+      0% { transform: rotateY(0deg); }
+      50% { transform: rotateY(90deg); filter: brightness(1.08); }
+      100% { transform: rotateY(0deg); }
+    }
+
+    @keyframes county-flip-two {
+      0% { transform: rotateY(0deg); }
+      25% { transform: rotateY(90deg); }
+      50% { transform: rotateY(0deg); }
+      75% { transform: rotateY(90deg); }
+      100% { transform: rotateY(0deg); }
+    }
+
+    .county.flip-one,
+    .county.flip-two {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .county.flip-one { animation: county-flip-one 420ms ease-in-out; }
+    .county.flip-two { animation: county-flip-two 720ms ease-in-out; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .county.flip-one, .county.flip-two { animation: none; }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .topbar {
+        justify-content: flex-start;
+        margin-bottom: 14px;
+      }
+      .topbar > div:first-child { width: max-content; }
+      .desktop-controls { display: flex; }
+      .mobile-controls { display: none; }
+      .layout { grid-template-columns: minmax(0, 1fr) 292px; }
+      .county-label { font-weight: 820; }
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      .topbar { flex-direction: column; align-items: stretch; }
+      .mobile-controls { justify-content: stretch; }
+      .mobile-controls .btn { flex: 1 1 130px; }
+      .county-label { font-weight: 820; }
+      .map-hint { font-size: 17px; }
+      .map-notch-label { font-size: 15px; }
+      .map-notch-value { font-size: 24px; }
+    }
+
+    @media (max-width: 620px) and (hover: none),
+           (max-width: 620px) and (pointer: coarse) {
+      .map-notch-label { font-size: 17px; }
+      .map-notch-value { font-size: 27px; }
+    }
+
+    @media (max-width: 700px) {
+      .county-history-list {
+        grid-template-columns: 1fr;
+      }
+
+      .county-detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .county-detail-grid .park-detail {
+        grid-column: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>Utah Counties</h1>
+        <div class="desktop-controls" aria-label="Map controls">
+          <button class="text-control reset-control" type="button">Clear map</button>
+          <button class="text-control show-all-control" type="button">Show all</button>
         </div>
-        <div class="header-actions">
-          <button id="headerRefreshButton" class="header-refresh-button" type="button" aria-label="Refresh app" title="Refresh app" data-refresh-app>
-            <span aria-hidden="true">&#8635;</span>
-          </button>
-          <div class="display-preference-wrap theme-dot-wrap">
-            <button id="themeDotButton" class="theme-dot-button" type="button" aria-label="Change tab color" title="Change tab color" aria-expanded="false" aria-controls="themeDotMenu">
-              <span aria-hidden="true"></span>
-            </button>
-            <div id="themeDotMenu" class="theme-dot-menu hidden" role="menu" aria-label="Tab colors"></div>
-          </div>
-          <button id="backgroundToggleButton" class="background-toggle-button" type="button" aria-label="Use black background" title="Use black background" aria-pressed="false">
-            <span aria-hidden="true"></span>
-          </button>
-        </div>
-      </header>
-
-      <nav class="main-nav" aria-label="Main sections">
-        <button class="nav-button nav-icon-button" type="button" data-section="favorites" aria-label="Favorites" title="Favorites">
-          <span class="star-icon-mark" aria-hidden="true">&#9733;</span>
-          <span class="sr-only">Favorites</span>
-        </button>
-        <button class="nav-button" type="button" data-section="lists" aria-label="Lists" title="Lists">Lists</button>
-        <button class="nav-button active" type="button" data-section="library" aria-label="Files" title="Files">Files</button>
-        <button class="nav-button" type="button" data-section="cards" aria-label="Cards" title="Cards">Cards</button>
-        <button class="nav-button" type="button" data-section="links" aria-label="Links" title="Links">Links</button>
-        <div class="overflow-wrap nav-overflow-wrap">
-          <button id="overflowMenuButton" class="nav-button nav-icon-button" type="button" aria-label="More" title="More" aria-expanded="false" aria-controls="overflowMenu">&hellip;</button>
-          <div id="overflowMenu" class="overflow-menu hidden" role="menu" aria-label="More">
-            <button type="button" role="menuitem" data-menu-section="search">Search</button>
-            <span class="menu-separator" aria-hidden="true"></span>
-            <button id="exportBackupButton" type="button" role="menuitem">Export data + files</button>
-            <button id="importBackupButton" type="button" role="menuitem">Import data + files</button>
-            <button type="button" role="menuitem" data-open-help>Help</button>
-            <button type="button" role="menuitem" data-open-about>About</button>
-          </div>
-          <input id="backupFileInput" class="hidden" type="file" accept="application/json,.json">
-        </div>
-      </nav>
-
-      <main class="main-content">
-        <section id="librarySection" class="view active" data-view="library" aria-label="Files">
-          <div class="toolbar compact-topbar files-toolbar">
-            <label class="search-field">
-              <span>Search files</span>
-              <input id="librarySearch" type="search" autocomplete="off" placeholder="">
-            </label>
-            <label class="files-sort-field">
-              <span>Sort</span>
-              <select id="librarySort" aria-label="Sort files">
-                <option value="alpha">Alphabetical</option>
-                <option value="category">Category / Genre</option>
-                <option value="book">Source / Book</option>
-                <option value="composer">Composer / Arranger</option>
-                <option value="tag">Tag</option>
-              </select>
-            </label>
-          </div>
-          <button id="libraryTopAddButton" class="top-add-button file-add-button" type="button" aria-label="Add file" title="Add file">+</button>
-          <div id="libraryContent" class="stack"></div>
-          <button id="libraryAddButton" class="top-add-button label-add-button file-add-button bottom-file-add-button" type="button" aria-label="Add file" title="Add file">Add File +</button>
-        </section>
-
-        <section id="listsSection" class="view" data-view="lists" aria-label="Lists">
-          <button id="listTopAddButton" class="top-add-button" type="button" aria-label="New list" title="New list">+</button>
-          <label class="compact-select hidden">
-            <span>List</span>
-            <select id="listSelect"></select>
-          </label>
-          <div id="listTabs" class="list-tabs" role="listbox" aria-label="Saved lists"></div>
-          <div class="toolbar compact-topbar lists-toolbar">
-            <button id="listEditButton" class="icon-button hidden" type="button" aria-label="Edit list" title="Edit list">&#9998;</button>
-            <div class="overflow-wrap list-overflow-wrap">
-              <button id="listMoreButton" class="icon-button" type="button" aria-label="List options" title="List options" aria-expanded="false" aria-controls="listMoreMenu">&hellip;</button>
-              <div id="listMoreMenu" class="overflow-menu hidden" role="menu" aria-label="List options">
-                <button type="button" role="menuitem" data-new-list>New list</button>
-                <button type="button" role="menuitem" data-delete-active-list>Delete the selected list</button>
-              </div>
-            </div>
-          </div>
-          <div id="listEditorPanel" class="editor-panel hidden"></div>
-          <div id="listContent" class="quick-list"></div>
-          <button id="listItemAddButton" class="top-add-button list-item-add-button" type="button" aria-label="Add file to this list" title="Add file to this list">+</button>
-          <div id="listPickerPanel" class="editor-panel hidden"></div>
-        </section>
-
-        <section id="cardsSection" class="view" data-view="cards" aria-label="Cards">
-          <button id="cardTopAddButton" class="top-add-button card-label-add-button" type="button" aria-label="Add card" title="Add card">+</button>
-          <div id="cardsContent" class="cards-grid"></div>
-          <button id="cardAddButton" class="top-add-button label-add-button card-label-add-button bottom-card-add-button" type="button" aria-label="Add card" title="Add card">Add Card +</button>
-        </section>
-
-        <section id="linksSection" class="view" data-view="links" aria-label="Links">
-          <button id="linkTopAddButton" class="top-add-button link-add-button" type="button" aria-label="Add link" title="Add link">+</button>
-          <div id="linksContent" class="stack"></div>
-          <button id="linkAddButton" class="top-add-button label-add-button link-add-button bottom-link-add-button" type="button" aria-label="Add link" title="Add link">Add Link +</button>
-        </section>
-
-        <section id="favoritesSection" class="view" data-view="favorites" aria-label="Favorites">
-          <div class="favorites-topbar">
-            <button id="favoritesReorderButton" class="favorites-reorder-button" type="button" aria-label="Rearrange favorites" title="Rearrange favorites" aria-pressed="false">Rearrange</button>
-          </div>
-          <div id="favoritesContent" class="stack"></div>
-          <button id="favoriteDividerAddButton" class="top-add-button label-add-button favorite-divider-add-button bottom-favorite-divider-button" type="button" aria-label="Add spacer" title="Add spacer">Add spacer</button>
-        </section>
-
-        <section id="searchSection" class="view" data-view="search" aria-labelledby="searchTitle">
-          <div class="toolbar">
-            <label class="search-field">
-              <span>Search all content</span>
-              <input id="globalSearch" type="search" autocomplete="off" placeholder="">
-            </label>
-          </div>
-          <div id="searchContent" class="stack"></div>
-        </section>
-
-        <section id="detailSection" class="view detail-view" data-view="detail" aria-labelledby="detailTitle">
-          <div id="detailContent"></div>
-        </section>
-      </main>
-    </div>
-
-    <section id="pdfViewer" class="pdf-viewer hidden" aria-label="PDF viewer">
-      <header class="pdf-toolbar">
-        <button id="pdfPrevButton" class="icon-button pdf-page-button" type="button" aria-label="Previous page" title="Previous page">&lt;</button>
-        <div class="pdf-title-wrap">
-          <h2 id="pdfTitle">PDF</h2>
-          <p id="pdfPageStatus">Page 1 of 1</p>
-        </div>
-        <button id="pdfNextButton" class="icon-button pdf-page-button" type="button" aria-label="Next page" title="Next page">&gt;</button>
-      </header>
-      <div id="pdfStage" class="pdf-stage">
-        <div id="pdfLoading" class="pdf-message">Loading PDF...</div>
-        <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
-        <button id="pdfTapLeft" class="pdf-tap-zone pdf-tap-left" type="button" aria-label="Previous page; top-left jumps to first page"></button>
-        <button id="pdfTapRight" class="pdf-tap-zone pdf-tap-right" type="button" aria-label="Next page; top-right jumps to last page"></button>
       </div>
+      <div class="controls mobile-controls" aria-label="Map controls">
+        <button class="btn secondary reset-control" type="button">Clear map</button>
+        <button class="btn show-all-control" type="button">Show all</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="map-shell" aria-label="Utah county map">
+        <div class="map-display map-display-top" aria-live="polite">
+          <div class="map-instructions">
+            <span>Tap once for county, tap again for the county seat</span>
+          </div>
+        </div>
+        <svg class="map-frame" id="utahMap" viewBox="0 20 760 880" role="img" aria-label="Blank clickable map of Utah counties"></svg>
+        <div class="mode-display map-mode-display">
+          <div class="displaying-status" aria-live="polite">
+            <span class="mode-label">Displaying:</span>
+            <span class="mode-pill" id="modeValue">Nothing selected</span>
+          </div>
+          <div class="color-legend" aria-label="Map color legend">
+            <span class="legend-item">
+              <span class="legend-swatch county-color" aria-hidden="true"></span>
+              County
+            </span>
+            <span class="legend-item">
+              <span class="legend-swatch seat-color" aria-hidden="true"></span>
+              County Seat
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="info-panel" aria-live="polite">
+        <dl class="selection">
+          <div>
+            <dt>County</dt>
+            <dd id="countyValue"></dd>
+          </div>
+          <div>
+            <dt>County Seat</dt>
+            <dd id="seatValue"></dd>
+          </div>
+        </dl>
+        <div class="county-facts">
+          <p>Utah has 29 counties.</p>
+          <p>Delaware has the fewest counties: 3</p>
+          <p>Texas has the most counties: 254</p>
+        </div>
+        <div class="all-list" id="allList" hidden>
+          <ol id="allListItems"></ol>
+        </div>
+        <p class="source">Map geometry from <a href="https://github.com/topojson/us-atlas" target="_blank" rel="noreferrer">us-atlas</a>, derived from U.S. Census cartographic boundary files.</p>
+      </aside>
+    </main>
+
+    <section class="county-chronology" aria-labelledby="countyChronologyTitle">
+      <h2 id="countyChronologyTitle">Former Utah Territory Counties</h2>
+      <ul class="former-county-list">
+        <li><strong>Desert County</strong> — March 3, 1852–January 17, 1862; its territory became parts of Box Elder and Tooele counties and Nevada.</li>
+        <li><strong>Green River County</strong> — March 3, 1852–February 16, 1872; its former territory is now divided among several Utah counties, Wyoming, and Colorado.</li>
+        <li><strong>Carson County</strong> — January 17, 1854–March 2, 1861; became part of Nevada.</li>
+        <li><strong>Cedar County</strong> — January 5, 1856–January 17, 1862; became part of Utah County.</li>
+        <li><strong>Greasewood County</strong> — January 5, 1856–January 17, 1862; became part of Box Elder County.</li>
+        <li><strong>Humboldt County</strong> — January 5, 1856–March 2, 1861; became part of Nevada.</li>
+        <li><strong>Malad County</strong> — January 5, 1856–January 17, 1862; became part of Box Elder County.</li>
+        <li><strong>St. Mary&rsquo;s County</strong> — January 5, 1856–January 17, 1862; became part of Nevada.</li>
+        <li><strong>Shambip County</strong> — January 12, 1856–January 17, 1862; became part of Tooele County.</li>
+        <li><strong>Rio Virgen County</strong> — February 18, 1869–February 16, 1872; its territory became parts of Washington County, Nevada, and Arizona.</li>
+      </ul>
+
+      <h2 class="statehood-title">Counties at Utah Statehood (January 4, 1896)</h2>
+      <p class="statehood-counties">
+        Utah entered the Union with
+        <button class="statehood-counties-toggle" id="statehoodCountiesToggle"
+          type="button" aria-expanded="false" aria-controls="statehoodCountyList">27 counties</button>.
+        Duchesne and Daggett were created after statehood.
+      </p>
+      <ul class="statehood-county-list" id="statehoodCountyList" hidden>
+        <li>Beaver</li>
+        <li>Box Elder</li>
+        <li>Cache</li>
+        <li>Carbon</li>
+        <li>Davis</li>
+        <li>Emery</li>
+        <li>Garfield</li>
+        <li>Grand</li>
+        <li>Iron</li>
+        <li>Juab</li>
+        <li>Kane</li>
+        <li>Millard</li>
+        <li>Morgan</li>
+        <li>Piute</li>
+        <li>Rich</li>
+        <li>Salt Lake</li>
+        <li>San Juan</li>
+        <li>Sanpete</li>
+        <li>Sevier</li>
+        <li>Summit</li>
+        <li>Tooele</li>
+        <li>Uintah</li>
+        <li>Utah</li>
+        <li>Wasatch</li>
+        <li>Washington</li>
+        <li>Wayne</li>
+        <li>Weber</li>
+      </ul>
+
+      <h2 class="creation-dates-title">Utah County Creation Dates</h2>
+      <button class="county-order-control" id="countyOrderToggle" type="button">
+        View counties alphabetically
+      </button>
+      <ol class="county-history-list">
+        <li>
+          <time datetime="1850-01-31">January 31, 1850</time> — Iron County
+          <span class="county-origin">An original State of Deseret county.</span>
+        </li>
+        <li>
+          <time datetime="1850-01-31">January 31, 1850</time> — Salt Lake County
+          <span class="county-origin">Created as Great Salt Lake County; renamed Salt Lake County on January 29, 1868.</span>
+        </li>
+        <li>
+          <time datetime="1850-01-31">January 31, 1850</time> — Sanpete County
+          <span class="county-origin">An original State of Deseret county.</span>
+        </li>
+        <li>
+          <time datetime="1850-01-31">January 31, 1850</time> — Tooele County
+          <span class="county-origin">Created as Tuilla County; re-created as Tooele County on March 3, 1852.</span>
+        </li>
+        <li>
+          <time datetime="1850-01-31">January 31, 1850</time> — Utah County
+          <span class="county-origin">An original State of Deseret county.</span>
+        </li>
+        <li>
+          <time datetime="1850-01-31">January 31, 1850</time> — Weber County
+          <span class="county-origin">An original State of Deseret county.</span>
+        </li>
+        <li>
+          <time datetime="1850-10-05">October 5, 1850</time> — Davis County
+          <span class="county-origin">Formed from parts of Great Salt Lake and Weber counties.</span>
+        </li>
+        <li>
+          <time datetime="1851-10-04">October 4, 1851</time> — Millard County
+          <span class="county-origin">An original Utah Territory county.</span>
+        </li>
+        <li>
+          <time datetime="1852-03-03">March 3, 1852</time> — Juab County
+          <span class="county-origin">Created by Utah Territory’s first legislature.</span>
+        </li>
+        <li>
+          <time datetime="1852-03-03">March 3, 1852</time> — Washington County
+          <span class="county-origin">Created by Utah Territory’s first legislature.</span>
+        </li>
+        <li>
+          <time datetime="1854-01-13">January 13, 1854</time> — Summit County
+          <span class="county-origin">Formed from Great Salt Lake and the former Green River County.</span>
+        </li>
+        <li>
+          <time datetime="1856-01-05">January 5, 1856</time> — Beaver County
+          <span class="county-origin">Formed from Iron County.</span>
+        </li>
+        <li>
+          <time datetime="1856-01-05">January 5, 1856</time> — Box Elder County
+          <span class="county-origin">Formed from Weber County; later received land from former Greasewood and Malad counties.</span>
+        </li>
+        <li>
+          <time datetime="1857-01-05">January 5, 1857</time> — Cache County
+          <span class="county-origin">Formed from Weber County.</span>
+        </li>
+        <li>
+          <time datetime="1862-01-17">January 17, 1862</time> — Morgan County
+          <span class="county-origin">Formed from Davis, Great Salt Lake, Summit, and Weber counties.</span>
+        </li>
+        <li>
+          <time datetime="1862-01-17">January 17, 1862</time> — Wasatch County
+          <span class="county-origin">Formed from Great Salt Lake, Green River, Sanpete, Summit, and Utah counties.</span>
+        </li>
+        <li>
+          <time datetime="1864-01-16">January 16, 1864</time> — Kane County
+          <span class="county-origin">Formed from Washington County.</span>
+        </li>
+        <li>
+          <time datetime="1864-01-16">January 16, 1864</time> — Rich County
+          <span class="county-origin">Formed from Cache County as Richland County; renamed Rich County on January 29, 1868.</span>
+        </li>
+        <li>
+          <time datetime="1865-01-16">January 16, 1865</time> — Piute County
+          <span class="county-origin">Formed from Beaver County.</span>
+        </li>
+        <li>
+          <time datetime="1865-01-16">January 16, 1865</time> — Sevier County
+          <span class="county-origin">Formed from Sanpete County.</span>
+        </li>
+        <li>
+          <time datetime="1880-02-12">February 12, 1880</time> — Emery County
+          <span class="county-origin">Formed from Sanpete County.</span>
+        </li>
+        <li>
+          <time datetime="1880-02-17">February 17, 1880</time> — San Juan County
+          <span class="county-origin">Formed from parts of Kane, Iron, and Piute counties.</span>
+        </li>
+        <li>
+          <time datetime="1880-02-18">February 18, 1880</time> — Uintah County
+          <span class="county-origin">Formed from Sanpete, Summit, and Wasatch counties.</span>
+        </li>
+        <li>
+          <time datetime="1882-03-09">March 9, 1882</time> — Garfield County
+          <span class="county-origin">Formed from Iron County.</span>
+        </li>
+        <li>
+          <time datetime="1890-03-13">March 13, 1890</time> — Grand County
+          <span class="county-origin">Formed from Emery County.</span>
+        </li>
+        <li>
+          <time datetime="1892-03-10">March 10, 1892</time> — Wayne County
+          <span class="county-origin">Formed from Piute County.</span>
+        </li>
+        <li>
+          <time datetime="1894-03-08">March 8, 1894</time> — Carbon County
+          <span class="county-origin">Formed from Emery County.</span>
+        </li>
+        <li>
+          <time datetime="1915-01-04">January 4, 1915</time> — Duchesne County
+          <span class="county-origin">Authorized in 1914 from part of Wasatch County and effective in 1915.</span>
+        </li>
+        <li>
+          <time datetime="1918-01-07">January 7, 1918</time> — Daggett County
+          <span class="county-origin">Approved in 1917 from parts of Uintah and Summit counties and effective in 1918.</span>
+        </li>
+      </ol>
+
+      <p class="chronology-note">
+        Creation and relationship dates follow the
+        <a href="https://archives.utah.gov/research/guides/county-formation/" target="_blank" rel="noreferrer">Utah Division of Archives and Records Service county-formation history</a>.
+        A county’s organization or effective date can differ from its authorizing legislation.
+        Population figures include the April 1, 2020 Census count used for the
+        current redistricting cycle and a more recent July 1, 2024 estimate.
+        Land areas are from the
+        <a href="https://www.census.gov/programs-surveys/popest/data.html" target="_blank" rel="noreferrer">U.S. Census Bureau</a>.
+        Park locations follow
+        <a href="https://stateparks.utah.gov/parks/" target="_blank" rel="noreferrer">Utah State Parks</a>
+        and the <a href="https://www.nps.gov/state/ut/index.htm" target="_blank" rel="noreferrer">National Park Service</a>.
+      </p>
+      <p class="external-resource">
+        <a href="https://ilovehistory.utah.gov/our-counties/" target="_blank" rel="noopener noreferrer">
+          Learn more about Utah counties ↗
+        </a>
+        Outside resource from Utah.gov
+      </p>
     </section>
 
-    <template id="emptyStateTemplate">
-      <div class="empty-state">
-        <p>No items found.</p>
-      </div>
-    </template>
+    <footer class="site-footer">
+      <p class="copyright">&copy; 2026 Utah County Map Quiz. All rights reserved.</p>
+    </footer>
+  </div>
 
-    <div id="importModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="importTitle">
-      <div id="modalPanel" class="modal-panel">
-        <form id="importForm" class="import-form">
-          <div id="modalHeading" class="modal-heading">
-            <button id="importCloseButton" class="icon-button form-close-button" type="button" aria-label="Cancel" title="Cancel">&times;</button>
-            <h2 id="importTitle">Add item</h2>
-            <div class="modal-action-buttons">
-              <button id="importDeleteButton" class="icon-button danger-icon hidden" type="button" aria-label="Delete" title="Delete">&#128465;</button>
-              <button id="importSaveButton" class="icon-button primary-icon" type="submit" aria-label="Save" title="Save">&#10003;</button>
-            </div>
-          </div>
+  <script id="mapData" type="application/json">{"viewBox":"0 0 760 920","counties":[{"id":"49001","name":"Beaver","seat":"Beaver","label":{"x":142.81,"y":663.31,"size":16},"path":"M28,626.73 L169.2,626.73 L243.84,626.73 L243.34,637.26 L243.34,642.52 L252.41,651.13 L253.93,655.07 L259.47,653.47 L269.05,667.47 L267.04,676.07 L263,682.48 L266.03,685.83 L256.45,693.25 L253.93,698.49 L248.88,698.92 L139.95,698.63 L28.5,698.63 L28,626.73 Z"},{"id":"49003","name":"Box Elder","seat":"Brigham City","label":{"x":164.34,"y":113.51,"size":16},"path":"M29.51,29.54 L60.28,30.46 L175.76,28.62 L289.23,28.15 L293.26,28.92 L299.31,41.23 L308.89,52.44 L314.95,65.03 L308.89,81.89 L313.94,88.63 L315.45,101.18 L318.98,111.57 L324.02,108.21 L328.56,111.87 L333.6,122.11 L328.06,124.55 L332.6,130.65 L328.06,133.09 L319.99,131.72 L321.5,141.48 L311.42,146.66 L282.67,146.66 L246.87,192.56 L204,206.06 L147.52,206.06 L29.51,206.06 L29.51,29.54 Z"},{"id":"49005","name":"Cache","seat":"Logan","label":{"x":353.2,"y":75.96,"size":13},"path":"M293.26,28.92 L300.83,28.77 L385.55,28.46 L390.59,41.23 L386.05,43.84 L385.55,54.75 L392.1,61.04 L394.62,75.46 L398.15,79.75 L397.15,86.18 L400.17,89.24 L396.64,96.59 L396.14,108.05 L389.58,116.92 L385.04,131.26 L369.91,131.41 L364.87,134.01 L358.82,132.33 L354.79,139.65 L349.74,140.87 L344.7,136.75 L334.61,135.53 L332.6,130.65 L328.06,124.55 L333.6,122.11 L328.56,111.87 L324.02,108.21 L318.98,111.57 L315.45,101.18 L313.94,88.63 L308.89,81.89 L314.95,65.03 L308.89,52.44 L299.31,41.23 L293.26,28.92 Z"},{"id":"49007","name":"Carbon","seat":"Price","label":{"x":514.7,"y":442.16,"size":16},"path":"M421.86,413.63 L476.83,413.63 L524.73,413.93 L524.73,414.68 L600.38,414.83 L613.49,414.83 L608.45,418.25 L607.44,424.5 L598.36,432.68 L599.37,439.36 L591.81,456.29 L595.34,469.19 L593.82,473.04 L527.26,473.04 L446.06,473.04 L445.05,464 L440.52,458.81 L437.99,448.13 L434.46,451.24 L430.43,447.09 L425.89,434.61 L421.86,432.53 L421.86,413.63 Z"},{"id":"49009","name":"Daggett","seat":"Manila","label":{"x":672.51,"y":222.15,"size":11},"path":"M597.35,206.51 L662.41,206.36 L730.99,206.06 L730.99,265.46 L720.4,265.46 L715.36,261.69 L714.85,243.73 L709.31,243.88 L709.31,231.04 L682.58,231.04 L682.58,242.97 L669.97,251.73 L665.94,249.92 L663.92,236.63 L657.36,239.05 L648.79,238.59 L642.74,242.22 L632.15,240.86 L630.13,244.33 L615.51,247.66 L600.38,239.65 L597.35,238.9 L597.35,206.51 Z"},{"id":"49011","name":"Davis","seat":"Farmington","label":{"x":294.28,"y":205.75,"size":11},"path":"M336.63,181.48 L337.13,194.38 L339.15,202.12 L347.72,213.33 L342.18,213.18 L348.73,228.62 L352.77,230.58 L334.61,237.54 L324.02,237.38 L320.49,226.04 L322.01,219.84 L314.95,219.99 L295.28,233.15 L279.64,246.75 L246.87,192.56 L290.23,179.05 L320.49,179.21 L328.56,182.24 L336.63,181.48 Z"},{"id":"49013","name":"Duchesne","seat":"Duchesne","label":{"x":537.42,"y":329.01,"size":16},"path":"M470.77,262.75 L471.78,254.3 L484.39,256.71 L491.95,250.53 L505.07,251.88 L509.6,246.75 L512.13,248.86 L523.72,248.11 L529.27,244.94 L544.91,243.28 L549.44,237.23 L556,235.42 L574.66,237.69 L583.23,239.95 L597.35,238.9 L600.38,239.65 L600.38,414.83 L524.73,414.68 L524.73,413.93 L476.83,413.63 L476.83,398.59 L471.78,398.59 L471.28,366.79 L471.28,305.95 L470.27,305.95 L470.77,262.75 Z"},{"id":"49015","name":"Emery","seat":"Castle Dale","label":{"x":498.93,"y":554.03,"size":16},"path":"M414.8,548.21 L414.8,503.23 L414.29,473.49 L421.86,473.49 L421.86,432.53 L425.89,434.61 L430.43,447.09 L434.46,451.24 L437.99,448.13 L440.52,458.81 L445.05,464 L446.06,473.04 L527.26,473.04 L593.82,473.04 L595.84,482.22 L592.31,493.76 L586.26,506.33 L589.79,514.6 L586.26,514.89 L581.21,527.58 L583.23,530.39 L576.68,540.41 L575.16,548.07 L583.74,556.01 L591.3,554.84 L596.85,562.34 L591.3,562.34 L587.77,557.34 L577.68,559.55 L574.66,572.92 L578.19,582.03 L582.73,586.73 L581.21,590.98 L585.25,596.26 L580.21,603.01 L585.25,604.03 L584.74,609.45 L592.31,612.82 L589.79,621.17 L597.35,619.12 L597.86,622.92 L590.8,622.78 L589.79,625.85 L598.87,627.9 L597.35,635.36 L593.82,639.01 L520.7,639.01 L413.79,639.01 L413.79,637.4 L413.79,609.75 L414.8,609.75 L414.8,548.21 Z"},{"id":"49017","name":"Garfield","seat":"Panguitch","label":{"x":394.6,"y":748.19,"size":16},"path":"M248.88,698.92 L253.93,698.49 L307.89,699.22 L338.14,698.2 L367.39,698.49 L398.66,697.76 L500.53,698.2 L607.44,698.2 L598.87,706.92 L594.83,705.9 L588.28,716.8 L586.76,723.62 L578.69,722.75 L568.61,734.07 L566.59,741.9 L559.53,741.03 L557.51,746.39 L554.99,742.48 L540.87,743.92 L536.33,755.22 L530.28,757.39 L532.3,762.31 L536.84,762.46 L529.27,773.59 L527.26,781.4 L518.18,785.44 L512.63,790.93 L511.12,797.13 L506.58,801.17 L455.14,801.32 L342.18,801.32 L338.14,802.04 L293.26,801.89 L265.52,800.74 L220.14,800.74 L219.63,756.67 L234.76,756.81 L235.27,743.78 L233.75,742.33 L250.4,742.33 L250.9,727.69 L248.88,727.54 L248.88,698.92 Z"},{"id":"49019","name":"Grand","seat":"Moab","label":{"x":657.79,"y":556.23,"size":16},"path":"M593.82,473.04 L722.92,474.37 L725.44,469.04 L730.49,468.15 L730.49,490.81 L730.49,569.98 L729.48,601.69 L729.48,639.01 L670.98,639.16 L593.82,639.01 L597.35,635.36 L598.87,627.9 L589.79,625.85 L590.8,622.78 L597.86,622.92 L597.35,619.12 L589.79,621.17 L592.31,612.82 L584.74,609.45 L585.25,604.03 L580.21,603.01 L585.25,596.26 L581.21,590.98 L582.73,586.73 L578.19,582.03 L574.66,572.92 L577.68,559.55 L587.77,557.34 L591.3,562.34 L596.85,562.34 L591.3,554.84 L583.74,556.01 L575.16,548.07 L576.68,540.41 L583.23,530.39 L581.21,527.58 L586.26,514.89 L589.79,514.6 L586.26,506.33 L592.31,493.76 L595.84,482.22 L593.82,473.04 Z"},{"id":"49021","name":"Iron","seat":"Parowan","label":{"x":135.13,"y":747.49,"size":16},"path":"M28.5,698.63 L139.95,698.63 L248.88,698.92 L248.88,727.54 L250.9,727.69 L250.4,742.33 L233.75,742.33 L235.27,743.78 L234.76,756.81 L219.63,756.67 L220.14,800.74 L189.88,800.74 L189.88,808.09 L170.72,808.09 L170.72,812.27 L139.95,810.98 L139.95,803.19 L109.19,803.19 L109.19,788.18 L93.05,788.18 L93.05,790.49 L28,790.49 L28.5,763.33 L28,723.91 L28.5,698.63 Z"},{"id":"49023","name":"Juab","seat":"Nephi","label":{"x":205.83,"y":432.59,"size":16},"path":"M28.5,397.54 L140.96,397.69 L268.05,397.84 L268.55,390.83 L278.13,391.73 L284.69,383.07 L291.24,379.19 L300.83,385.76 L301.83,393.52 L308.89,399.63 L304.86,404.55 L306.88,410.8 L303.85,418.99 L309.9,419.89 L320.49,414.68 L329.07,399.48 L339.66,394.26 L340.66,390.24 L353.27,404.85 L349.24,414.08 L366.38,413.63 L369.41,418.7 L374.45,418.7 L374.45,426.28 L355.79,434.16 L356.8,474.67 L351.76,474.67 L351.76,488 L327.05,488.14 L322.01,490.81 L322.01,495.83 L313.94,495.83 L313.94,499.68 L306.37,497.17 L289.73,497.17 L289.23,469.49 L286.7,458.51 L190.89,458.66 L61.28,458.66 L61.28,460.15 L28.5,460.44 L28.5,397.54 Z"},{"id":"49025","name":"Kane","seat":"Kanab","label":{"x":332.09,"y":843.99,"size":16},"path":"M189.88,808.09 L189.88,800.74 L220.14,800.74 L265.52,800.74 L293.26,801.89 L338.14,802.04 L342.18,801.32 L455.14,801.32 L506.58,801.17 L504.06,811.7 L496.49,811.12 L493.47,817.17 L499.01,819.91 L491.45,825.24 L495.48,830.42 L490.44,836.03 L483.89,837.75 L475.31,833.3 L479.35,838.33 L475.82,843.07 L476.32,848.39 L472.79,849.69 L470.27,862.47 L463.21,866.77 L459.17,872.65 L436.48,876.81 L431.44,875.09 L426.4,882.12 L422.87,880.97 L423.37,887.7 L414.29,880.54 L416.81,885.41 L407.74,891.43 L240.81,891.57 L189.88,891.57 L189.88,808.09 Z"},{"id":"49027","name":"Millard","seat":"Fillmore","label":{"x":161.77,"y":540.88,"size":16},"path":"M28.5,608.87 L28.5,460.44 L61.28,460.15 L61.28,458.66 L190.89,458.66 L286.7,458.51 L289.23,469.49 L289.73,497.17 L306.37,497.17 L313.94,499.68 L314.44,545.86 L313.43,554.4 L306.88,555.72 L307.38,560.72 L297.3,560.72 L295.28,569.69 L292.25,569.84 L289.73,576.89 L284.69,576.89 L284.18,594.06 L285.7,600.37 L272.58,609.01 L253.42,608.14 L248.38,614.43 L248.38,621.9 L243.84,626.73 L169.2,626.73 L28,626.73 L28.5,608.87 Z"},{"id":"49029","name":"Morgan","seat":"Morgan","label":{"x":380.95,"y":192.19,"size":11},"path":"M397.65,142.24 L402.69,139.95 L410.26,142.85 L419.84,153.66 L417.32,166.29 L425.39,168.11 L422.87,177.08 L419.34,180.72 L405.21,183.15 L403.2,190.74 L394.12,191.65 L385.55,194.99 L373.44,207.27 L375.46,213.48 L383.03,214.24 L382.52,220.29 L389.58,231.04 L384.03,237.99 L384.03,242.82 L378.99,244.79 L370.92,239.35 L366.89,241.46 L363.36,232.55 L352.77,230.58 L348.73,228.62 L342.18,213.18 L347.72,213.33 L339.15,202.12 L337.13,194.38 L336.63,181.48 L333.6,176.17 L336.13,171.15 L344.19,167.66 L351.76,168.26 L355.79,172.98 L364.37,173.28 L370.92,169.02 L372.94,164.01 L387.06,165.98 L395.13,154.88 L393.62,150.31 L397.65,142.24 Z"},{"id":"49031","name":"Piute","seat":"Junction","label":{"x":298.44,"y":666.9,"size":14.77},"path":"M243.34,637.26 L298.81,636.96 L307.38,638.72 L349.24,638.72 L337.64,651.86 L338.14,698.2 L307.89,699.22 L253.93,698.49 L256.45,693.25 L266.03,685.83 L263,682.48 L267.04,676.07 L269.05,667.47 L259.47,653.47 L253.93,655.07 L252.41,651.13 L243.34,642.52 L243.34,637.26 Z"},{"id":"49033","name":"Rich","seat":"Randolph","label":{"x":423.4,"y":91.93,"size":12},"path":"M385.55,28.46 L450.1,28 L450.6,103.32 L450.1,161.57 L442.53,169.48 L423.87,180.88 L419.34,180.72 L422.87,177.08 L425.39,168.11 L417.32,166.29 L419.84,153.66 L410.26,142.85 L402.69,139.95 L397.65,142.24 L389.58,138.12 L385.04,131.26 L389.58,116.92 L396.14,108.05 L396.64,96.59 L400.17,89.24 L397.15,86.18 L398.15,79.75 L394.62,75.46 L392.1,61.04 L385.55,54.75 L386.05,43.84 L390.59,41.23 L385.55,28.46 Z"},{"id":"49035","name":"Salt Lake","seat":"Salt Lake City","label":{"x":324.05,"y":269.37,"size":12},"path":"M279.64,246.75 L295.28,233.15 L314.95,219.99 L322.01,219.84 L320.49,226.04 L324.02,237.38 L334.61,237.54 L352.77,230.58 L363.36,232.55 L366.89,241.46 L365.38,246 L373.44,259.13 L371.93,264.71 L378.99,274.8 L373.44,280.53 L367.39,282.03 L360.84,288.51 L349.74,288.81 L339.15,298.28 L332.6,298.88 L324.02,307.15 L318.98,308.95 L310.91,300.24 L300.32,304.6 L296.29,299.18 L292.25,299.79 L291.75,275.71 L288.72,271.34 L287.21,256.11 L279.64,246.75 Z"},{"id":"49037","name":"San Juan","seat":"Monticello","label":{"x":625.04,"y":786.25,"size":16},"path":"M506.58,801.17 L511.12,797.13 L512.63,790.93 L518.18,785.44 L527.26,781.4 L529.27,773.59 L536.84,762.46 L532.3,762.31 L530.28,757.39 L536.33,755.22 L540.87,743.92 L554.99,742.48 L557.51,746.39 L559.53,741.03 L566.59,741.9 L568.61,734.07 L578.69,722.75 L586.76,723.62 L588.28,716.8 L594.83,705.9 L598.87,706.92 L607.44,698.2 L613.49,692.09 L608.45,685.83 L612.99,684.66 L607.44,679.86 L606.93,675.78 L599.37,663.24 L600.38,657.99 L595.34,662.08 L592.81,658.58 L596.85,653.32 L596.85,642.37 L593.82,639.01 L670.98,639.16 L729.48,639.01 L729.48,677.24 L732,697.91 L732,743.92 L732,802.9 L731.5,810.54 L731.5,891.86 L649.8,892 L597.35,892 L531.29,892 L528.26,891 L491.95,891.14 L407.74,891.43 L416.81,885.41 L414.29,880.54 L423.37,887.7 L422.87,880.97 L426.4,882.12 L431.44,875.09 L436.48,876.81 L459.17,872.65 L463.21,866.77 L470.27,862.47 L472.79,849.69 L476.32,848.39 L475.82,843.07 L479.35,838.33 L475.31,833.3 L483.89,837.75 L490.44,836.03 L495.48,830.42 L491.45,825.24 L499.01,819.91 L493.47,817.17 L496.49,811.12 L504.06,811.7 L506.58,801.17 Z"},{"id":"49039","name":"Sanpete","seat":"Manti","label":{"x":375.81,"y":489.41,"size":16},"path":"M366.38,413.63 L421.86,413.63 L421.86,432.53 L421.86,473.49 L414.29,473.49 L414.8,503.23 L414.8,548.21 L337.13,548.07 L337.13,545.86 L314.44,545.86 L313.94,499.68 L313.94,495.83 L322.01,495.83 L322.01,490.81 L327.05,488.14 L351.76,488 L351.76,474.67 L356.8,474.67 L355.79,434.16 L374.45,426.28 L374.45,418.7 L369.41,418.7 L366.38,413.63 Z"},{"id":"49041","name":"Sevier","seat":"Richfield","label":{"x":343.86,"y":596.78,"size":16},"path":"M243.84,626.73 L248.38,621.9 L248.38,614.43 L253.42,608.14 L272.58,609.01 L285.7,600.37 L284.18,594.06 L284.69,576.89 L289.73,576.89 L292.25,569.84 L295.28,569.69 L297.3,560.72 L307.38,560.72 L306.88,555.72 L313.43,554.4 L314.44,545.86 L337.13,545.86 L337.13,548.07 L414.8,548.21 L414.8,609.75 L413.79,609.75 L413.79,637.4 L350.75,637.4 L349.24,638.72 L307.38,638.72 L298.81,636.96 L243.34,637.26 L243.84,626.73 Z"},{"id":"49043","name":"Summit","seat":"Coalville","label":{"x":471.91,"y":229.41,"size":12},"path":"M366.89,241.46 L370.92,239.35 L378.99,244.79 L384.03,242.82 L384.03,237.99 L389.58,231.04 L382.52,220.29 L383.03,214.24 L375.46,213.48 L373.44,207.27 L385.55,194.99 L394.12,191.65 L403.2,190.74 L405.21,183.15 L419.34,180.72 L423.87,180.88 L442.53,169.48 L450.1,161.57 L450.1,206.51 L497,206.82 L564.07,206.97 L590.29,206.51 L597.35,206.51 L597.35,238.9 L583.23,239.95 L574.66,237.69 L556,235.42 L549.44,237.23 L544.91,243.28 L529.27,244.94 L523.72,248.11 L512.13,248.86 L509.6,246.75 L505.07,251.88 L491.95,250.53 L484.39,256.71 L471.78,254.3 L470.77,262.75 L466.23,262.29 L460.18,277.67 L453.12,280.38 L445.56,277.37 L440.01,278.12 L435.47,285.5 L419.34,278.72 L410.76,272.39 L405.21,271.34 L401.18,260.48 L390.09,268.78 L388.07,276.61 L378.99,274.8 L371.93,264.71 L373.44,259.13 L365.38,246 L366.89,241.46 Z"},{"id":"49045","name":"Tooele","seat":"Tooele","label":{"x":157.4,"y":302.52,"size":16},"path":"M28.5,360.81 L29.01,340.75 L29.01,246.3 L29.51,206.06 L147.52,206.06 L204,206.06 L246.87,192.56 L279.64,246.75 L287.21,256.11 L288.72,271.34 L291.75,275.71 L292.25,299.79 L286.2,301.89 L288.22,314.51 L291.75,322.61 L288.72,324.41 L289.23,335.21 L295.28,344.35 L295.78,351.09 L291.75,354.38 L295.28,362.46 L290.74,370.83 L291.24,379.19 L284.69,383.07 L278.13,391.73 L268.55,390.83 L268.05,397.84 L140.96,397.69 L28.5,397.54 L28.5,360.81 Z"},{"id":"49047","name":"Uintah","seat":"Vernal","label":{"x":664.88,"y":358.7,"size":16},"path":"M600.38,414.83 L600.38,239.65 L615.51,247.66 L630.13,244.33 L632.15,240.86 L642.74,242.22 L648.79,238.59 L657.36,239.05 L663.92,236.63 L665.94,249.92 L669.97,251.73 L682.58,242.97 L682.58,231.04 L709.31,231.04 L709.31,243.88 L714.85,243.73 L715.36,261.69 L720.4,265.46 L730.99,265.46 L730.49,293.92 L730.49,342.4 L730.49,440.11 L730.49,468.15 L725.44,469.04 L722.92,474.37 L593.82,473.04 L595.34,469.19 L591.81,456.29 L599.37,439.36 L598.36,432.68 L607.44,424.5 L608.45,418.25 L613.49,414.83 L600.38,414.83 Z"},{"id":"49049","name":"Utah","seat":"Provo","label":{"x":362.62,"y":360.15,"size":16},"path":"M292.25,299.79 L296.29,299.18 L300.32,304.6 L310.91,300.24 L318.98,308.95 L324.02,307.15 L332.6,298.88 L339.15,298.28 L349.74,288.81 L360.84,288.51 L367.39,282.03 L373.44,280.53 L376.97,285.65 L375.97,296.33 L369.41,302.79 L378.99,317.36 L389.08,318.11 L395.13,325.16 L394.62,330.71 L404.21,329.51 L412.78,331.31 L419.84,338.96 L418.33,342.55 L424.88,352.13 L425.89,359.46 L421.86,371.57 L427.91,372.92 L433.46,382.77 L440.01,386.65 L438.5,390.38 L445.05,390.98 L445.05,398.59 L471.78,398.59 L476.83,398.59 L476.83,413.63 L421.86,413.63 L366.38,413.63 L349.24,414.08 L353.27,404.85 L340.66,390.24 L339.66,394.26 L329.07,399.48 L320.49,414.68 L309.9,419.89 L303.85,418.99 L306.88,410.8 L304.86,404.55 L308.89,399.63 L301.83,393.52 L300.83,385.76 L291.24,379.19 L290.74,370.83 L295.28,362.46 L291.75,354.38 L295.78,351.09 L295.28,344.35 L289.23,335.21 L288.72,324.41 L291.75,322.61 L288.22,314.51 L286.2,301.89 L292.25,299.79 Z"},{"id":"49051","name":"Wasatch","seat":"Heber City","label":{"x":435.05,"y":329.22,"size":11},"path":"M373.44,280.53 L378.99,274.8 L388.07,276.61 L390.09,268.78 L401.18,260.48 L405.21,271.34 L410.76,272.39 L419.34,278.72 L435.47,285.5 L440.01,278.12 L445.56,277.37 L453.12,280.38 L460.18,277.67 L466.23,262.29 L470.77,262.75 L470.27,305.95 L471.28,305.95 L471.28,366.79 L471.78,398.59 L445.05,398.59 L445.05,390.98 L438.5,390.38 L440.01,386.65 L433.46,382.77 L427.91,372.92 L421.86,371.57 L425.89,359.46 L424.88,352.13 L418.33,342.55 L419.84,338.96 L412.78,331.31 L404.21,329.51 L394.62,330.71 L395.13,325.16 L389.08,318.11 L378.99,317.36 L369.41,302.79 L375.97,296.33 L376.97,285.65 L373.44,280.53 Z"},{"id":"49053","name":"Washington","seat":"St. George","label":{"x":104.9,"y":844.72,"size":16},"path":"M28,790.49 L93.05,790.49 L93.05,788.18 L109.19,788.18 L109.19,803.19 L139.95,803.19 L139.95,810.98 L170.72,812.27 L170.72,808.09 L189.88,808.09 L189.88,891.57 L128.86,891.57 L28,891.57 L28,790.49 Z"},{"id":"49055","name":"Wayne","seat":"Loa","label":{"x":470.51,"y":668.85,"size":16},"path":"M349.24,638.72 L350.75,637.4 L413.79,637.4 L413.79,639.01 L520.7,639.01 L593.82,639.01 L596.85,642.37 L596.85,653.32 L592.81,658.58 L595.34,662.08 L600.38,657.99 L599.37,663.24 L606.93,675.78 L607.44,679.86 L612.99,684.66 L608.45,685.83 L613.49,692.09 L607.44,698.2 L500.53,698.2 L398.66,697.76 L367.39,698.49 L338.14,698.2 L337.64,651.86 L349.24,638.72 Z"},{"id":"49057","name":"Weber","seat":"Ogden","label":{"x":326.46,"y":157.45,"size":12},"path":"M246.87,192.56 L282.67,146.66 L311.42,146.66 L321.5,141.48 L319.99,131.72 L328.06,133.09 L332.6,130.65 L334.61,135.53 L344.7,136.75 L349.74,140.87 L354.79,139.65 L358.82,132.33 L364.87,134.01 L369.91,131.41 L385.04,131.26 L389.58,138.12 L397.65,142.24 L393.62,150.31 L395.13,154.88 L387.06,165.98 L372.94,164.01 L370.92,169.02 L364.37,173.28 L355.79,172.98 L351.76,168.26 L344.19,167.66 L336.13,171.15 L333.6,176.17 L336.63,181.48 L328.56,182.24 L320.49,179.21 L290.23,179.05 L246.87,192.56 Z"}]}</script>
+  <script>
+    const data = JSON.parse(document.getElementById("mapData").textContent);
+    const statehoodCountiesToggle = document.getElementById("statehoodCountiesToggle");
+    const statehoodCountyList = document.getElementById("statehoodCountyList");
 
-          <label id="importTitleRow">
-            <span id="importTitleLabel">Title</span>
-            <input id="importTitleField" type="text" autocomplete="off">
-          </label>
+    statehoodCountiesToggle.addEventListener("click", () => {
+      const willOpen = statehoodCountiesToggle.getAttribute("aria-expanded") !== "true";
+      statehoodCountiesToggle.setAttribute("aria-expanded", String(willOpen));
+      statehoodCountyList.hidden = !willOpen;
+    });
 
-          <label id="importPageRow">
-            <span>Page</span>
-            <input id="importPage" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" size="5" autocomplete="off">
-          </label>
+    const countyFacts = {
+      "Beaver": { area: 2582.912, census2020: 7072, population2024: 7424, stateParks: [] },
+      "Box Elder": { area: 5781.304, census2020: 57666, population2024: 64120, stateParks: ["Willard Bay State Park"] },
+      "Cache": { area: 1164.687, census2020: 133154, population2024: 145487, stateParks: ["Hyrum Lake State Park"] },
+      "Carbon": { area: 1479.343, census2020: 20412, population2024: 20613, stateParks: ["Scofield State Park"] },
+      "Daggett": { area: 696.515, census2020: 935, population2024: 956, stateParks: [] },
+      "Davis": { area: 324.753, census2020: 362679, population2024: 378470, stateParks: ["Antelope Island State Park", "Jordan River OHV State Park"] },
+      "Duchesne": { area: 3235.523, census2020: 19596, population2024: 20803, stateParks: ["Fred Hayes State Park at Starvation"] },
+      "Emery": { area: 4462.635, census2020: 9825, population2024: 10161, stateParks: ["Goblin Valley State Park", "Green River State Park", "Huntington State Park", "Millsite State Park"], nationalParks: ["Capitol Reef National Park"] },
+      "Garfield": { area: 5179.556, census2020: 5083, population2024: 5290, stateParks: ["Anasazi State Park Museum", "Escalante Petrified Forest State Park", "Kodachrome Basin State Park"], nationalParks: ["Bryce Canyon National Park", "Canyonlands National Park", "Capitol Reef National Park"] },
+      "Grand": { area: 3672.858, census2020: 9669, population2024: 9788, stateParks: ["Dead Horse Point State Park", "Utahraptor State Park"], nationalParks: ["Arches National Park", "Canyonlands National Park"] },
+      "Iron": { area: 3296.167, census2020: 57289, population2024: 65936, stateParks: ["Frontier Homestead State Park Museum"], nationalParks: ["Zion National Park"] },
+      "Juab": { area: 3391.812, census2020: 11786, population2024: 13297, stateParks: ["Yuba State Park"] },
+      "Kane": { area: 3994.140, census2020: 7667, population2024: 8525, stateParks: ["Coral Pink Sand Dunes State Park", "Kodachrome Basin State Park"], nationalParks: ["Bryce Canyon National Park", "Zion National Park"] },
+      "Millard": { area: 6785.482, census2020: 12975, population2024: 13572, stateParks: ["Territorial Statehouse State Park Museum"] },
+      "Morgan": { area: 609.197, census2020: 12295, population2024: 13093, stateParks: ["East Canyon State Park", "Lost Creek State Park"] },
+      "Piute": { area: 758.210, census2020: 1438, population2024: 1534, stateParks: ["Otter Creek State Park", "Piute State Park"] },
+      "Rich": { area: 1028.758, census2020: 2510, population2024: 2752, stateParks: ["Bear Lake State Park"] },
+      "Salt Lake": { area: 752.852, census2020: 1185238, population2024: 1216274, stateParks: ["Great Salt Lake State Park", "Jordan River OHV State Park", "This Is The Place Heritage Park"] },
+      "San Juan": { area: 7823.765, census2020: 14518, population2024: 14601, stateParks: ["Dead Horse Point State Park", "Edge of the Cedars State Park Museum", "Goosenecks State Park"], nationalParks: ["Canyonlands National Park"] },
+      "Sanpete": { area: 1589.816, census2020: 28437, population2024: 30732, stateParks: ["Palisade State Park", "Yuba State Park"] },
+      "Sevier": { area: 1910.476, census2020: 21522, population2024: 22520, stateParks: ["Fremont Indian State Park and Museum"], nationalParks: ["Capitol Reef National Park"] },
+      "Summit": { area: 1870.674, census2020: 42357, population2024: 43109, stateParks: ["Echo State Park", "Historic Union Pacific Rail Trail State Park", "Rockport State Park"] },
+      "Tooele": { area: 7040.271, census2020: 72698, population2024: 84488, stateParks: [] },
+      "Uintah": { area: 4482.881, census2020: 35620, population2024: 38307, stateParks: ["Red Fleet State Park", "Steinaker State Park", "Utah Field House of Natural History State Park Museum"] },
+      "Utah": { area: 2004.460, census2020: 659399, population2024: 747234, stateParks: ["Camp Floyd State Park Museum", "Flight Park State Recreation Area", "Scofield State Park", "Utah Lake State Park"] },
+      "Wasatch": { area: 1176.952, census2020: 34788, population2024: 37858, stateParks: ["Deer Creek State Park", "Jordanelle State Park", "Wasatch Mountain State Park"] },
+      "Washington": { area: 2427.589, census2020: 180279, population2024: 207943, stateParks: ["Gunlock State Park", "Quail Creek State Park", "Sand Hollow State Park", "Snow Canyon State Park"], nationalParks: ["Zion National Park"] },
+      "Wayne": { area: 2461.094, census2020: 2486, population2024: 2608, stateParks: [], nationalParks: ["Canyonlands National Park", "Capitol Reef National Park"] },
+      "Weber": { area: 611.023, census2020: 262223, population2024: 276118, stateParks: ["Willard Bay State Park"] },
+    };
+    const countyCardPalette = [
+      { tint: "#edf5e8", accent: "#9fbd88", detail: "#f7faf5" },
+      { tint: "#e8f3f2", accent: "#79aaa5", detail: "#f5faf9" },
+      { tint: "#fbf3e3", accent: "#d2aa62", detail: "#fdf9f1" },
+      { tint: "#f3edf8", accent: "#aa8fc2", detail: "#faf7fc" },
+    ];
+    const morganCounty = data.counties.find((county) => county.name === "Morgan");
+    if (morganCounty) {
+      morganCounty.label.x -= 9;
+      morganCounty.label.y -= 7;
+      morganCounty.label.allSeatXOffset = -8;
+    }
+    const sanpeteCounty = data.counties.find((county) => county.name === "Sanpete");
+    if (sanpeteCounty) {
+      sanpeteCounty.label.x -= 6;
+      sanpeteCounty.label.y += 14;
+    }
+    const daggettCounty = data.counties.find((county) => county.name === "Daggett");
+    if (daggettCounty) {
+      daggettCounty.label.x -= 8;
+      daggettCounty.label.allVisibleLines = ["Daggett  Manila"];
+      daggettCounty.label.allVisibleYOffset = -5;
+    }
+    const summitCounty = data.counties.find((county) => county.name === "Summit");
+    if (summitCounty) summitCounty.label.x -= 12;
+    const garfieldCounty = data.counties.find((county) => county.name === "Garfield");
+    if (garfieldCounty) garfieldCounty.label.x -= 6;
+    const wasatchCounty = data.counties.find((county) => county.name === "Wasatch");
+    if (wasatchCounty) {
+      wasatchCounty.label.y -= 13;
+      wasatchCounty.label.allVisibleYOffset = -5;
+    }
+    const davisCounty = data.counties.find((county) => county.name === "Davis");
+    if (davisCounty) {
+      davisCounty.label.y -= 4;
+      davisCounty.label.seatXOffset = 5;
+    }
+    const saltLakeCounty = data.counties.find((county) => county.name === "Salt Lake");
+    if (saltLakeCounty) {
+      saltLakeCounty.label.y -= 7;
+      saltLakeCounty.label.seatLines = ["Salt Lake", "City"];
+    }
+    const weberCounty = data.counties.find((county) => county.name === "Weber");
+    if (weberCounty) {
+      weberCounty.label.allCountyXOffset = 8;
+      weberCounty.label.allSeatXOffset = -10;
+    }
+    const richCounty = data.counties.find((county) => county.name === "Rich");
+    if (richCounty) richCounty.label.allSeatDy = "1.5em";
+    const leftAlignedCountyNames = new Set([
+      "Box Elder", "Tooele", "Juab", "Millard", "Beaver", "Iron", "Washington",
+    ]);
+    data.counties.forEach((county) => {
+      if (leftAlignedCountyNames.has(county.name)) county.label.x = 76;
+    });
+    const svg = document.getElementById("utahMap");
+    const resetButtons = document.querySelectorAll(".reset-control");
+    const showAllButtons = document.querySelectorAll(".show-all-control");
+    const countyValue = document.getElementById("countyValue");
+    const seatValue = document.getElementById("seatValue");
+    let mapCountyValue = null;
+    let mapSeatValue = null;
+    const mapDisplays = document.querySelectorAll(".map-display, .map-mode-display");
+    const modeValue = document.getElementById("modeValue");
+    const allList = document.getElementById("allList");
+    const allListItems = document.getElementById("allListItems");
+    const svgNS = "http://www.w3.org/2000/svg";
+    const countyState = new Map(data.counties.map((county) => [county.id, 0]));
+    const countyNodes = new Map();
+    let allVisible = false;
+    let activeCountyId = null;
 
-          <div id="pdfImportFields" class="type-fields">
-            <div class="file-picker-field">
-              <span id="importFileLabel" class="file-picker-label">PDF, photo, or image</span>
-              <input id="importPdfFile" class="sr-only" type="file" accept="application/pdf,.pdf,image/*">
-              <div class="file-picker-row">
-                <label class="secondary-button file-picker-button" for="importPdfFile">Select File</label>
-                <span id="importPdfFileName" class="file-picker-name">No file selected</span>
-              </div>
-            </div>
-          </div>
+    function createSvgElement(tagName) {
+      return document.createElementNS(svgNS, tagName);
+    }
 
-          <label id="importTypeRow">
-            <span>Type</span>
-            <select id="importType">
-              <option value="pdf">PDF sheet music or document</option>
-              <option value="image">Photo / image</option>
-              <option value="card">Text / chord song card</option>
-              <option value="link">Online music link</option>
-              <option value="note">Note / plan</option>
-              <option value="index">Book page reference</option>
-            </select>
-          </label>
+    function renderMap() {
+      const fragment = document.createDocumentFragment();
 
-          <div id="cardImportFields" class="type-fields hidden">
-            <div id="importCardImageRow" class="file-picker-field">
-              <input id="importCardImage" class="sr-only" type="file" accept="image/*" aria-label="Select card image file">
-              <div class="file-picker-row">
-                <label class="secondary-button file-picker-button" for="importCardImage">Select File</label>
-                <span id="importCardImageName" class="file-picker-name">(optional)</span>
-              </div>
-            </div>
-            <div id="richCardContentRow" class="rich-card-row">
-              <span>Card text</span>
-              <div id="cardFormatToolbar" class="rich-toolbar" aria-label="Card text formatting">
-                <button type="button" data-rich-command="bold" aria-label="Bold" title="Bold" aria-pressed="false"><strong>B</strong></button>
-                <button type="button" data-rich-command="italic" aria-label="Italic" title="Italic" aria-pressed="false"><em>I</em></button>
-                <button type="button" data-rich-command="strikeThrough" aria-label="Strikeout" title="Strikeout" aria-pressed="false"><span class="strikeout-icon" aria-hidden="true"><span>S</span></span></button>
-                <button type="button" data-rich-command="insertOrderedList" aria-label="Numbered list" title="Numbered list" aria-pressed="false"><span class="toolbar-icon numbered-list-icon" aria-hidden="true"></span></button>
-                <button type="button" data-rich-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list" aria-pressed="false"><span class="toolbar-icon bullet-list-icon" aria-hidden="true"></span></button>
-                <button type="button" data-rich-command="photo" aria-label="Insert photo" title="Insert photo"><span class="toolbar-icon photo-icon" aria-hidden="true"></span></button>
-              </div>
-              <input id="inlineCardImageInput" class="sr-only" type="file" accept="image/*" aria-label="Insert photo into card text">
-              <div id="importCardEditor" class="rich-card-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Card text"></div>
-              <textarea id="importCardContent" class="hidden" rows="10"></textarea>
-            </div>
-            <label id="plainCardContentRow" class="hidden">
-              <span>Note text</span>
-              <textarea id="importPlainContent" rows="10"></textarea>
-            </label>
-          </div>
+      data.counties.forEach((county, index) => {
+        const group = createSvgElement("g");
+        const path = createSvgElement("path");
+        const text = createSvgElement("text");
 
-          <div id="linkImportFields" class="type-fields hidden">
-            <label>
-              <span>URL</span>
-              <input id="importUrl" type="url" inputmode="url">
-            </label>
-          </div>
+        path.setAttribute("d", county.path);
+        path.setAttribute("class", "county");
+        path.setAttribute("tabindex", "0");
+        path.setAttribute("role", "button");
+        path.setAttribute("aria-label", county.name);
+        path.dataset.id = county.id;
+        path.dataset.palette = String(index % 4);
 
-          <div class="form-grid">
-            <label id="importCategoryRow">
-              <span>Category / Genre</span>
-              <input id="importCategory" type="text" autocomplete="off" list="categorySuggestions">
-            </label>
-            <label id="importBookRow">
-              <span>Source / Book</span>
-              <input id="importBook" type="text" autocomplete="off">
-            </label>
-            <label id="importComposerRow">
-              <span>Composer / Arranger</span>
-              <input id="importComposer" type="text" autocomplete="off">
-            </label>
-          </div>
+        text.setAttribute(
+          "class",
+          leftAlignedCountyNames.has(county.name)
+            ? "county-label is-left-aligned"
+            : "county-label",
+        );
+        text.setAttribute("x", county.label.x);
+        text.setAttribute("y", county.label.y);
+        text.dataset.id = county.id;
 
-          <datalist id="categorySuggestions">
-            <option value="Christmas"></option>
-            <option value="Primary"></option>
-            <option value="Hymn"></option>
-            <option value="Choir"></option>
-            <option value="Patriotic"></option>
-            <option value="Birthday"></option>
-            <option value="New Music"></option>
-            <option value="Program"></option>
-            <option value="Not in the Book"></option>
-          </datalist>
+        path.addEventListener("click", () => cycleCounty(county.id));
+        path.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            cycleCounty(county.id);
+          }
+        });
 
-          <label id="importTagsRow">
-            <span>Tags</span>
-            <input id="importTags" type="text" autocomplete="off">
-          </label>
+        group.append(path, text);
+        fragment.append(group);
+        countyNodes.set(county.id, { path, text });
+      });
 
-          <label id="importNotesRow">
-            <span>Notes</span>
-            <textarea id="importNotes" rows="4"></textarea>
-          </label>
+      const mobileNotch = !isDesktopDevice();
+      const phoneNotch = mobileNotch && window.matchMedia("(max-width: 620px)").matches;
+      const countyReadoutLabel = createSvgElement("text");
+      countyReadoutLabel.setAttribute("class", "map-notch-label");
+      countyReadoutLabel.setAttribute("x", "472");
+      countyReadoutLabel.setAttribute("y", phoneNotch ? "90" : mobileNotch ? "92" : "125");
+      countyReadoutLabel.textContent = "COUNTY";
 
-          <p id="importStatus" class="form-status" role="status"></p>
+      mapCountyValue = createSvgElement("text");
+      mapCountyValue.setAttribute("class", "map-notch-value");
+      mapCountyValue.setAttribute("x", mobileNotch ? "472" : "535");
+      mapCountyValue.setAttribute("y", phoneNotch ? "124" : mobileNotch ? "122" : "125");
 
-          <button class="form-apply-button" type="submit" aria-label="Apply changes" title="Apply changes">Apply</button>
+      const seatReadoutLabel = createSvgElement("text");
+      seatReadoutLabel.setAttribute("class", "map-notch-label");
+      seatReadoutLabel.setAttribute("x", "472");
+      seatReadoutLabel.setAttribute("y", phoneNotch ? "160" : mobileNotch ? "148" : "158");
+      seatReadoutLabel.textContent = "COUNTY SEAT";
 
-        </form>
-      </div>
-    </div>
+      mapSeatValue = createSvgElement("text");
+      mapSeatValue.setAttribute("class", "map-notch-value");
+      mapSeatValue.setAttribute("x", mobileNotch ? "472" : "575");
+      mapSeatValue.setAttribute("y", phoneNotch ? "196" : mobileNotch ? "181" : "158");
 
-    <div id="listEditModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="listEditTitle">
-      <div id="listEditPanel" class="modal-panel list-edit-modal-panel">
-        <form id="listEditForm" class="import-form list-edit-form">
-          <div class="modal-heading">
-            <button id="listEditCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
-            <h2 id="listEditTitle">Edit list</h2>
-            <div class="modal-action-buttons">
-              <button id="listEditSaveButton" class="icon-button primary-icon" type="submit" aria-label="Save" title="Save">&#10003;</button>
-            </div>
-          </div>
+      fragment.append(countyReadoutLabel, mapCountyValue, seatReadoutLabel, mapSeatValue);
 
-          <label>
-            <span>List name</span>
-            <input id="listEditTitleField" type="text" autocomplete="off">
-          </label>
+      svg.replaceChildren(fragment);
+      render();
+    }
 
-          <section class="list-edit-section" aria-label="Items in this list">
-            <div class="picker-heading">
-              <strong>Items in this list</strong>
-            </div>
-            <div id="listEditItems" class="list-edit-items"></div>
-          </section>
+    function cycleCounty(countyId) {
+      if (allVisible) {
+        allVisible = false;
+        resetStates();
+        countyState.set(countyId, 1);
+      } else {
+        const nextState = (countyState.get(countyId) + 1) % 3;
+        countyState.set(countyId, nextState);
+      }
 
-          <section class="list-edit-section" aria-label="Select list contents from Files, Cards, and Links">
-            <div class="picker-heading">
-              <strong>Select items</strong>
-            </div>
-            <div class="editor-grid list-edit-add-grid">
-              <label>
-                <span>Filter</span>
-                <input id="listEditSearch" type="search" autocomplete="off">
-              </label>
-            </div>
-            <p id="listEditStatus" class="quick-meta" role="status"></p>
-            <div id="listEditResults" class="picker-results"></div>
-          </section>
+      activeCountyId = countyId;
+      render();
+      animateCounty(countyId);
+    }
 
-          <button class="form-apply-button" type="submit" aria-label="Apply changes" title="Apply changes">Apply</button>
-        </form>
-      </div>
-    </div>
+    function animateCounty(countyId) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const path = countyNodes.get(countyId)?.path;
+      if (!path) return;
+      path.classList.remove("flip-one", "flip-two");
+      void path.getBoundingClientRect();
+      const chance = Math.random();
+      if (chance < 0.10) path.classList.add("flip-two");
+      else if (chance < 0.35) path.classList.add("flip-one");
+    }
 
-    <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-      <div id="settingsPanel" class="modal-panel settings-panel">
-        <div class="import-form">
-          <div class="modal-heading">
-            <button id="settingsCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
-            <h2 id="settingsTitle">Settings</h2>
-          </div>
+    function resetStates() {
+      data.counties.forEach((county) => countyState.set(county.id, 0));
+    }
 
-          <section class="settings-section" aria-label="Tab color">
-            <div class="picker-heading">
-              <strong>Tab color</strong>
-            </div>
-            <div id="settingsThemeChoices" class="theme-choice-grid"></div>
-            <p class="quick-meta">This changes the active tab and main accent color on this device.</p>
-          </section>
+    function setLabel(textNode, county, state) {
+      textNode.replaceChildren();
+      textNode.removeAttribute("display");
+      textNode.classList.toggle("is-seat", state === 2 && !allVisible);
+      const displayY = county.label.y + (allVisible ? county.label.allVisibleYOffset || 0 : 0);
+      textNode.setAttribute("y", displayY);
 
-        </div>
-      </div>
-    </div>
+      const baseSize = Number(county.label.size);
+      const desktopAllSize = Math.min(Math.max(baseSize, 12.5), 14);
+      const mobileAllSize = Math.min(Math.max(baseSize, 12), 13);
+      const mobileRevealSize = Math.min(baseSize * 1.35, 19);
+      const fontSize = isDesktopDevice()
+        ? allVisible ? desktopAllSize : baseSize
+        : allVisible ? mobileAllSize : mobileRevealSize;
+      textNode.style.fontSize = fontSize + "px";
 
-    <div id="helpModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-      <div id="helpPanel" class="modal-panel help-panel">
-        <div class="import-form">
-          <div class="modal-heading">
-            <button id="helpCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
-            <h2 id="helpTitle">Help</h2>
-          </div>
+      let lines = [];
+      const seatLines = county.label.seatLines || [county.seat];
+      if (allVisible) {
+        lines = county.label.allVisibleLines || [county.name, ...seatLines];
+      } else if (state === 1) {
+        lines = [county.name];
+      } else if (state === 2) {
+        lines = seatLines;
+      } else {
+        textNode.setAttribute("display", "none");
+        return;
+      }
 
-          <div class="help-topic-grid">
-            <section class="help-topic">
-              <h3>PDF Page Turning</h3>
-              <ul>
-                <li>Flip pages by tapping the left or bottom part of the screen.</li>
-                <li class="help-subitem">Tap the top-left to jump to page 1.</li>
-                <li class="help-subitem">Tap the top-right to jump to the last page.</li>
-              </ul>
-            </section>
+      lines.forEach((line, index) => {
+        const tspan = createSvgElement("tspan");
+        tspan.textContent = line;
+        const isSeatLine = allVisible ? index >= 1 : state === 2;
+        const allVisibleXOffset = isSeatLine
+          ? county.label.allSeatXOffset ?? county.label.seatXOffset ?? 0
+          : county.label.allCountyXOffset ?? 0;
+        const lineX = county.label.x + (allVisible
+          ? allVisibleXOffset
+          : isSeatLine ? county.label.seatXOffset || 0 : 0);
+        tspan.setAttribute("x", lineX);
+        if (index === 0) {
+          const firstLineOffset = lines.length > 2 ? "-0.72em" : lines.length > 1 ? "-0.36em" : "0";
+          tspan.setAttribute("dy", firstLineOffset);
+        } else {
+          tspan.setAttribute("dy", allVisible && county.label.allSeatDy
+            ? county.label.allSeatDy
+            : "1.15em");
+          tspan.setAttribute("class", "seat-line");
+        }
+        textNode.append(tspan);
+      });
+    }
 
-            <section class="help-topic">
-              <h3>Favorites</h3>
-              <ul>
-                <li>Tap the star to add or remove favorites.</li>
-              </ul>
-            </section>
+    function isDesktopDevice() {
+      return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    }
 
-            <section class="help-topic">
-              <h3>Lists</h3>
-              <ul>
-                <li>Categorize documents into groups.</li>
-              </ul>
-            </section>
+    function renderCounty(county) {
+      const nodes = countyNodes.get(county.id);
+      const state = countyState.get(county.id);
 
-            <section class="help-topic">
-              <h3>Cards</h3>
-              <ul>
-                <li>Add your own text or an image.</li>
-              </ul>
-            </section>
+      nodes.path.dataset.state = allVisible ? "2" : String(state);
+      if (allVisible) {
+        nodes.path.dataset.all = nodes.path.dataset.palette;
+      } else {
+        delete nodes.path.dataset.all;
+      }
 
-            <section class="help-topic">
-              <h3>Links</h3>
-              <ul>
-                <li>Online music resources.</li>
-              </ul>
-            </section>
+      setLabel(nodes.text, county, state);
+    }
 
-            <section class="help-topic">
-              <h3>Search</h3>
-              <ul>
-                <li>Find documents by title, author, genre or tag.</li>
-              </ul>
-            </section>
-          </div>
-        </div>
-      </div>
-    </div>
+    function setSelectionText(countyText, seatText, modeText) {
+      countyValue.textContent = countyText;
+      seatValue.textContent = seatText;
+      if (mapCountyValue) mapCountyValue.textContent = countyText;
+      if (mapSeatValue) mapSeatValue.textContent = seatText;
+      modeValue.textContent = modeText;
+    }
 
-    <div id="aboutModal" class="modal about-modal hidden" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-      <div id="aboutPanel" class="modal-panel about-panel">
-        <button id="aboutCloseButton" class="icon-button form-close-button about-close-button" type="button" aria-label="Close" title="Close">&times;</button>
-        <h2 id="aboutTitle" class="sr-only">About</h2>
-        <p class="about-text">&copy; 2026 Ken Roberts</p>
-      </div>
-    </div>
-  </body>
+    function renderPanel() {
+      const activeCounty = data.counties.find((county) => county.id === activeCountyId);
+      const activeState = activeCounty ? countyState.get(activeCounty.id) : 0;
+
+      if (allVisible) {
+        setSelectionText("All counties", "All seats", "All revealed");
+      } else if (activeCounty && activeState > 0) {
+        setSelectionText(
+          activeCounty.name,
+          activeState === 2 ? activeCounty.seat : "",
+          activeState === 1 ? "County name" : "County seat",
+        );
+      } else {
+        setSelectionText("", "", "Nothing selected");
+      }
+
+      allList.hidden = !allVisible;
+    }
+
+    function enhanceCountyHistory() {
+      const historyItems = document.querySelectorAll(".county-history-list > li");
+      const historyList = document.querySelector(".county-history-list");
+      const orderToggle = document.getElementById("countyOrderToggle");
+      const chronologicalItems = [...historyItems];
+      const numberFormatter = new Intl.NumberFormat("en-US");
+      let openButton = null;
+      let alphabetical = false;
+
+      historyItems.forEach((item, index) => {
+        const match = item.textContent.match(/—\s+(.+?) County/);
+        if (!match) return;
+
+        const countyName = match[1].trim();
+        const facts = countyFacts[countyName];
+        const county = data.counties.find((entry) => entry.name === countyName);
+        if (!facts || !county) return;
+        item.dataset.countyName = countyName;
+        const palette = countyCardPalette[data.counties.indexOf(county) % countyCardPalette.length];
+        item.style.setProperty("--card-tint", palette.tint);
+        item.style.setProperty("--card-accent", palette.accent);
+        item.style.setProperty("--card-detail", palette.detail);
+
+        const summary = document.createElement("span");
+        summary.className = "county-card-summary";
+        while (item.firstChild) summary.append(item.firstChild);
+
+        const chevron = document.createElement("span");
+        chevron.className = "county-card-chevron";
+        chevron.setAttribute("aria-hidden", "true");
+        chevron.textContent = "⌄";
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "county-history-toggle";
+        button.setAttribute("aria-expanded", "false");
+        button.setAttribute("aria-controls", `county-detail-${index}`);
+        button.append(summary, chevron);
+
+        const detail = document.createElement("div");
+        detail.className = "county-detail";
+        detail.id = `county-detail-${index}`;
+        detail.hidden = true;
+
+        const stateParks = facts.stateParks.length ? facts.stateParks.join("; ") : "None";
+        const nationalParks = facts.nationalParks?.length ? facts.nationalParks.join("; ") : "None";
+        detail.innerHTML = `
+          <dl class="county-detail-grid">
+            <div><dt>County name</dt><dd>${county.name} County</dd></div>
+            <div><dt>County seat</dt><dd>${county.seat}</dd></div>
+            <div><dt>Land area</dt><dd>${numberFormatter.format(facts.area)} square miles</dd></div>
+            <div><dt>2020 Census population</dt><dd>${numberFormatter.format(facts.census2020)} <small>(redistricting count)</small></dd></div>
+            <div><dt>2024 population estimate</dt><dd>${numberFormatter.format(facts.population2024)} <small>(July 1, 2024)</small></dd></div>
+            <div class="park-detail"><dt>Utah state parks</dt><dd>${stateParks}</dd></div>
+            <div class="park-detail"><dt>National parks</dt><dd>${nationalParks}</dd></div>
+          </dl>
+        `;
+
+        button.addEventListener("click", () => {
+          const willOpen = button.getAttribute("aria-expanded") !== "true";
+          if (openButton && openButton !== button) {
+            openButton.setAttribute("aria-expanded", "false");
+            document.getElementById(openButton.getAttribute("aria-controls")).hidden = true;
+          }
+          button.setAttribute("aria-expanded", String(willOpen));
+          detail.hidden = !willOpen;
+          openButton = willOpen ? button : null;
+        });
+
+        item.append(button, detail);
+      });
+
+      orderToggle.addEventListener("click", () => {
+        alphabetical = !alphabetical;
+        const orderedItems = alphabetical
+          ? [...chronologicalItems].sort((a, b) =>
+              a.dataset.countyName.localeCompare(b.dataset.countyName))
+          : chronologicalItems;
+        orderedItems.forEach((item) => historyList.append(item));
+        orderToggle.textContent = alphabetical
+          ? "View counties by creation date"
+          : "View counties alphabetically";
+      });
+    }
+
+    function renderAllList() {
+      const fragment = document.createDocumentFragment();
+      data.counties.forEach((county) => {
+        const item = document.createElement("li");
+        const name = document.createElement("span");
+        const seat = document.createElement("span");
+        name.textContent = county.name;
+        seat.textContent = county.seat;
+        item.append(name, seat);
+        fragment.append(item);
+      });
+      allListItems.replaceChildren(fragment);
+    }
+
+    function render() {
+      data.counties.forEach(renderCounty);
+      renderPanel();
+    }
+
+    resetButtons.forEach((button) => button.addEventListener("click", () => {
+        allVisible = false;
+        activeCountyId = null;
+        resetStates();
+        render();
+      }));
+
+    showAllButtons.forEach((button) => button.addEventListener("click", () => {
+        allVisible = true;
+        activeCountyId = null;
+        render();
+      }));
+
+    enhanceCountyHistory();
+    renderAllList();
+    renderMap();
+
+    function syncMapDisplayWidths() {
+      const mapWidth = svg.getBoundingClientRect().width;
+      mapDisplays.forEach((display) => display.style.width = mapWidth + "px");
+    }
+    syncMapDisplayWidths();
+    if ("ResizeObserver" in window) {
+      new ResizeObserver(syncMapDisplayWidths).observe(svg);
+    } else {
+      window.addEventListener("resize", syncMapDisplayWidths);
+    }
+  </script>
+</body>
 </html>
