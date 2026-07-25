@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#23322c">
+  <meta name="description" content="Guess and discover Utah's 40 official state symbols and designations.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Utah Symbols">
+  <meta property="og:title" content="Utah Symbols">
+  <meta property="og:description" content="Guess, flip, and discover Utah's 40 official state symbols and designations.">
+  <meta property="og:url" content="https://utahbug.github.io/Utah/activities/state-symbols.html">
+  <meta property="og:image" content="https://utahbug.github.io/Utah/assets/state-symbols/utah-symbols-social-card.jpg">
+  <meta property="og:image:secure_url" content="https://utahbug.github.io/Utah/assets/state-symbols/utah-symbols-social-card.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Utah Symbols quiz featuring a Rocky Mountain elk, California gull, Allosaurus, Utah mountains, and red-rock desert.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Utah Symbols">
+  <meta name="twitter:description" content="Guess, flip, and discover Utah's 40 official state symbols and designations.">
+  <meta name="twitter:image" content="https://utahbug.github.io/Utah/assets/state-symbols/utah-symbols-social-card.jpg">
+  <meta name="twitter:image:alt" content="Utah Symbols quiz featuring a Rocky Mountain elk, California gull, Allosaurus, Utah mountains, and red-rock desert.">
+  <title>Utah State Symbols</title>
+  <link rel="canonical" href="https://utahbug.github.io/Utah/activities/state-symbols.html">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/state-symbols/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../assets/state-symbols/utah-symbols-icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/state-symbols/apple-touch-icon.png">
+  <style>
+    :root {
+      --ink: #1f2428;
+      --muted: #626b71;
+      --page: #f7f4ec;
+      --panel: #fffdf8;
+      --line: #d8cfc0;
+      --redrock: #b45737;
+      --sage: #647a5d;
+      --night: #23322c;
+      color-scheme: light;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(180, 87, 55, .14), transparent 26rem),
+        radial-gradient(circle at 90% 18%, rgba(45, 111, 139, .12), transparent 24rem),
+        var(--page);
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    button { font: inherit; }
+
+    .app-header {
+      position: relative;
+      min-height: 150px;
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(20, 28, 34, .86), rgba(20, 28, 34, .48) 52%, rgba(20, 28, 34, .2)),
+        url("../assets/utah-header.png");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .header-inner,
+    main,
+    footer {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    .header-inner {
+      min-height: 150px;
+      padding: 16px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .parent-home {
+      display: inline-flex;
+      align-items: center;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .parent-home strong {
+      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      line-height: .9;
+      font-weight: 900;
+    }
+
+    .parent-home strong::after {
+      content: "unofficial";
+      position: absolute;
+      left: 14px;
+      bottom: 8px;
+      color: rgba(255, 255, 255, .86);
+      font-size: .22em;
+      line-height: 1;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: .04em;
+    }
+
+    .parent-home:hover,
+    .parent-home:focus-visible {
+      text-shadow: 0 0 14px rgba(255, 255, 255, .28);
+      outline: none;
+    }
+
+    .symbol-page-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .symbol-page-heading h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 4.2vw, 2rem);
+      line-height: 1.1;
+      letter-spacing: .04em;
+    }
+
+    main { padding: 12px 0 42px; }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .instructions {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 750;
+    }
+
+    .toolbar-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .sort-control {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: .9rem;
+      font-weight: 800;
+    }
+
+    .sort-control select {
+      flex: 1 1 auto;
+      min-height: 42px;
+      border: 1px solid #b9c4bb;
+      border-radius: 8px;
+      padding: 7px 30px 7px 10px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 400;
+      cursor: pointer;
+    }
+
+    .sort-control option { font-weight: 400; }
+
+    .sort-control select:focus-visible {
+      border-color: #789885;
+      box-shadow: 0 0 0 3px rgba(73, 122, 88, .18);
+      outline: none;
+    }
+
+    .symbol-all-toggle {
+      min-height: 36px;
+      border: 1px solid #245b50;
+      border-radius: 7px;
+      padding: 5px 12px;
+      background: #245b50;
+      color: #fff;
+      font-size: .9rem;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .symbol-all-toggle[aria-pressed="true"] {
+      border-color: #9eaea5;
+      background: #fff;
+      color: #245b50;
+    }
+
+    .symbol-all-toggle:hover,
+    .symbol-all-toggle:focus-visible {
+      border-color: #789885;
+      outline: 2px solid #789885;
+      outline-offset: 2px;
+    }
+
+    .reveal-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 11px;
+    }
+
+    .symbol-decoration {
+      min-height: 116px;
+      grid-column: 1 / -1;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      pointer-events: none;
+      animation: decoration-in .45s ease-out both;
+    }
+
+    .symbol-decoration:nth-of-type(even) { justify-content: flex-end; }
+    .symbol-decoration:nth-of-type(odd) { justify-content: flex-start; }
+
+    .symbol-decoration img {
+      display: block;
+      width: auto;
+      max-width: min(72%, 500px);
+      max-height: 112px;
+      object-fit: contain;
+      opacity: .9;
+      filter: drop-shadow(0 5px 5px rgba(31, 36, 40, .13));
+    }
+
+    @keyframes decoration-in {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal-card {
+      position: relative;
+      min-height: 190px;
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 0;
+      color: var(--ink);
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      perspective: 900px;
+      transition: min-height 320ms ease, transform 160ms ease;
+    }
+
+    .reveal-card:hover,
+    .reveal-card:focus-visible {
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .card-inner {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 5px 14px rgba(50, 60, 54, .07);
+      transform-style: preserve-3d;
+      transition: transform 500ms cubic-bezier(.2, .75, .25, 1);
+    }
+
+    .reveal-card:hover .card-inner,
+    .reveal-card:focus-visible .card-inner {
+      border-color: #9fb5a7;
+      box-shadow: 0 10px 24px rgba(50, 60, 54, .13);
+    }
+
+    .reveal-card.is-revealed .card-inner { transform: rotateY(180deg); }
+
+    .reveal-card.flip-spin.is-revealed .card-inner {
+      transform: rotateY(540deg);
+      transition-duration: 700ms;
+    }
+
+    .reveal-card.flip-vertical .card-back { transform: rotateX(180deg); }
+
+    .reveal-card.flip-vertical.is-revealed .card-inner {
+      transform: rotateX(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 9px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .card-front {
+      display: grid;
+      place-content: center;
+      gap: 4px;
+      padding: 14px;
+      background: #f6dfaa;
+      text-align: center;
+    }
+
+    .reveal-card.tone-sand .card-front {
+      background: #f2c98d;
+      color: #56351f;
+    }
+
+    .reveal-card.tone-sage .card-front {
+      background: #b9d5ca;
+      color: #193f36;
+    }
+
+    .reveal-card.tone-blue .card-front {
+      background: #c9d8e7;
+      color: #203e58;
+    }
+
+    .reveal-card.tone-lavender .card-front {
+      background: #d8c5dc;
+      color: #49334e;
+    }
+
+    .card-back {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      background: #edf5f0;
+      transform: rotateY(180deg);
+    }
+
+    .prompt {
+      font-size: 1.04rem;
+      font-weight: 900;
+    }
+
+    .tap-label {
+      color: currentColor;
+      font-size: .91rem;
+      font-style: italic;
+      opacity: .78;
+    }
+
+    .symbol-image {
+      min-height: 0;
+      background-image: none;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+    }
+
+    .symbol-image.is-mirrored { transform: scaleX(-1); }
+
+    .answer {
+      display: grid;
+      place-items: center;
+      gap: 1px;
+      min-height: 48px;
+      padding: 6px 10px;
+      color: #245b50;
+      font-size: .95rem;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .adoption-year {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 500;
+    }
+
+    .reveal-grid.showing-all .reveal-card.is-revealed {
+      min-height: 210px;
+    }
+
+    .reveal-grid.showing-all .card-inner {
+      transform: none !important;
+      transition: none;
+    }
+
+    .reveal-grid.showing-all .card-front {
+      display: none;
+    }
+
+    .reveal-grid.showing-all .card-back {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      transform: none;
+    }
+
+    footer {
+      padding: 20px 0 30px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      display: grid;
+      gap: 8px;
+      text-align: center;
+      font-size: .92rem;
+    }
+
+    .reference-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+    }
+
+    .reference-links a {
+      color: #245b50;
+      font-weight: 800;
+      text-underline-offset: 3px;
+    }
+
+    @media (max-width: 850px) {
+      .reveal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 520px) {
+      .app-header,
+      .header-inner { min-height: 128px; }
+      .toolbar {
+        align-items: stretch;
+        min-width: 0;
+      }
+      .instructions {
+        width: 100%;
+        min-width: 0;
+      }
+      .symbol-decoration {
+        min-height: 88px;
+      }
+      .symbol-decoration img {
+        max-width: 82%;
+        max-height: 84px;
+      }
+      .toolbar-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        min-width: 0;
+      }
+      .sort-control {
+        grid-column: 1 / -1;
+        justify-content: space-between;
+        min-width: 0;
+      }
+      .sort-control select {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+      }
+      .reveal-grid { grid-template-columns: 1fr; }
+      .reveal-card { min-height: 108px; }
+      .reveal-card.is-revealed { min-height: 310px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal-card,
+      .card-inner { transition: none; }
+      .symbol-decoration { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="parent-home" href="../index.html"><strong>UtahBug</strong></a>
+    </div>
+  </header>
+
+  <main>
+    <div class="symbol-page-heading">
+      <h1>UTAH SYMBOLS</h1>
+      <button class="symbol-all-toggle" id="symbol-all-toggle" type="button" aria-pressed="false">Show all</button>
+    </div>
+    <div class="toolbar">
+      <p class="instructions" id="instructions">Guess the symbol. Flip the card.</p>
+      <div class="toolbar-actions">
+        <label class="sort-control" for="sort-cards">
+          <span>Sort</span>
+          <select id="sort-cards">
+            <option value="category">Category</option>
+            <option value="alphabetical">Alphabetical</option>
+            <option value="date">Date incorporated</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <section class="reveal-grid" aria-describedby="instructions">
+      <button class="reveal-card" type="button" data-answer="Rocky Mountain elk" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Animal</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Rocky Mountain elk"></span><span class="answer" aria-live="polite">Rocky Mountain elk</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="California gull" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Bird</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="California gull"></span><span class="answer" aria-live="polite">California gull</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Sego lily" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Flower</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Sego lily"></span><span class="answer" aria-live="polite">Sego lily</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Quaking aspen" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Tree</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Quaking aspen"></span><span class="answer" aria-live="polite">Quaking aspen</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Honey bee" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Insect</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Honey bee"></span><span class="answer" aria-live="polite">Honey bee</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Bonneville cutthroat trout" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Fish</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Bonneville cutthroat trout"></span><span class="answer" aria-live="polite">Bonneville cutthroat trout</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Topaz" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Gem</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Topaz gemstone"></span><span class="answer" aria-live="polite">Topaz</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Copper" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Mineral</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Copper mineral"></span><span class="answer" aria-live="polite">Copper</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Allosaurus" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Fossil</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Allosaurus"></span><span class="answer" aria-live="polite">Allosaurus</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Cherry" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Fruit</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Cherries"></span><span class="answer" aria-live="polite">Cherry</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Spanish sweet onion" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Vegetable</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Spanish sweet onion"></span><span class="answer" aria-live="polite">Spanish sweet onion</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Sugar beet" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Historic vegetable</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Sugar beet"></span><span class="answer" aria-live="polite">Sugar beet</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Indian ricegrass" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Grass</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Indian ricegrass"></span><span class="answer" aria-live="polite">Indian ricegrass</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Porcini" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Mushroom</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Porcini mushroom"></span><span class="answer" aria-live="polite">Porcini</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Utah, This Is the Place" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">State song</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Music over a Utah landscape"></span><span class="answer" aria-live="polite">Utah, This Is the Place</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Utah, We Love Thee" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">State hymn</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Open hymn book"></span><span class="answer" aria-live="polite">Utah, We Love Thee</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Industry" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Motto</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Beehive and tools"></span><span class="answer" aria-live="polite">Industry</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Beehive" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Emblem</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Beehive"></span><span class="answer" aria-live="polite">Beehive</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Spiral Jetty" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Work of land art</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Spiral Jetty"></span><span class="answer" aria-live="polite">Spiral Jetty</span></span></span></button>
+      <button class="reveal-card" type="button" data-answer="Beehive Cluster" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Centennial astronomical symbol</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Beehive star cluster"></span><span class="answer" aria-live="polite">Beehive Cluster</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 0%; --sprite-y: 0%;" type="button" data-answer="Skiing and snowboarding" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Winter sports</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Skiing and snowboarding"></span><span class="answer" aria-live="polite">Skiing and snowboarding</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 50%; --sprite-y: 0%;" type="button" data-answer="Honeycomb calcite" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Stone</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Honeycomb calcite"></span><span class="answer" aria-live="polite">Honeycomb calcite</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 100%; --sprite-y: 0%;" type="button" data-answer="The Great Seal of the State of Utah" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Seal</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Great Seal of Utah"></span><span class="answer" aria-live="polite">The Great Seal of the State of Utah</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 0%; --sprite-y: 16.667%;" type="button" data-answer="Coal" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Rock</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Coal"></span><span class="answer" aria-live="polite">Coal</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 50%; --sprite-y: 16.667%;" type="button" data-answer="Gila monster" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Reptile</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Gila monster"></span><span class="answer" aria-live="polite">Gila monster</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 100%; --sprite-y: 16.667%;" type="button" data-answer="Ogden Union Station" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Railroad museum</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Ogden Union Station"></span><span class="answer" aria-live="polite">Ogden Union Station</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 0%; --sprite-y: 33.333%;" type="button" data-answer="Fort Douglas Military Museum" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Military museum</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Fort Douglas Military Museum"></span><span class="answer" aria-live="polite">Fort Douglas Military Museum</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 50%; --sprite-y: 33.333%;" type="button" data-answer="Native American rock art" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Works of art</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Native American rock art"></span><span class="answer" aria-live="polite">Native American rock art</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 100%; --sprite-y: 33.333%;" type="button" data-answer="Historic Utah state flag" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Historic state flag</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Historic Utah state flag"></span><span class="answer" aria-live="polite">Historic Utah state flag</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 0%; --sprite-y: 50%;" type="button" data-answer="Utah state flag" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Flag</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Current Utah state flag"></span><span class="answer" aria-live="polite">Utah state flag</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 50%; --sprite-y: 50%;" type="button" data-answer="M1911 automatic pistol" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Firearm</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="M1911 museum artifact"></span><span class="answer" aria-live="polite">M1911 automatic pistol</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 100%; --sprite-y: 50%;" type="button" data-answer="Honor and Remember Flag" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Emblem of service and sacrifice</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Honor and Remember Flag"></span><span class="answer" aria-live="polite">Honor and Remember Flag</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 50%; --sprite-y: 66.667%;" type="button" data-answer="Utahraptor" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Dinosaur</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Utahraptor"></span><span class="answer" aria-live="polite">Utahraptor</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 100%; --sprite-y: 66.667%;" type="button" data-answer="Utahn" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Demonym</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Utah residents"></span><span class="answer" aria-live="polite">Utahn</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 0%; --sprite-y: 83.333%;" type="button" data-answer="Artemia franciscana (brine shrimp)" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Crustacean</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Brine shrimp"></span><span class="answer" aria-live="polite">Artemia franciscana (brine shrimp)</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 50%; --sprite-y: 83.333%;" type="button" data-answer="Dutch oven" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Cooking pot</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Dutch oven"></span><span class="answer" aria-live="polite">Dutch oven</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 100%; --sprite-y: 83.333%;" type="button" data-answer="Utah Centennial Tartan" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Centennial tartan</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Utah Centennial Tartan"></span><span class="answer" aria-live="polite">Utah Centennial Tartan</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 0%; --sprite-y: 100%;" type="button" data-answer="Dubhe" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Centennial star</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Dubhe in the Big Dipper"></span><span class="answer" aria-live="polite">Dubhe</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 50%; --sprite-y: 100%;" type="button" data-answer="Golden eagle" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Bird of prey</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Golden eagle"></span><span class="answer" aria-live="polite">Golden eagle</span></span></span></button>
+      <button class="reveal-card extra-card" style="--sprite-x: 100%; --sprite-y: 100%;" type="button" data-answer="Square dance" aria-pressed="false"><span class="card-inner"><span class="card-face card-front"><span class="prompt">Folk dance</span><span class="tap-label">Tap to reveal</span></span><span class="card-face card-back"><span class="symbol-image" role="img" aria-label="Square dancers"></span><span class="answer" aria-live="polite">Square dance</span></span></span></button>
+    </section>
+  </main>
+
+  <footer>
+    <span>&copy; 2026 Utah Symbols. All rights reserved.</span>
+    <span>Educational activity about Utah’s official state symbols.</span>
+    <span class="reference-links">
+      <a href="https://le.utah.gov/xcode/Title63G/Chapter1/63G-1-S601.html" target="_blank" rel="noopener">Utah Code §63G-1-601</a>
+      <a href="https://onlinelibrary.utah.gov/state-symbol/" target="_blank" rel="noopener">Utah’s Official Symbols &amp; Emblems</a>
+    </span>
+  </footer>
+
+  <script>
+    const cards = document.querySelectorAll(".reveal-card");
+    const tapLabels = document.querySelectorAll(".tap-label");
+    const allSymbolsButton = document.querySelector("#symbol-all-toggle");
+    const sortCardsSelect = document.querySelector("#sort-cards");
+    const cardGrid = document.querySelector(".reveal-grid");
+    const compactScreen = window.matchMedia("(max-width: 520px)");
+    let allSymbolsShown = false;
+    const officialOrder = Array.from(cards);
+    const decorationData = [
+      ["cherry-pie.png", "A slice of cherry pie"],
+      ["fossil-dig.png", "A dinosaur footprint and fossil excavation tools"],
+      ["honey-table.png", "A jar of honey with toast and a honey dipper"],
+      ["copper-work.png", "Copper craftwork, ore, a miner's pick, and a lantern"],
+      ["music-dance.png", "A fiddle and western dance boots"],
+    ];
+    const decorationPlacements = [5, 13, 21, 29, 37];
+    const decorations = decorationData.map(([file, alt]) => {
+      const figure = document.createElement("figure");
+      const image = document.createElement("img");
+      figure.className = "symbol-decoration";
+      image.src = `../assets/state-symbols/decorations/${file}`;
+      image.alt = alt;
+      figure.append(image);
+      return figure;
+    });
+    const colorTones = ["tone-sand", "tone-sage", "tone-blue", "tone-lavender"];
+    const balancedShuffle = [0, 2, 1, 3, 1, 3, 0, 2, 3, 1, 2, 0, 2, 0, 3, 1];
+    const categoryGroups = [
+      [
+        "Rocky Mountain elk", "California gull", "Honey bee",
+        "Bonneville cutthroat trout", "Allosaurus", "Gila monster",
+        "Utahraptor", "Artemia franciscana (brine shrimp)", "Golden eagle"
+      ],
+      [
+        "Sego lily", "Quaking aspen", "Cherry", "Spanish sweet onion",
+        "Sugar beet", "Indian ricegrass", "Porcini"
+      ],
+      ["Topaz", "Copper", "Honeycomb calcite", "Coal"],
+      [
+        "Industry", "Beehive", "The Great Seal of the State of Utah",
+        "Historic Utah state flag", "Utah state flag", "Honor and Remember Flag"
+      ],
+      [
+        "Utah, This Is the Place", "Utah, We Love Thee", "Spiral Jetty",
+        "Native American rock art", "Utahn", "Dutch oven",
+        "Utah Centennial Tartan", "Square dance"
+      ],
+      ["Skiing and snowboarding"],
+      ["Ogden Union Station", "Fort Douglas Military Museum", "M1911 automatic pistol"],
+      ["Beehive Cluster", "Dubhe"]
+    ];
+    const categoryRanks = new Map(
+      categoryGroups.flatMap((group, rank) => group.map((answer) => [answer, rank]))
+    );
+
+    Array.from(cards)
+      .sort((a, b) => a.dataset.answer.localeCompare(b.dataset.answer))
+      .forEach((card, index) => {
+        card.classList.add(colorTones[balancedShuffle[index % balancedShuffle.length]]);
+      });
+
+    tapLabels.forEach((label) => label.remove());
+
+    const incorporationYears = new Map([
+      ["Rocky Mountain elk", 1971],
+      ["California gull", 1955],
+      ["Sego lily", 1911],
+      ["Quaking aspen", 2014],
+      ["Honey bee", 1983],
+      ["Bonneville cutthroat trout", 1997],
+      ["Topaz", 1969],
+      ["Copper", 1994],
+      ["Allosaurus", 1988],
+      ["Cherry", 1997],
+      ["Spanish sweet onion", 2002],
+      ["Sugar beet", 2002],
+      ["Indian ricegrass", 1990],
+      ["Porcini", 2023],
+      ["Utah, This Is the Place", 2003],
+      ["Utah, We Love Thee", 2003],
+      ["Industry", 1959],
+      ["Beehive", 1959],
+      ["Spiral Jetty", 2017],
+      ["Beehive Cluster", 1996],
+      ["Skiing and snowboarding", 2012],
+      ["Honeycomb calcite", 2021],
+      ["The Great Seal of the State of Utah", 1896],
+      ["Coal", 1991],
+      ["Gila monster", 2019],
+      ["Ogden Union Station", 1988],
+      ["Fort Douglas Military Museum", 2020],
+      ["Native American rock art", 2017],
+      ["Historic Utah state flag", 2023],
+      ["Utah state flag", 2024],
+      ["M1911 automatic pistol", 2011],
+      ["Honor and Remember Flag", 2011],
+      ["Utahraptor", 2018],
+      ["Utahn", 2025],
+      ["Artemia franciscana (brine shrimp)", 2023],
+      ["Dutch oven", 1997],
+      ["Utah Centennial Tartan", 1997],
+      ["Dubhe", 1996],
+      ["Golden eagle", 2022],
+      ["Square dance", 1994],
+    ]);
+
+    const cardImages = new Map([
+      ["Rocky Mountain elk", "rocky-mountain-elk.png"],
+      ["California gull", "california-gull.png"],
+      ["Sego lily", "sego-lily.png"],
+      ["Quaking aspen", "quaking-aspen.png"],
+      ["Honey bee", "honey-bee.png"],
+      ["Bonneville cutthroat trout", "bonneville-cutthroat-trout.png"],
+      ["Topaz", "topaz.png"],
+      ["Copper", "copper.png"],
+      ["Allosaurus", "allosaurus.png"],
+      ["Cherry", "cherry.png"],
+      ["Spanish sweet onion", "spanish-sweet-onion.png"],
+      ["Sugar beet", "sugar-beet.png"],
+      ["Indian ricegrass", "indian-ricegrass.png"],
+      ["Porcini", "porcini.png"],
+      ["Utah, This Is the Place", "state-song.png"],
+      ["Utah, We Love Thee", "state-hymn.png"],
+      ["Industry", "industry.png"],
+      ["Beehive", "beehive.png"],
+      ["Spiral Jetty", "spiral-jetty.png"],
+      ["Beehive Cluster", "beehive-cluster.png"],
+      ["Skiing and snowboarding", "skiing-snowboarding.png"],
+      ["Honeycomb calcite", "honeycomb-calcite.png"],
+      ["The Great Seal of the State of Utah", "great-seal.png"],
+      ["Coal", "coal.png"],
+      ["Gila monster", "gila-monster.png"],
+      ["Ogden Union Station", "ogden-union-station.png"],
+      ["Fort Douglas Military Museum", "fort-douglas.png"],
+      ["Native American rock art", "native-american-rock-art.png"],
+      ["Historic Utah state flag", "historic-state-flag.png"],
+      ["Utah state flag", "utah-state-flag.png"],
+      ["M1911 automatic pistol", "m1911.png"],
+      ["Honor and Remember Flag", "honor-remember-flag.png"],
+      ["Utahraptor", "utahraptor.png"],
+      ["Utahn", "utahn.png"],
+      ["Artemia franciscana (brine shrimp)", "brine-shrimp.png"],
+      ["Dutch oven", "dutch-oven.png"],
+      ["Utah Centennial Tartan", "utah-centennial-tartan.png"],
+      ["Dubhe", "dubhe.png"],
+      ["Golden eagle", "golden-eagle.png"],
+      ["Square dance", "square-dance.png"],
+    ]);
+    const mirroredImages = new Set([
+      "M1911 automatic pistol",
+      "Gila monster",
+    ]);
+    const containedImages = new Set([
+      "The Great Seal of the State of Utah",
+      "Gila monster",
+    ]);
+
+    officialOrder.forEach((card) => {
+      const image = card.querySelector(".symbol-image");
+      const answer = card.querySelector(".answer");
+      const answerName = document.createElement("span");
+      const adoptionYear = document.createElement("span");
+      const front = card.querySelector(".card-front");
+      const back = card.querySelector(".card-back");
+      const prompt = card.querySelector(".prompt").textContent;
+      const year = incorporationYears.get(card.dataset.answer);
+
+      answerName.textContent = card.dataset.answer;
+      adoptionYear.className = "adoption-year";
+      adoptionYear.textContent = `Adopted ${year}`;
+      answer.replaceChildren(answerName, adoptionYear);
+
+      front.setAttribute("aria-hidden", "false");
+      back.setAttribute("aria-hidden", "true");
+      card.setAttribute("aria-label", `${prompt}. Flip card to reveal answer.`);
+
+      image.style.backgroundImage =
+        `url("../assets/state-symbols/card-images/${cardImages.get(card.dataset.answer)}")`;
+      image.style.backgroundSize =
+        containedImages.has(card.dataset.answer)
+          ? "contain"
+          : "cover";
+      if (card.dataset.answer === "Cherry") {
+        image.style.backgroundPosition = "center 60%";
+      }
+      image.classList.toggle(
+        "is-mirrored",
+        mirroredImages.has(card.dataset.answer),
+      );
+    });
+
+    function setCard(card, revealed) {
+      const prompt = card.querySelector(".prompt").textContent;
+      const year = incorporationYears.get(card.dataset.answer);
+      card.classList.toggle("is-revealed", revealed);
+      card.setAttribute("aria-pressed", String(revealed));
+      card.querySelector(".card-front").setAttribute("aria-hidden", String(revealed));
+      card.querySelector(".card-back").setAttribute("aria-hidden", String(!revealed));
+      card.setAttribute(
+        "aria-label",
+        revealed
+          ? `${prompt}: ${card.dataset.answer}, adopted ${year}. Flip card to hide answer.`
+          : `${prompt}. Flip card to reveal answer.`,
+      );
+    }
+
+    function chooseFlipStyle(card) {
+      card.classList.remove("flip-spin", "flip-vertical");
+      const roll = Math.random();
+
+      if (roll < 0.08) {
+        card.classList.add("flip-spin");
+      } else if (roll < 0.16) {
+        card.classList.add("flip-vertical");
+      }
+    }
+
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
+        if (allSymbolsShown) {
+          cardGrid.classList.remove("showing-all");
+          cards.forEach((otherCard) => setCard(otherCard, false));
+          allSymbolsShown = false;
+          allSymbolsButton.textContent = "Show all";
+          allSymbolsButton.setAttribute("aria-pressed", "false");
+          chooseFlipStyle(card);
+          setCard(card, true);
+          return;
+        }
+
+        const revealing = !card.classList.contains("is-revealed");
+        if (revealing) chooseFlipStyle(card);
+        setCard(card, revealing);
+      });
+    });
+
+    allSymbolsButton.addEventListener("click", () => {
+      if (allSymbolsShown) {
+        cardGrid.classList.remove("showing-all");
+        cards.forEach((card) => setCard(card, false));
+        allSymbolsShown = false;
+      } else {
+        cardGrid.classList.toggle("showing-all", compactScreen.matches);
+        cards.forEach((card) => {
+          card.classList.remove("flip-spin", "flip-vertical");
+          setCard(card, true);
+        });
+        allSymbolsShown = true;
+      }
+      allSymbolsButton.textContent = allSymbolsShown ? "Reset" : "Show all";
+      allSymbolsButton.setAttribute("aria-pressed", String(allSymbolsShown));
+    });
+
+    sortCardsSelect.addEventListener("change", () => {
+      const mode = sortCardsSelect.value;
+      const sortedCards = Array.from(cards);
+
+      sortedCards.sort((a, b) => {
+        const aTitle = a.querySelector(".prompt").textContent;
+        const bTitle = b.querySelector(".prompt").textContent;
+
+        if (mode === "date") {
+          const yearDifference =
+            incorporationYears.get(a.dataset.answer) -
+            incorporationYears.get(b.dataset.answer);
+          if (yearDifference !== 0) return yearDifference;
+        }
+
+        if (mode === "category") {
+          const categoryDifference =
+            categoryRanks.get(a.dataset.answer) -
+            categoryRanks.get(b.dataset.answer);
+          if (categoryDifference !== 0) return categoryDifference;
+        }
+
+        return (
+          aTitle.localeCompare(bTitle) ||
+          a.dataset.answer.localeCompare(b.dataset.answer)
+        );
+      });
+
+      sortedCards.forEach((card) => cardGrid.append(card));
+      decorations.forEach((figure, index) => {
+        sortedCards[decorationPlacements[index]].after(figure);
+      });
+    });
+
+    sortCardsSelect.dispatchEvent(new Event("change"));
+  </script>
+</body>
+</html>

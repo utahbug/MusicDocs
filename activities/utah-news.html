@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5f7f70">
+    <link rel="icon" href="../assets/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../assets/utahbug-icon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+    <title>Daily Utah | UtahBug</title>
+    <link rel="stylesheet" href="../utahbug-playground-20260714c.css">
+  </head>
+  <body class="live-updates-page">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">
+          <span><strong>UtahBug</strong></span>
+        </a>
+      </div>
+    </header>
+    <main class="page-main">
+      <h1 class="quiz-page-label">DAILY UTAH</h1>
+      <p class="live-updates-intro">Choose news, traffic, or weather.</p>
+
+      <nav class="daily-feed-tabs" aria-label="Daily Utah choices">
+        <button type="button" data-daily-feed="news" aria-pressed="true">News</button>
+        <button type="button" data-daily-feed="traffic" aria-pressed="false">Traffic</button>
+        <button type="button" data-daily-feed="weather" aria-pressed="false">Weather</button>
+      </nav>
+
+      <section class="daily-feed-shell" aria-live="polite" aria-busy="true">
+        <header class="daily-feed-heading">
+          <h2 id="daily-feed-title">Utah News</h2>
+          <a id="daily-feed-source" href="#" target="_blank" rel="noopener" hidden>Official source</a>
+        </header>
+        <div id="x-feed-host" class="x-feed-host"></div>
+        <div id="weather-feed" class="weather-feed" hidden>
+          <p id="weather-feed-status">Loading active Utah weather alerts…</p>
+          <ul id="weather-alert-list"></ul>
+          <a class="weather-forecast-link" href="https://www.weather.gov/slc/" target="_blank" rel="noopener">
+            Open National Weather Service forecasts
+          </a>
+        </div>
+        <noscript>
+          <p>
+            JavaScript is needed to switch feeds.
+            <a href="https://x.com/i/lists/1064307421659619328">Open Utah News on X</a>,
+            <a href="https://x.com/i/lists/1065680931980115973">open Traffic &amp; Weather on X</a>,
+            or <a href="https://www.weather.gov/slc/">open the National Weather Service</a>.
+          </p>
+        </noscript>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <a href="../index.html">Home</a>
+      <a href="https://www.udottraffic.utah.gov/map" target="_blank" rel="noopener">UDOT Traffic</a>
+    </footer>
+    <script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <script src="../daily-updates.js"></script>
+  </body>
+</html>
