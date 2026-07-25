@@ -2,118 +2,574 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#5f7f70">
-    <link rel="icon" href="assets/favicon.ico" sizes="any">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="assets/utahbug-icon-512.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#2B5F9E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="MusicDocs">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>MusicDocs</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
-    <title>UtahBug | Utah</title>
-    <link rel="stylesheet" href="utahbug-playground-20260714c.css">
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
+    <link rel="stylesheet" href="styles.css?v=primary-2026-31">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="script.js?v=primary-2026-31" defer></script>
   </head>
   <body>
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="index.html">
-          <span>
-            <strong>UtahBug</strong>
-          </span>
-        </a>
+    <div id="appShell" class="app-shell">
+      <header class="app-header">
+        <div class="app-title-row">
+          <h1>
+            <button id="homeTitleButton" class="app-title-button" type="button" aria-label="Go to Favorites" title="Go to Favorites">MusicDocs</button>
+          </h1>
+        </div>
+        <div class="header-actions">
+          <button id="headerRefreshButton" class="header-refresh-button" type="button" aria-label="Refresh app" title="Refresh app" data-refresh-app>
+            <span aria-hidden="true">&#8635;</span>
+          </button>
+          <div class="display-preference-wrap theme-dot-wrap">
+            <button id="themeDotButton" class="theme-dot-button" type="button" aria-label="Change tab color" title="Change tab color" aria-expanded="false" aria-controls="themeDotMenu">
+              <span aria-hidden="true"></span>
+            </button>
+            <div id="themeDotMenu" class="theme-dot-menu hidden" role="menu" aria-label="Tab colors"></div>
+          </div>
+          <button id="backgroundToggleButton" class="background-toggle-button" type="button" aria-label="Use black background" title="Use black background" aria-pressed="false">
+            <span aria-hidden="true"></span>
+          </button>
+        </div>
+      </header>
+
+      <nav class="main-nav" aria-label="Main sections">
+        <button class="nav-button nav-icon-button" type="button" data-section="favorites" aria-label="Favorites" title="Favorites">
+          <span class="star-icon-mark" aria-hidden="true">&#9733;</span>
+          <span class="sr-only">Favorites</span>
+        </button>
+        <button class="nav-button active" type="button" data-section="lists" aria-label="Lists" title="Lists">Lists</button>
+        <button class="nav-button" type="button" data-section="library" aria-label="Files" title="Files">Files</button>
+        <button class="nav-button" type="button" data-section="cards" aria-label="Cards" title="Cards">Cards</button>
+        <button class="nav-button" type="button" data-section="links" aria-label="Links" title="Links">Links</button>
+        <div class="overflow-wrap nav-overflow-wrap">
+          <button id="overflowMenuButton" class="nav-button nav-icon-button" type="button" aria-label="More" title="More" aria-expanded="false" aria-controls="overflowMenu">&hellip;</button>
+          <div id="overflowMenu" class="overflow-menu hidden" role="menu" aria-label="More">
+            <button type="button" role="menuitem" data-menu-section="search">Search</button>
+          <button type="button" role="menuitem" data-menu-section="metronome">Metronome</button>
+          <button type="button" role="menuitem" data-menu-section="tuner">Tuner</button>
+          <button type="button" role="menuitem" data-menu-section="pitch">Pitch</button>
+            <span class="menu-separator" aria-hidden="true"></span>
+            <button id="exportBackupButton" type="button" role="menuitem">Export data + files</button>
+            <button id="importBackupButton" type="button" role="menuitem">Import data + files</button>
+            <button type="button" role="menuitem" data-open-help>Help</button>
+            <button type="button" role="menuitem" data-open-about>About</button>
+          </div>
+          <input id="backupFileInput" class="hidden" type="file" accept="application/json,.json">
+        </div>
+      </nav>
+
+      <main class="main-content">
+        <section id="librarySection" class="view" data-view="library" aria-label="Files">
+          <div class="toolbar compact-topbar files-toolbar">
+            <label class="search-field">
+              <span>Search files</span>
+              <input id="librarySearch" type="search" autocomplete="off" placeholder="">
+            </label>
+            <label class="files-sort-field">
+              <span>Sort</span>
+              <select id="librarySort" aria-label="Sort files">
+                <option value="alpha">Alphabetical</option>
+                <option value="category">Category / Genre</option>
+                <option value="book">Source / Book</option>
+                <option value="composer">Composer / Arranger</option>
+                <option value="tag">Tag</option>
+              </select>
+            </label>
+          </div>
+          <div class="tab-action-row">
+            <button id="libraryTopAddButton" class="top-add-button file-add-button" type="button" aria-label="Add file" title="Add file">+</button>
+            <button id="libraryBatchEditButton" class="secondary-button batch-edit-button" type="button" aria-label="Select files to delete" title="Select files to delete">Edit</button>
+          </div>
+          <div id="libraryBatchBar" class="batch-delete-bar hidden" aria-live="polite">
+            <span id="libraryBatchStatus" class="batch-status">No items selected</span>
+            <button id="libraryBatchDeleteButton" class="danger-button batch-delete-button" type="button" disabled>Delete selected</button>
+            <button id="libraryBatchCancelButton" class="secondary-button batch-cancel-button" type="button">Cancel</button>
+          </div>
+          <div id="libraryContent" class="stack"></div>
+          <button id="libraryAddButton" class="top-add-button label-add-button file-add-button bottom-file-add-button" type="button" aria-label="Add file" title="Add file">Add File +</button>
+        </section>
+
+        <section id="listsSection" class="view active" data-view="lists" aria-label="Lists">
+          <div class="tab-action-row lists-action-row">
+            <button id="listTopAddButton" class="top-add-button" type="button" aria-label="New list" title="New list">+</button>
+            <button id="listReorderButton" class="favorites-reorder-button list-reorder-button" type="button" aria-label="Rearrange lists" title="Rearrange lists" aria-pressed="false">Rearrange</button>
+          </div>
+          <label class="compact-select hidden">
+            <span>List</span>
+            <select id="listSelect"></select>
+          </label>
+          <div id="listTabs" class="list-tabs" role="listbox" aria-label="Saved lists"></div>
+          <div class="toolbar compact-topbar lists-toolbar">
+            <button id="listEditButton" class="icon-button hidden" type="button" aria-label="Edit list" title="Edit list">&#9998;</button>
+            <div class="overflow-wrap list-overflow-wrap">
+              <button id="listMoreButton" class="icon-button" type="button" aria-label="List options" title="List options" aria-expanded="false" aria-controls="listMoreMenu">&hellip;</button>
+              <div id="listMoreMenu" class="overflow-menu hidden" role="menu" aria-label="List options">
+                <button type="button" role="menuitem" data-new-list>New list</button>
+                <button type="button" role="menuitem" data-delete-active-list>Delete the selected list</button>
+              </div>
+            </div>
+          </div>
+          <div id="listEditorPanel" class="editor-panel hidden"></div>
+          <div id="listContent" class="quick-list"></div>
+          <button id="listItemAddButton" class="top-add-button list-item-add-button" type="button" aria-label="Add file to this list" title="Add file to this list">+</button>
+          <div id="listPickerPanel" class="editor-panel hidden"></div>
+        </section>
+
+        <section id="cardsSection" class="view" data-view="cards" aria-label="Cards">
+          <div class="tab-action-row">
+            <button id="cardTopAddButton" class="top-add-button card-label-add-button" type="button" aria-label="Add card" title="Add card">+</button>
+            <button id="cardBatchEditButton" class="secondary-button batch-edit-button" type="button" aria-label="Select cards to delete" title="Select cards to delete">Edit</button>
+          </div>
+          <div id="cardBatchBar" class="batch-delete-bar hidden" aria-live="polite">
+            <span id="cardBatchStatus" class="batch-status">No items selected</span>
+            <button id="cardBatchDeleteButton" class="danger-button batch-delete-button" type="button" disabled>Delete selected</button>
+            <button id="cardBatchCancelButton" class="secondary-button batch-cancel-button" type="button">Cancel</button>
+          </div>
+          <div id="cardsContent" class="cards-grid"></div>
+          <button id="cardAddButton" class="top-add-button label-add-button card-label-add-button bottom-card-add-button" type="button" aria-label="Add card" title="Add card">Add Card +</button>
+        </section>
+
+        <section id="linksSection" class="view" data-view="links" aria-label="Links">
+          <div class="tab-action-row">
+            <button id="linkTopAddButton" class="top-add-button link-add-button" type="button" aria-label="Add link" title="Add link">+</button>
+            <button id="linkBatchEditButton" class="secondary-button batch-edit-button" type="button" aria-label="Select links to delete" title="Select links to delete">Edit</button>
+          </div>
+          <div id="linkBatchBar" class="batch-delete-bar hidden" aria-live="polite">
+            <span id="linkBatchStatus" class="batch-status">No items selected</span>
+            <button id="linkBatchDeleteButton" class="danger-button batch-delete-button" type="button" disabled>Delete selected</button>
+            <button id="linkBatchCancelButton" class="secondary-button batch-cancel-button" type="button">Cancel</button>
+          </div>
+          <div id="linksContent" class="stack"></div>
+          <button id="linkAddButton" class="top-add-button label-add-button link-add-button bottom-link-add-button" type="button" aria-label="Add link" title="Add link">Add Link +</button>
+        </section>
+
+        <section id="favoritesSection" class="view" data-view="favorites" aria-label="Favorites">
+          <div class="favorites-topbar">
+            <button id="favoritesReorderButton" class="favorites-reorder-button" type="button" aria-label="Rearrange favorites" title="Rearrange favorites" aria-pressed="false">Rearrange</button>
+          </div>
+          <div id="favoritesContent" class="stack"></div>
+          <button id="favoriteDividerAddButton" class="top-add-button label-add-button favorite-divider-add-button bottom-favorite-divider-button" type="button" aria-label="Add spacer" title="Add spacer">Add spacer</button>
+        </section>
+
+        <section id="searchSection" class="view" data-view="search" aria-labelledby="searchTitle">
+          <div class="toolbar">
+            <label class="search-field">
+              <span>Search all content</span>
+              <input id="globalSearch" type="search" autocomplete="off" placeholder="">
+            </label>
+          </div>
+          <div id="searchContent" class="stack"></div>
+        </section>
+
+        <section id="metronomeSection" class="view metronome-view" data-view="metronome" aria-labelledby="metronomeTitle">
+          <div class="metronome-panel">
+            <div class="metronome-header">
+              <h2 id="metronomeTitle">Metronome</h2>
+              <span id="metronomeStatus" class="metronome-status">Stopped</span>
+            </div>
+            <div class="metronome-display" aria-live="polite">
+              <button id="metronomeMinusButton" class="icon-button" type="button" aria-label="Decrease tempo" title="Decrease tempo">-</button>
+              <div class="metronome-bpm-wrap">
+                <output id="metronomeBpmOutput" for="metronomeBpm">90</output>
+                <span>BPM</span>
+              </div>
+              <button id="metronomePlusButton" class="icon-button" type="button" aria-label="Increase tempo" title="Increase tempo">+</button>
+            </div>
+            <input id="metronomeBpm" class="metronome-slider" type="range" min="40" max="220" step="1" value="90" aria-label="Tempo">
+            <div class="metronome-controls">
+              <button id="metronomeStartButton" class="primary-button" type="button">Start</button>
+              <button id="metronomeTapButton" class="secondary-button" type="button">Tap tempo</button>
+            </div>
+            <label class="metronome-beats-field">
+              <span>Beats</span>
+              <select id="metronomeBeats">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+                <option value="6">6</option>
+              </select>
+            </label>
+            <div id="metronomeBeatDots" class="metronome-beat-dots" aria-hidden="true"></div>
+          </div>
+        </section>
+
+        <section id="tunerSection" class="view tuner-view" data-view="tuner" aria-labelledby="tunerTitle">
+          <div class="tuner-panel">
+            <div class="tuner-header">
+              <h2 id="tunerTitle">Tuner</h2>
+              <span id="tunerStatus" class="tuner-status">Microphone off</span>
+            </div>
+            <label class="tuner-field">
+              <span>Instrument</span>
+              <select id="tunerInstrument">
+                <option value="chromatic">Chromatic</option>
+                <option value="guitar">Guitar</option>
+                <option value="ukulele">Ukulele</option>
+                <option value="clarinet">Clarinet</option>
+                <option value="violin">Violin</option>
+                <option value="flute">Flute</option>
+              </select>
+            </label>
+            <div class="tuner-readout" aria-live="polite">
+              <div id="tunerNote" class="tuner-note">--</div>
+              <div id="tunerFrequency" class="tuner-frequency">Tap Start and play a note</div>
+              <div id="tunerTarget" class="tuner-target"></div>
+            </div>
+            <div class="tuner-meter" aria-hidden="true">
+              <div class="tuner-meter-track">
+                <span class="tuner-meter-center"></span>
+                <span id="tunerNeedle" class="tuner-needle"></span>
+              </div>
+              <div class="tuner-meter-labels">
+                <span>Flat</span>
+                <span>In tune</span>
+                <span>Sharp</span>
+              </div>
+            </div>
+            <div id="tunerStrings" class="tuner-strings" aria-hidden="true"></div>
+            <div class="tuner-controls">
+              <button id="tunerStartButton" class="primary-button" type="button">Start tuner</button>
+            </div>
+            <p id="tunerMessage" class="tuner-message">Use HTTPS for microphone access on iPhone.</p>
+          </div>
+        </section>
+
+        <section id="pitchSection" class="view pitch-view" data-view="pitch" aria-labelledby="pitchTitle">
+          <div class="pitch-panel">
+            <div class="pitch-header">
+              <h2 id="pitchTitle">Pitch</h2>
+              <span id="pitchStatus" class="pitch-status">Ready</span>
+            </div>
+            <div class="pitch-fields">
+              <label class="pitch-field">
+                <span>Preset</span>
+                <select id="pitchPreset">
+                  <option value="chromatic">Chromatic</option>
+                  <option value="guitar">Guitar</option>
+                  <option value="ukulele">Ukulele</option>
+                  <option value="clarinet">Clarinet</option>
+                  <option value="violin">Violin</option>
+                  <option value="flute">Flute</option>
+                </select>
+              </label>
+              <label class="pitch-field">
+                <span>Pitch</span>
+                <select id="pitchNote"></select>
+              </label>
+            </div>
+            <div class="pitch-readout" aria-live="polite">
+              <div id="pitchNoteName" class="pitch-note-name">A4</div>
+              <div id="pitchFrequency" class="pitch-frequency">440.0 Hz</div>
+            </div>
+            <div id="pitchQuickButtons" class="pitch-quick-buttons" aria-label="Quick pitch choices"></div>
+            <div class="pitch-controls">
+              <button id="pitchPlayButton" class="primary-button" type="button">Play pitch</button>
+              <button id="pitchStopButton" class="secondary-button" type="button">Stop</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="detailSection" class="view detail-view" data-view="detail" aria-labelledby="detailTitle">
+          <div id="detailContent"></div>
+        </section>
+      </main>
+    </div>
+
+    <section id="pdfViewer" class="pdf-viewer hidden" aria-label="PDF viewer">
+      <header class="pdf-toolbar">
+        <button id="pdfTopHomeButton" class="icon-button pdf-home-icon" type="button" aria-label="Home" title="Home">&#8962;</button>
+        <button id="pdfPrevButton" class="icon-button pdf-page-button pdf-prev-page-button" type="button" aria-label="Previous page" title="Previous page">&lt;</button>
+        <div class="pdf-title-wrap">
+          <h2 id="pdfTitle">PDF</h2>
+          <p id="pdfPageStatus">Page 1 of 1</p>
+        </div>
+        <button id="pdfNextButton" class="icon-button pdf-page-button pdf-next-page-button" type="button" aria-label="Next page" title="Next page">&gt;</button>
+      </header>
+      <div id="pdfStage" class="pdf-stage">
+        <div id="pdfLoading" class="pdf-message">Loading PDF...</div>
+        <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+        <button id="pdfTapLeft" class="pdf-tap-zone pdf-tap-left" type="button" aria-label="Previous page; top-left jumps to first page"></button>
+        <button id="pdfTapRight" class="pdf-tap-zone pdf-tap-right" type="button" aria-label="Next page; top-right jumps to last page"></button>
+        <div class="pdf-zone-tips" aria-hidden="true">
+          <div class="pdf-zone-tip pdf-zone-tip-first">tap to jump to first page</div>
+          <div class="pdf-zone-tip pdf-zone-tip-last">tap to jump to last page</div>
+          <div class="pdf-zone-tip pdf-zone-tip-prev">tap to flip the page</div>
+          <div class="pdf-zone-tip pdf-zone-tip-next">tap to flip the page</div>
+        </div>
       </div>
-    </header>
-    <main class="blank-main home-main">
-      <section class="home-categories" aria-labelledby="home-categories-title">
-        <header class="home-section-heading">
-          <div>
-            <h1 id="home-categories-title">Explore Utah</h1>
-            <p>Choose a place to start.</p>
-          </div>
-        </header>
-        <div class="home-image-grid">
-          <a class="home-image-card" href="activities/quiz-me.html">
-            <img src="assets/home/quizzes-puzzles.webp" alt="" width="960" height="640">
-            <span>Quizzes &amp; Puzzles</span>
-          </a>
-          <a class="home-image-card" href="activities/history.html">
-            <img src="assets/home/utah-history.webp" alt="" width="960" height="640">
-            <span>Utah History</span>
-          </a>
-          <a class="home-image-card" href="activities/state-symbols.html">
-            <img src="assets/home/state-symbols.webp" alt="" width="960" height="640">
-            <span>State Symbols</span>
-          </a>
-          <a class="home-image-card" href="activities/county-map.html">
-            <img src="assets/home/counties-places.webp" alt="" width="960" height="640">
-            <span>Counties &amp; Places</span>
-          </a>
-          <a class="home-image-card" href="activities/national-parks.html">
-            <img src="assets/home/parks-scenery.webp" alt="" width="960" height="640">
-            <span>Parks &amp; Scenery</span>
-          </a>
-          <a class="home-image-card" href="activities/official-websites.html">
-            <img src="assets/home/official-resources.webp" alt="" width="960" height="640">
-            <span>Official Resources</span>
-          </a>
-        </div>
-      </section>
+      <footer class="pdf-action-bar" aria-label="PDF viewer actions">
+        <button id="pdfHomeButton" class="pdf-action-button" type="button">HOME</button>
+        <button id="pdfTipsButton" class="pdf-action-button" type="button" aria-pressed="false">TIPS</button>
+        <button id="pdfMetronomeButton" class="pdf-action-button pdf-icon-action" type="button" aria-label="Metronome" title="Metronome"><span class="metronome-mini-icon" aria-hidden="true"></span></button>
+      </footer>
+    </section>
 
-      <section class="daily-utah" aria-labelledby="daily-utah-title">
-        <header class="home-section-heading">
-          <div>
-            <h2 id="daily-utah-title">Daily Utah</h2>
-            <p>News, roads and weather in one stop.</p>
-          </div>
-        </header>
-        <div class="daily-utah-grid">
-          <a class="daily-utah-card daily-news" href="activities/utah-news.html#news">
-            <strong>Utah News</strong>
-            <span>Live updates from the selected X list</span>
-          </a>
-          <a class="daily-utah-card daily-traffic" href="activities/utah-news.html#traffic">
-            <strong>Traffic &amp; Weather</strong>
-            <span>Live updates from the selected X list</span>
-          </a>
-          <a class="daily-utah-card daily-weather" href="activities/utah-news.html#weather">
-            <strong>Weather</strong>
-            <span>Active Utah alerts and official forecasts</span>
-          </a>
-        </div>
-      </section>
+    <template id="emptyStateTemplate">
+      <div class="empty-state">
+        <p>No items found.</p>
+      </div>
+    </template>
 
-      <section class="link-index" aria-labelledby="link-index-title">
-        <p class="kicker">Temporary reference</p>
-        <h2 id="link-index-title">Main-page link index</h2>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="activities/quiz-me.html">Quiz me</a></li>
-          <li><a href="activities/official-websites.html">Official websites</a></li>
-          <li><a href="activities/county-map.html">County Map</a></li>
-          <li><a href="activities/states-capitals.html">States</a></li>
-          <li><a href="activities/state-symbols.html">Symbols</a></li>
-          <li><a href="activities/trivia.html">Trivia</a></li>
-          <li><a href="activities/demographics.html">Demographics</a></li>
-          <li><a href="activities/history.html">History</a></li>
-          <li><a href="activities/districts.html">Districts</a></li>
-          <li><a href="activities/filmed-in-utah.html">Filmed</a></li>
-          <li><a href="activities/state-parks.html">State Parks</a></li>
-          <li><a href="activities/national-parks.html">National Parks</a></li>
-          <li><a href="activities/utah-news.html#news">Utah News</a></li>
-          <li><a href="activities/utah-news.html#traffic">Traffic &amp; Weather</a></li>
-          <li><a href="activities/utah-news.html#weather">Utah Weather</a></li>
-          <li><a href="https://www.ksl.com/" target="_blank" rel="noopener">KSL</a></li>
-          <li><a href="https://www.sltrib.com/" target="_blank" rel="noopener">Salt Lake Tribune</a></li>
-          <li><a href="https://www.deseret.com/utah/" target="_blank" rel="noopener">Deseret News</a></li>
-          <li><a href="https://utahnewsdispatch.com/" target="_blank" rel="noopener">Utah News Dispatch</a></li>
-          <li><a href="https://www.udottraffic.utah.gov/map" target="_blank" rel="noopener">UDOT Traffic</a></li>
-          <li><a href="https://www.weather.gov/slc/" target="_blank" rel="noopener">National Weather Service</a></li>
-          <li><a href="https://www.utah.gov/search.html" target="_blank" rel="noopener">Search Utah.gov</a></li>
-        </ul>
-      </section>
-    </main>
-    <footer class="site-footer">
-      <span>UtahBug draft playground</span>
-      <a href="https://www.utah.gov/search.html" target="_blank" rel="noopener">Search Utah.gov</a>
-    </footer>
-    <script src="script.js"></script>
+    <div id="importModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+      <div id="modalPanel" class="modal-panel">
+        <form id="importForm" class="import-form">
+          <div id="modalHeading" class="modal-heading">
+            <button id="importCloseButton" class="icon-button form-close-button" type="button" aria-label="Cancel" title="Cancel">&times;</button>
+            <h2 id="importTitle">Add item</h2>
+            <div class="modal-action-buttons">
+              <button id="importDeleteButton" class="icon-button danger-icon hidden" type="button" aria-label="Delete" title="Delete">&#128465;</button>
+              <button id="importSaveButton" class="icon-button primary-icon" type="submit" aria-label="Save" title="Save">&#10003;</button>
+            </div>
+          </div>
+
+          <label id="importTitleRow">
+            <span id="importTitleLabel">Title</span>
+            <input id="importTitleField" type="text" autocomplete="off">
+          </label>
+
+          <label id="importPageRow">
+            <span>Page</span>
+            <input id="importPage" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" size="5" autocomplete="off">
+          </label>
+
+          <div id="pdfImportFields" class="type-fields">
+            <div class="file-picker-field">
+              <span id="importFileLabel" class="file-picker-label">PDF, photo, or image</span>
+              <input id="importPdfFile" class="sr-only" type="file" accept="application/pdf,.pdf,image/*">
+              <div class="file-picker-row">
+                <label class="secondary-button file-picker-button" for="importPdfFile">Select File</label>
+                <span id="importPdfFileName" class="file-picker-name">No file selected</span>
+              </div>
+            </div>
+          </div>
+
+          <label id="importTypeRow">
+            <span>Type</span>
+            <select id="importType">
+              <option value="pdf">PDF sheet music or document</option>
+              <option value="image">Photo / image</option>
+              <option value="card">Text / chord song card</option>
+              <option value="link">Online music link</option>
+              <option value="note">Note / plan</option>
+              <option value="index">Book page reference</option>
+            </select>
+          </label>
+
+          <div id="cardImportFields" class="type-fields hidden">
+            <div id="importCardImageRow" class="file-picker-field">
+              <input id="importCardImage" class="sr-only" type="file" accept="image/*" aria-label="Select card image file">
+              <div class="file-picker-row">
+                <label class="secondary-button file-picker-button" for="importCardImage">Select File</label>
+                <span id="importCardImageName" class="file-picker-name">(optional)</span>
+              </div>
+            </div>
+            <div id="richCardContentRow" class="rich-card-row">
+              <span>Card text</span>
+              <div id="cardFormatToolbar" class="rich-toolbar" aria-label="Card text formatting">
+                <button type="button" data-rich-command="bold" aria-label="Bold" title="Bold" aria-pressed="false"><strong>B</strong></button>
+                <button type="button" data-rich-command="italic" aria-label="Italic" title="Italic" aria-pressed="false"><em>I</em></button>
+                <button type="button" data-rich-command="strikeThrough" aria-label="Strikeout" title="Strikeout" aria-pressed="false"><span class="strikeout-icon" aria-hidden="true"><span>S</span></span></button>
+                <button type="button" data-rich-command="insertOrderedList" aria-label="Numbered list" title="Numbered list" aria-pressed="false"><span class="toolbar-icon numbered-list-icon" aria-hidden="true"></span></button>
+                <button type="button" data-rich-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list" aria-pressed="false"><span class="toolbar-icon bullet-list-icon" aria-hidden="true"></span></button>
+                <button type="button" data-rich-command="photo" aria-label="Insert photo" title="Insert photo"><span class="toolbar-icon photo-icon" aria-hidden="true"></span></button>
+              </div>
+              <input id="inlineCardImageInput" class="sr-only" type="file" accept="image/*" aria-label="Insert photo into card text">
+              <div id="importCardEditor" class="rich-card-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Card text"></div>
+              <textarea id="importCardContent" class="hidden" rows="10"></textarea>
+            </div>
+            <label id="plainCardContentRow" class="hidden">
+              <span>Note text</span>
+              <textarea id="importPlainContent" rows="10"></textarea>
+            </label>
+          </div>
+
+          <div id="linkImportFields" class="type-fields hidden">
+            <label>
+              <span>URL</span>
+              <input id="importUrl" type="url" inputmode="url">
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label id="importCategoryRow">
+              <span>Category / Genre</span>
+              <input id="importCategory" type="text" autocomplete="off" list="categorySuggestions">
+            </label>
+            <label id="importBookRow">
+              <span>Source / Book</span>
+              <input id="importBook" type="text" autocomplete="off">
+            </label>
+            <label id="importComposerRow">
+              <span>Composer / Arranger</span>
+              <input id="importComposer" type="text" autocomplete="off">
+            </label>
+          </div>
+
+          <datalist id="categorySuggestions">
+            <option value="Christmas"></option>
+            <option value="Primary"></option>
+            <option value="Hymn"></option>
+            <option value="Choir"></option>
+            <option value="Patriotic"></option>
+            <option value="Birthday"></option>
+            <option value="New Music"></option>
+            <option value="Program"></option>
+            <option value="Not in the Book"></option>
+          </datalist>
+
+          <label id="importTagsRow">
+            <span>Tags</span>
+            <input id="importTags" type="text" autocomplete="off">
+          </label>
+
+          <label id="importNotesRow">
+            <span>Notes</span>
+            <textarea id="importNotes" rows="4"></textarea>
+          </label>
+
+          <p id="importStatus" class="form-status" role="status"></p>
+
+          <button class="form-apply-button" type="submit" aria-label="Apply changes" title="Apply changes">Apply</button>
+
+        </form>
+      </div>
+    </div>
+
+    <div id="listEditModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="listEditTitle">
+      <div id="listEditPanel" class="modal-panel list-edit-modal-panel">
+        <form id="listEditForm" class="import-form list-edit-form">
+          <div class="modal-heading">
+            <button id="listEditCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
+            <h2 id="listEditTitle">Edit list</h2>
+            <div class="modal-action-buttons">
+              <button id="listEditSaveButton" class="icon-button primary-icon" type="submit" aria-label="Save" title="Save">&#10003;</button>
+            </div>
+          </div>
+
+          <label>
+            <span>List name</span>
+            <input id="listEditTitleField" type="text" autocomplete="off">
+          </label>
+
+          <section class="list-edit-section" aria-label="Items in this list">
+            <div class="picker-heading">
+              <strong>Items in this list</strong>
+            </div>
+            <div id="listEditItems" class="list-edit-items"></div>
+          </section>
+
+          <section class="list-edit-section" aria-label="Select list contents from Files, Cards, and Links">
+            <div class="picker-heading">
+              <strong>Select items</strong>
+            </div>
+            <div class="editor-grid list-edit-add-grid">
+              <label>
+                <span>Filter</span>
+                <input id="listEditSearch" type="search" autocomplete="off">
+              </label>
+            </div>
+            <p id="listEditStatus" class="quick-meta" role="status"></p>
+            <div id="listEditResults" class="picker-results"></div>
+          </section>
+
+          <button class="form-apply-button" type="submit" aria-label="Apply changes" title="Apply changes">Apply</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div id="settingsPanel" class="modal-panel settings-panel">
+        <div class="import-form">
+          <div class="modal-heading">
+            <button id="settingsCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
+            <h2 id="settingsTitle">Settings</h2>
+          </div>
+
+          <section class="settings-section" aria-label="Tab color">
+            <div class="picker-heading">
+              <strong>Tab color</strong>
+            </div>
+            <div id="settingsThemeChoices" class="theme-choice-grid"></div>
+            <p class="quick-meta">This changes the active tab and main accent color on this device.</p>
+          </section>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="helpModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div id="helpPanel" class="modal-panel help-panel">
+        <div class="import-form">
+          <div class="modal-heading">
+            <button id="helpCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
+            <h2 id="helpTitle">Help</h2>
+          </div>
+
+          <div class="help-topic-grid">
+            <section class="help-topic">
+              <h3>PDF Page Turning</h3>
+              <ul>
+                <li>Flip pages by tapping the left or bottom part of the screen.</li>
+                <li class="help-subitem">Tap the top-left to jump to page 1.</li>
+                <li class="help-subitem">Tap the top-right to jump to the last page.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Favorites</h3>
+              <ul>
+                <li>Tap the star to add or remove favorites.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Lists</h3>
+              <ul>
+                <li>Categorize documents into groups.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Cards</h3>
+              <ul>
+                <li>Add your own text or an image.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Links</h3>
+              <ul>
+                <li>Online music resources.</li>
+              </ul>
+            </section>
+
+            <section class="help-topic">
+              <h3>Search</h3>
+              <ul>
+                <li>Find documents by title, author, genre or tag.</li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="aboutModal" class="modal about-modal hidden" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+      <div id="aboutPanel" class="modal-panel about-panel">
+        <button id="aboutCloseButton" class="icon-button form-close-button about-close-button" type="button" aria-label="Close" title="Close">&times;</button>
+        <h2 id="aboutTitle" class="sr-only">About</h2>
+        <p class="about-text">&copy; 2026 Ken Roberts</p>
+      </div>
+    </div>
   </body>
 </html>

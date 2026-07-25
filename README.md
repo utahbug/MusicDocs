@@ -1,28 +1,36 @@
-# UtahBug Playground Draft
+# MusicDocs
 
-Fresh-start draft created July 14, 2026.
+A simple private/local music helper for Primary music planning, quick lists, cards, links, and uploaded files.
 
-## What is included
+This repository is intended to hold the app shell: HTML, CSS, JavaScript, icons, and starter data. Personal music files and exported data backups should be treated as private.
 
-- Sparse opening page with expandable RoboHelp-style topic headers.
-- Link/search form for Utah.gov.
-- Placeholder merge of the earlier Utah county map quiz.
-- Click-to-reveal activities for states/capitals, Utah symbols, filmed-in-Utah, Utah State Parks, and NPS Utah sites.
-- District activity scaffold for State Senate, State House, and national delegation.
+## Local/private data
 
-## Audience rule
+The app stores user-added items, favorites, lists, uploaded PDFs/images, and cards in the browser on each device.
 
-Activities should be easy and fun for all skill levels. A school kid should be able to play without feeling tested, while educated adults, Utah obsessives, and even legislators should find deeper challenge layers when they want them.
+Use the app menu:
 
-Preferred pattern:
+- `Export data + files`
+- `Import data + files`
 
-1. Start with a friendly reveal card or simple map prompt.
-2. Add optional hints and facts.
-3. Add a harder mode only after the easy version works.
-4. Avoid fast-changing answers unless the page is explicitly designed as a verified edition.
+to intentionally move a private setup between devices or app versions.
 
-## Known placeholders
+## Public-safe sharing
 
-- District coverage is intentionally placeholder text until official boundaries are verified.
-- Parks and film activities are clue-card starters, not final polished games.
-- County map quiz is copied from the earlier one-file draft and can be replaced with the correct source folder if needed.
+Before making this repository public, avoid committing:
+
+- copyrighted or personal PDFs
+- exported app data/files backups
+- private church-only files
+
+The starter `library.json` is intentionally clean so each user can build or import their own local library.
+
+## Running locally
+
+From this folder:
+
+```bash
+node server.mjs
+```
+
+Then open the shown local or Wi-Fi URL.
