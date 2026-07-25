@@ -1,9 +1,9 @@
-const CACHE_NAME = "primary-music-helper-shell-v162";
+const CACHE_NAME = "primary-music-helper-shell-v194";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=pdf-zone-two-bars-1",
-  "./script.js?v=pdf-zone-two-bars-1",
+  "./styles.css?v=primary-2026-31",
+  "./script.js?v=primary-2026-31",
   "./library.json",
   "./manifest.json",
   "./favicon.ico",
@@ -11,8 +11,23 @@ const APP_SHELL = [
   "./assets/apple-touch-icon.png",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
-  "./music/Ken-Roberts/Amazing-Grace-Ken-Roberts.pdf",
-  "./music/Ken-Roberts/Love-at-Home-Ken-Roberts.pdf"
+  "./music/Primary-2026/called-to-serve-lyrics-249.pdf",
+  "./music/Primary-2026/called-to-serve-hymnbook-174.pdf",
+  "./music/Primary-2026/called-to-serve-249.pdf",
+  "./music/Primary-2026/choose-to-serve-the-lord-lyrics.pdf",
+  "./music/Primary-2026/choose-to-serve-the-lord.pdf",
+  "./music/Primary-2026/i-feel-my-saviors-love-74.pdf",
+  "./music/Primary-2026/i-feel-my-savior-s-love-lyrics-74.pdf",
+  "./music/Primary-2026/i-will-follow-god-s-plan-lyrics-165.pdf",
+  "./music/Primary-2026/i-will-follow-gods-plan-for-me-165.pdf",
+  "./music/Primary-2026/i-will-walk-with-jesus-1004-lyrics.pdf",
+  "./music/Primary-2026/i-will-walk-with-jesus-1004.pdf",
+  "./music/Primary-2026/search-ponder-and-pray-lyrics-109.pdf",
+  "./music/Primary-2026/search-ponder-and-pray-109.pdf",
+  "./music/Primary-2026/the-wise-man-and-the-foolish-man-281.pdf",
+  "./music/Primary-2026/the-wise-man-and-the-foolish-man-lyrics-281.pdf",
+  "./music/Primary-2026/this-little-light-of-mine-lyrics-1028.pdf",
+  "./music/Primary-2026/this-little-light-of-mine-1028.pdf"
 ];
 
 self.addEventListener("install", (event) => {

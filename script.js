@@ -3,113 +3,337 @@
 const PDFJS_VERSION = "3.11.174";
 const PDFJS_WORKER_URL = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.js`;
 
+const APP_STORAGE_SCOPE = getAppStorageScope();
 const STORAGE_KEYS = {
-  deletedItems: "primaryMusicHelper.deletedItems",
-  favorites: "primaryMusicHelper.favorites",
-  importedItems: "primaryMusicHelper.importedItems",
-  itemEdits: "primaryMusicHelper.itemEdits",
-  lastOpened: "primaryMusicHelper.lastOpened",
-  lists: "primaryMusicHelper.lists",
-  pdfPages: "primaryMusicHelper.pdfPages",
-  quickIndexes: "primaryMusicHelper.quickIndexes",
-  recents: "primaryMusicHelper.recents",
-  settings: "primaryMusicHelper.settings",
-  starterFavorites: "primaryMusicHelper.starterFavorites",
-  starterLists: "primaryMusicHelper.starterLists",
-  setlists: "primaryMusicHelper.setlists",
-  quickChecks: "primaryMusicHelper.quickChecks"
+  deletedItems: storageKey("deletedItems"),
+  favorites: storageKey("favorites"),
+  importedItems: storageKey("importedItems"),
+  itemEdits: storageKey("itemEdits"),
+  lastOpened: storageKey("lastOpened"),
+  lists: storageKey("lists"),
+  pdfPages: storageKey("pdfPages"),
+  quickIndexes: storageKey("quickIndexes"),
+  recents: storageKey("recents"),
+  settings: storageKey("settings"),
+  metronome: storageKey("metronome"),
+  tuner: storageKey("tuner"),
+  pitch: storageKey("pitch"),
+  starterDataVersion: storageKey("starterDataVersion"),
+  starterFavorites: storageKey("starterFavorites"),
+  starterLists: storageKey("starterLists"),
+  setlists: storageKey("setlists"),
+  quickChecks: storageKey("quickChecks")
 };
 
-const IMPORT_DB_NAME = "primaryMusicHelper.imports";
+const IMPORT_DB_NAME = `${APP_STORAGE_SCOPE}.imports`;
 const IMPORT_DB_VERSION = 1;
 const PDF_STORE_NAME = "pdfFiles";
 const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
 const FAVORITE_DIVIDER_PREFIX = "favorite-divider:";
+const TUNER_INSTRUMENTS = {
+  chromatic: { label: "Chromatic", targets: [] },
+  guitar: {
+    label: "Guitar",
+    targets: [
+      { label: "E2", frequency: 82.41 },
+      { label: "A2", frequency: 110 },
+      { label: "D3", frequency: 146.83 },
+      { label: "G3", frequency: 196 },
+      { label: "B3", frequency: 246.94 },
+      { label: "E4", frequency: 329.63 }
+    ]
+  },
+  ukulele: {
+    label: "Ukulele",
+    targets: [
+      { label: "G4", frequency: 392 },
+      { label: "C4", frequency: 261.63 },
+      { label: "E4", frequency: 329.63 },
+      { label: "A4", frequency: 440 }
+    ]
+  },
+  clarinet: { label: "Clarinet", targets: [] },
+  violin: {
+    label: "Violin",
+    targets: [
+      { label: "G3", frequency: 196 },
+      { label: "D4", frequency: 293.66 },
+      { label: "A4", frequency: 440 },
+      { label: "E5", frequency: 659.25 }
+    ]
+  },
+  flute: { label: "Flute", targets: [] }
+};
+const TUNER_NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const PITCH_PRESETS = {
+  chromatic: { label: "Chromatic", midiStart: 48, midiEnd: 84, defaultNote: "A4" },
+  guitar: { label: "Guitar", notes: TUNER_INSTRUMENTS.guitar.targets, defaultNote: "E2" },
+  ukulele: { label: "Ukulele", notes: TUNER_INSTRUMENTS.ukulele.targets, defaultNote: "C4" },
+  clarinet: { label: "Clarinet", midiStart: 52, midiEnd: 84, defaultNote: "G4" },
+  violin: { label: "Violin", notes: TUNER_INSTRUMENTS.violin.targets, defaultNote: "A4" },
+  flute: { label: "Flute", midiStart: 60, midiEnd: 96, defaultNote: "A4" }
+};
+const STARTER_DATA_VERSION = "primary-2026-lists-v3";
 const FILE_ITEM_TYPES = new Set(["pdf", "image", "note", "index"]);
 const LIBRARY_CONTENT_TYPES = new Set(["pdf", "image", "note", "index", "card", "link"]);
+const BATCH_DELETE_SECTIONS = ["library", "cards", "links"];
+let shouldApplyStarterListOrder = false;
 
 const BUILT_IN_LINKS = [];
 
+function storageKey(name) {
+  return `${APP_STORAGE_SCOPE}.${name}`;
+}
+
+function getAppStorageScope() {
+  const pathParts = window.location.pathname
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const repoOrFolder = pathParts[0] || "local";
+  return `primaryMusicHelper.${repoOrFolder}`;
+}
+
 const DEFAULT_LIBRARY_DATA = {
-  items: [
+  "items": [
     {
-      id: "amazing-grace-ken-roberts",
-      title: "Amazing Grace",
-      type: "pdf",
-      category: "Ken Roberts",
-      composer: "Ken Roberts",
-      file: "music/Ken-Roberts/Amazing-Grace-Ken-Roberts.pdf",
-      tags: ["arrangement", "demo"],
-      notes: "Starter example arrangement by Ken Roberts."
+      "id": "called-to-serve-lyrics-249",
+      "title": "Called to Serve - lyrics, 249",
+      "type": "pdf",
+      "file": "music/Primary-2026/called-to-serve-lyrics-249.pdf",
+      "page": 249
     },
     {
-      id: "love-at-home-ken-roberts",
-      title: "Love at Home",
-      type: "pdf",
-      category: "Ken Roberts",
-      composer: "Ken Roberts",
-      file: "music/Ken-Roberts/Love-at-Home-Ken-Roberts.pdf",
-      tags: ["arrangement", "demo"],
-      notes: "Starter example arrangement by Ken Roberts."
+      "id": "called-to-serve-hymnbook-174",
+      "title": "Called to Serve (hymnbook), 174",
+      "type": "pdf",
+      "file": "music/Primary-2026/called-to-serve-hymnbook-174.pdf",
+      "page": 174
     },
     {
-      id: "lds-hymnal",
-      title: "Hymnal",
-      type: "link",
-      category: "LDS Library",
-      url: "https://www.churchofjesuschrist.org/media/music/collections/hymns?lang=eng",
-      tags: ["church", "music", "hymns"],
-      notes: "Official Church hymn collection."
+      "id": "called-to-serve-249",
+      "title": "Called to Serve, 249",
+      "type": "pdf",
+      "file": "music/Primary-2026/called-to-serve-249.pdf",
+      "page": 249
     },
     {
-      id: "lds-new-hymns",
-      title: "New Hymns",
-      type: "link",
-      category: "LDS Library",
-      url: "https://www.churchofjesuschrist.org/media/music/collections/hymns-for-home-and-church?lang=eng",
-      tags: ["church", "music", "hymns"],
-      notes: "Official Hymns for Home and Church collection."
+      "id": "choose-to-serve-the-lord-lyrics",
+      "title": "Choose to Serve the Lord - lyrics",
+      "type": "pdf",
+      "file": "music/Primary-2026/choose-to-serve-the-lord-lyrics.pdf"
     },
     {
-      id: "lds-childrens-songbook",
-      title: "Children's Songbook",
-      type: "link",
-      category: "LDS Library",
-      url: "https://www.churchofjesuschrist.org/media/music/collections/childrens-songbook?lang=eng",
-      tags: ["church", "music", "children"],
-      notes: "Official Children's Songbook collection."
+      "id": "choose-to-serve-the-lord",
+      "title": "Choose to Serve the Lord",
+      "type": "pdf",
+      "file": "music/Primary-2026/choose-to-serve-the-lord.pdf"
     },
     {
-      id: "lds-music-and-children",
-      title: "Music and Children",
-      type: "link",
-      category: "LDS Library",
-      url: "https://www.churchofjesuschrist.org/media/music/collections/featured-music-for-children?lang=eng",
-      tags: ["church", "music", "children"],
-      notes: "Official featured music for children collection."
+      "id": "i-feel-my-saviors-love-74",
+      "title": "I Feel My Savior's Love, 74",
+      "type": "pdf",
+      "file": "music/Primary-2026/i-feel-my-saviors-love-74.pdf",
+      "page": 74
     },
     {
-      id: "lds-choir-and-voice",
-      title: "Choir and Voice",
-      type: "link",
-      category: "LDS Library",
-      url: "https://www.churchofjesuschrist.org/media/music/music-for-choir-and-voice?lang=eng",
-      tags: ["church", "music", "choir", "voice"],
-      notes: "Official Church choir and voice music page."
+      "id": "i-feel-my-savior-s-love-lyrics-74",
+      "title": "I Feel My Savior's Love, lyrics, 74",
+      "type": "pdf",
+      "file": "music/Primary-2026/i-feel-my-savior-s-love-lyrics-74.pdf",
+      "page": 74
+    },
+    {
+      "id": "i-will-follow-god-s-plan-lyrics-165",
+      "title": "I Will Follow God's Plan for Me - lyrics, 165",
+      "type": "pdf",
+      "file": "music/Primary-2026/i-will-follow-god-s-plan-lyrics-165.pdf",
+      "page": 165
+    },
+    {
+      "id": "i-will-follow-gods-plan-for-me-165",
+      "title": "I Will Follow God's Plan for Me, 165",
+      "type": "pdf",
+      "file": "music/Primary-2026/i-will-follow-gods-plan-for-me-165.pdf",
+      "page": 165
+    },
+    {
+      "id": "i-will-walk-with-jesus-1004-lyrics",
+      "title": "I Will Walk with Jesus, 1004 - lyrics",
+      "type": "pdf",
+      "file": "music/Primary-2026/i-will-walk-with-jesus-1004-lyrics.pdf",
+      "page": 1004
+    },
+    {
+      "id": "i-will-walk-with-jesus-1004",
+      "title": "I Will Walk with Jesus, 1004",
+      "type": "pdf",
+      "file": "music/Primary-2026/i-will-walk-with-jesus-1004.pdf",
+      "page": 1004
+    },
+    {
+      "id": "search-ponder-and-pray-lyrics-109",
+      "title": "Search, Ponder, and Pray - lyrics, 109",
+      "type": "pdf",
+      "file": "music/Primary-2026/search-ponder-and-pray-lyrics-109.pdf",
+      "page": 109
+    },
+    {
+      "id": "search-ponder-and-pray-109",
+      "title": "Search, Ponder, and Pray, 109",
+      "type": "pdf",
+      "file": "music/Primary-2026/search-ponder-and-pray-109.pdf",
+      "page": 109
+    },
+    {
+      "id": "the-wise-man-and-the-foolish-man-281",
+      "title": "The Wise Man and the Foolish Man, 281",
+      "type": "pdf",
+      "file": "music/Primary-2026/the-wise-man-and-the-foolish-man-281.pdf",
+      "page": 281
+    },
+    {
+      "id": "the-wise-man-and-the-foolish-man-lyrics-281",
+      "title": "The Wise Man and the Foolish Man, lyrics, 281",
+      "type": "pdf",
+      "file": "music/Primary-2026/the-wise-man-and-the-foolish-man-lyrics-281.pdf",
+      "page": 281
+    },
+    {
+      "id": "this-little-light-of-mine-lyrics-1028",
+      "title": "This Little Light of Mine - lyrics, 1028",
+      "type": "pdf",
+      "file": "music/Primary-2026/this-little-light-of-mine-lyrics-1028.pdf",
+      "page": 1028
+    },
+    {
+      "id": "this-little-light-of-mine-1028",
+      "title": "This Little Light of Mine, 1028",
+      "type": "pdf",
+      "file": "music/Primary-2026/this-little-light-of-mine-1028.pdf",
+      "page": 1028
+    },
+    {
+      "id": "childrens-songbook-link",
+      "title": "Children's Songbook",
+      "type": "link",
+      "url": "https://www.churchofjesuschrist.org/media/music/collections/childrens-songbook?lang=eng"
+    },
+    {
+      "id": "new-hymns-link",
+      "title": "New Hymns",
+      "type": "link",
+      "url": "https://www.churchofjesuschrist.org/media/music/collections/hymns-for-home-and-church?lang=eng"
     }
   ],
-  favorites: ["amazing-grace-ken-roberts"],
-  quickIndexes: [],
-  setlists: [
+  "favorites": [
+    "this-little-light-of-mine-1028",
+    "called-to-serve-249",
+    "i-will-follow-gods-plan-for-me-165",
+    "favorite-divider:primary-2026-1",
+    "choose-to-serve-the-lord",
+    "search-ponder-and-pray-109",
+    "the-wise-man-and-the-foolish-man-281",
+    "i-feel-my-saviors-love-74",
+    "favorite-divider:primary-2026-2",
+    "childrens-songbook-link",
+    "new-hymns-link"
+  ],
+  "quickIndexes": [],
+  "setlists": [
     {
-      id: "lds-library",
-      title: "LDS Library",
-      items: [
-        { itemId: "lds-hymnal" },
-        { itemId: "lds-new-hymns" },
-        { itemId: "lds-childrens-songbook" },
-        { itemId: "lds-music-and-children" },
-        { itemId: "lds-choir-and-voice" }
+      "id": "primary-program",
+      "title": "Primary Program",
+      "showCheckboxes": false,
+      "items": [
+        {
+          "itemId": "this-little-light-of-mine-1028"
+        },
+        {
+          "itemId": "called-to-serve-249"
+        },
+        {
+          "itemId": "i-will-follow-gods-plan-for-me-165"
+        }
+      ]
+    },
+    {
+      "id": "primary-program-lyrics",
+      "title": "Primary Program (lyrics)",
+      "showCheckboxes": false,
+      "items": [
+        {
+          "itemId": "this-little-light-of-mine-lyrics-1028"
+        },
+        {
+          "itemId": "called-to-serve-lyrics-249"
+        },
+        {
+          "itemId": "i-will-follow-god-s-plan-lyrics-165"
+        }
+      ]
+    },
+    {
+      "id": "primary-songs-2026",
+      "title": "Primary Songs 2026",
+      "showCheckboxes": false,
+      "items": [
+        {
+          "itemId": "choose-to-serve-the-lord"
+        },
+        {
+          "itemId": "search-ponder-and-pray-109"
+        },
+        {
+          "itemId": "the-wise-man-and-the-foolish-man-281"
+        },
+        {
+          "itemId": "i-will-walk-with-jesus-1004-lyrics"
+        },
+        {
+          "itemId": "i-feel-my-saviors-love-74"
+        },
+        {
+          "itemId": "this-little-light-of-mine-1028"
+        }
+      ]
+    },
+    {
+      "id": "primary-songs-2026-lyrics",
+      "title": "Primary Songs 2026 (lyrics)",
+      "showCheckboxes": false,
+      "items": [
+        {
+          "itemId": "choose-to-serve-the-lord-lyrics"
+        },
+        {
+          "itemId": "search-ponder-and-pray-lyrics-109"
+        },
+        {
+          "itemId": "the-wise-man-and-the-foolish-man-lyrics-281"
+        },
+        {
+          "itemId": "i-will-walk-with-jesus-1004-lyrics"
+        },
+        {
+          "itemId": "i-feel-my-savior-s-love-lyrics-74"
+        },
+        {
+          "itemId": "this-little-light-of-mine-lyrics-1028"
+        }
+      ]
+    },
+    {
+      "id": "lds-library",
+      "title": "LDS Library",
+      "showCheckboxes": false,
+      "items": [
+        {
+          "itemId": "childrens-songbook-link"
+        },
+        {
+          "itemId": "new-hymns-link"
+        }
       ]
     }
   ]
@@ -183,16 +407,27 @@ const state = {
   listPickerOpen: false,
   listPickerMessage: "",
   favoriteReorderMode: false,
+  listReorderMode: false,
   editingListId: "",
   editingItemId: null,
   importContext: "library",
   importReturnSection: "",
   modalDrag: null,
   cardEditorRange: null,
-  activeSection: "library",
+  activeSection: "lists",
   previousSection: "library",
   activeListId: "",
   expandedListId: "",
+  batchDeleteMode: {
+    library: false,
+    cards: false,
+    links: false
+  },
+  batchDeleteSelections: {
+    library: new Set(),
+    cards: new Set(),
+    links: new Set()
+  },
   swipe: {
     row: null,
     startX: 0,
@@ -201,6 +436,13 @@ const state = {
     suppressClick: false
   },
   favoriteDrag: {
+    row: null,
+    container: null,
+    pointerId: null,
+    startY: 0,
+    moved: false
+  },
+  listDrag: {
     row: null,
     container: null,
     pointerId: null,
@@ -228,7 +470,38 @@ const state = {
     zoom: 1,
     panX: 0,
     panY: 0,
-    suppressClick: false
+    suppressClick: false,
+    tipsTimer: null
+  },
+  metronome: {
+    bpm: 90,
+    beatsPerMeasure: 4,
+    running: false,
+    currentBeat: 0,
+    audioContext: null,
+    schedulerId: null,
+    nextNoteTime: 0,
+    tapTimes: []
+  },
+  tuner: {
+    instrument: "chromatic",
+    running: false,
+    audioContext: null,
+    analyser: null,
+    source: null,
+    stream: null,
+    buffer: null,
+    rafId: null,
+    lastAnalysisAt: 0,
+    lastFrequency: 0
+  },
+  pitch: {
+    preset: "chromatic",
+    note: "A4",
+    playing: false,
+    audioContext: null,
+    oscillator: null,
+    gain: null
   }
 };
 
@@ -243,7 +516,13 @@ async function init() {
   configurePdfJs();
   await loadLibrary();
   loadLocalState();
+  loadMetronomeSettings();
+  loadTunerSettings();
+  loadPitchSettings();
   setupInitialSelections();
+  renderMetronome();
+  renderTuner();
+  renderPitch();
   renderAll();
   openInitialSection();
   setupServiceWorker();
@@ -266,6 +545,9 @@ function collectElements() {
     links: document.getElementById("linksSection"),
     favorites: document.getElementById("favoritesSection"),
     search: document.getElementById("searchSection"),
+    metronome: document.getElementById("metronomeSection"),
+    tuner: document.getElementById("tunerSection"),
+    pitch: document.getElementById("pitchSection"),
     detail: document.getElementById("detailSection")
   };
 
@@ -274,6 +556,11 @@ function collectElements() {
   el.librarySort = document.getElementById("librarySort");
   el.libraryTopAddButton = document.getElementById("libraryTopAddButton");
   el.libraryAddButton = document.getElementById("libraryAddButton");
+  el.libraryBatchEditButton = document.getElementById("libraryBatchEditButton");
+  el.libraryBatchBar = document.getElementById("libraryBatchBar");
+  el.libraryBatchStatus = document.getElementById("libraryBatchStatus");
+  el.libraryBatchDeleteButton = document.getElementById("libraryBatchDeleteButton");
+  el.libraryBatchCancelButton = document.getElementById("libraryBatchCancelButton");
   el.exportBackupButton = document.getElementById("exportBackupButton");
   el.importBackupButton = document.getElementById("importBackupButton");
   el.backupFileInput = document.getElementById("backupFileInput");
@@ -281,6 +568,7 @@ function collectElements() {
   el.listSelect = document.getElementById("listSelect");
   el.listTabs = document.getElementById("listTabs");
   el.listTopAddButton = document.getElementById("listTopAddButton");
+  el.listReorderButton = document.getElementById("listReorderButton");
   el.listEditButton = document.getElementById("listEditButton");
   el.listMoreButton = document.getElementById("listMoreButton");
   el.listMoreMenu = document.getElementById("listMoreMenu");
@@ -292,18 +580,58 @@ function collectElements() {
   el.cardsContent = document.getElementById("cardsContent");
   el.cardTopAddButton = document.getElementById("cardTopAddButton");
   el.cardAddButton = document.getElementById("cardAddButton");
+  el.cardBatchEditButton = document.getElementById("cardBatchEditButton");
+  el.cardBatchBar = document.getElementById("cardBatchBar");
+  el.cardBatchStatus = document.getElementById("cardBatchStatus");
+  el.cardBatchDeleteButton = document.getElementById("cardBatchDeleteButton");
+  el.cardBatchCancelButton = document.getElementById("cardBatchCancelButton");
   el.linksContent = document.getElementById("linksContent");
   el.linkTopAddButton = document.getElementById("linkTopAddButton");
   el.linkAddButton = document.getElementById("linkAddButton");
+  el.linkBatchEditButton = document.getElementById("linkBatchEditButton");
+  el.linkBatchBar = document.getElementById("linkBatchBar");
+  el.linkBatchStatus = document.getElementById("linkBatchStatus");
+  el.linkBatchDeleteButton = document.getElementById("linkBatchDeleteButton");
+  el.linkBatchCancelButton = document.getElementById("linkBatchCancelButton");
   el.favoritesContent = document.getElementById("favoritesContent");
   el.favoritesReorderButton = document.getElementById("favoritesReorderButton");
   el.favoriteDividerAddButton = document.getElementById("favoriteDividerAddButton");
   el.globalSearch = document.getElementById("globalSearch");
   el.searchContent = document.getElementById("searchContent");
+  el.metronomeStatus = document.getElementById("metronomeStatus");
+  el.metronomeBpm = document.getElementById("metronomeBpm");
+  el.metronomeBpmOutput = document.getElementById("metronomeBpmOutput");
+  el.metronomeMinusButton = document.getElementById("metronomeMinusButton");
+  el.metronomePlusButton = document.getElementById("metronomePlusButton");
+  el.metronomeStartButton = document.getElementById("metronomeStartButton");
+  el.metronomeTapButton = document.getElementById("metronomeTapButton");
+  el.metronomeBeats = document.getElementById("metronomeBeats");
+  el.metronomeBeatDots = document.getElementById("metronomeBeatDots");
+  el.tunerStatus = document.getElementById("tunerStatus");
+  el.tunerInstrument = document.getElementById("tunerInstrument");
+  el.tunerNote = document.getElementById("tunerNote");
+  el.tunerFrequency = document.getElementById("tunerFrequency");
+  el.tunerTarget = document.getElementById("tunerTarget");
+  el.tunerNeedle = document.getElementById("tunerNeedle");
+  el.tunerStrings = document.getElementById("tunerStrings");
+  el.tunerStartButton = document.getElementById("tunerStartButton");
+  el.tunerMessage = document.getElementById("tunerMessage");
+  el.pitchStatus = document.getElementById("pitchStatus");
+  el.pitchPreset = document.getElementById("pitchPreset");
+  el.pitchNote = document.getElementById("pitchNote");
+  el.pitchNoteName = document.getElementById("pitchNoteName");
+  el.pitchFrequency = document.getElementById("pitchFrequency");
+  el.pitchQuickButtons = document.getElementById("pitchQuickButtons");
+  el.pitchPlayButton = document.getElementById("pitchPlayButton");
+  el.pitchStopButton = document.getElementById("pitchStopButton");
 
   el.detailContent = document.getElementById("detailContent");
 
   el.pdfViewer = document.getElementById("pdfViewer");
+  el.pdfTopHomeButton = document.getElementById("pdfTopHomeButton");
+  el.pdfHomeButton = document.getElementById("pdfHomeButton");
+  el.pdfTipsButton = document.getElementById("pdfTipsButton");
+  el.pdfMetronomeButton = document.getElementById("pdfMetronomeButton");
   el.pdfPrevButton = document.getElementById("pdfPrevButton");
   el.pdfNextButton = document.getElementById("pdfNextButton");
   el.pdfTitle = document.getElementById("pdfTitle");
@@ -381,6 +709,30 @@ function collectElements() {
   el.aboutModal = document.getElementById("aboutModal");
   el.aboutPanel = document.getElementById("aboutPanel");
   el.aboutCloseButton = document.getElementById("aboutCloseButton");
+
+  el.batchDeleteControls = {
+    library: {
+      editButton: el.libraryBatchEditButton,
+      bar: el.libraryBatchBar,
+      status: el.libraryBatchStatus,
+      deleteButton: el.libraryBatchDeleteButton,
+      cancelButton: el.libraryBatchCancelButton
+    },
+    cards: {
+      editButton: el.cardBatchEditButton,
+      bar: el.cardBatchBar,
+      status: el.cardBatchStatus,
+      deleteButton: el.cardBatchDeleteButton,
+      cancelButton: el.cardBatchCancelButton
+    },
+    links: {
+      editButton: el.linkBatchEditButton,
+      bar: el.linkBatchBar,
+      status: el.linkBatchStatus,
+      deleteButton: el.linkBatchDeleteButton,
+      cancelButton: el.linkBatchCancelButton
+    }
+  };
 }
 
 function wireEvents() {
@@ -399,6 +751,11 @@ function wireEvents() {
   el.cardTopAddButton.addEventListener("click", () => openImportModal(null, "card", "cards"));
   el.linkAddButton.addEventListener("click", () => openImportModal(null, "link", "links"));
   el.linkTopAddButton.addEventListener("click", () => openImportModal(null, "link", "links"));
+  Object.entries(el.batchDeleteControls).forEach(([section, controls]) => {
+    controls.editButton?.addEventListener("click", () => enterBatchDeleteMode(section));
+    controls.deleteButton?.addEventListener("click", () => deleteBatchSelectedItems(section));
+    controls.cancelButton?.addEventListener("click", () => cancelBatchDeleteMode(section));
+  });
   el.favoritesReorderButton.addEventListener("click", toggleFavoriteReorderMode);
   el.favoriteDividerAddButton.addEventListener("click", addFavoriteDivider);
   el.overflowMenuButton.addEventListener("click", toggleOverflowMenu);
@@ -435,6 +792,31 @@ function wireEvents() {
   el.settingsThemeChoices.addEventListener("change", handleSettingsThemeChange);
   el.helpCloseButton.addEventListener("click", closeHelpModal);
   el.aboutCloseButton.addEventListener("click", closeAboutModal);
+  el.metronomeMinusButton.addEventListener("click", () => setMetronomeBpm(state.metronome.bpm - 1));
+  el.metronomePlusButton.addEventListener("click", () => setMetronomeBpm(state.metronome.bpm + 1));
+  el.metronomeBpm.addEventListener("input", () => setMetronomeBpm(Number(el.metronomeBpm.value)));
+  el.metronomeStartButton.addEventListener("click", toggleMetronome);
+  el.metronomeTapButton.addEventListener("click", tapMetronomeTempo);
+  el.metronomeBeats.addEventListener("change", () => setMetronomeBeats(Number(el.metronomeBeats.value)));
+  el.tunerInstrument.addEventListener("change", () => setTunerInstrument(el.tunerInstrument.value));
+  el.tunerStartButton.addEventListener("click", toggleTuner);
+  el.pitchPreset.addEventListener("change", () => setPitchPreset(el.pitchPreset.value));
+  el.pitchNote.addEventListener("change", () => setPitchNote(el.pitchNote.value));
+  el.pitchPlayButton.addEventListener("click", playPitch);
+  el.pitchStopButton.addEventListener("click", stopPitch);
+  el.pitchQuickButtons.addEventListener("click", handlePitchQuickButtonClick);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopMetronome();
+      stopTuner();
+      stopPitch();
+    }
+  });
+  window.addEventListener("beforeunload", () => {
+    stopMetronome();
+    stopTuner();
+    stopPitch();
+  });
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
   window.addEventListener("pointermove", moveModalDrag);
   window.addEventListener("pointerup", endModalDrag);
@@ -452,6 +834,7 @@ function wireEvents() {
     closeListMoreMenu();
     createList();
   });
+  el.listReorderButton.addEventListener("click", toggleListReorderMode);
   el.listEditButton.addEventListener("click", toggleListEditMode);
   el.listItemAddButton.addEventListener("click", toggleListPicker);
   el.globalSearch.addEventListener("input", renderSearch);
@@ -464,11 +847,19 @@ function wireEvents() {
   document.body.addEventListener("pointermove", handleFavoriteDragPointerMove, { passive: false });
   document.body.addEventListener("pointerup", handleFavoriteDragPointerUp);
   document.body.addEventListener("pointercancel", handleFavoriteDragPointerCancel);
+  document.body.addEventListener("pointerdown", handleListDragPointerDown);
+  document.body.addEventListener("pointermove", handleListDragPointerMove, { passive: false });
+  document.body.addEventListener("pointerup", handleListDragPointerUp);
+  document.body.addEventListener("pointercancel", handleListDragPointerCancel);
   document.body.addEventListener("pointerdown", handleSwipePointerDown);
   document.body.addEventListener("pointermove", handleSwipePointerMove, { passive: false });
   document.body.addEventListener("pointerup", handleSwipePointerUp);
   document.body.addEventListener("pointercancel", handleSwipePointerUp);
 
+  el.pdfTopHomeButton.addEventListener("click", returnFromPdfViewer);
+  el.pdfHomeButton.addEventListener("click", returnFromPdfViewer);
+  el.pdfTipsButton.addEventListener("click", togglePdfTips);
+  el.pdfMetronomeButton.addEventListener("click", openMetronomeFromPdf);
   el.pdfPrevButton.addEventListener("click", previousPdfPage);
   el.pdfNextButton.addEventListener("click", nextPdfPage);
 
@@ -697,7 +1088,7 @@ function setNavHighlight(sectionName) {
   el.navButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.section === sectionName);
   });
-  el.overflowMenuButton.classList.toggle("active", sectionName === "search");
+  el.overflowMenuButton.classList.toggle("active", ["search", "metronome", "tuner", "pitch"].includes(sectionName));
 }
 
 function toggleListMoreMenu(event) {
@@ -787,7 +1178,7 @@ async function loadLibrary() {
     libraryData = cloneData(DEFAULT_LIBRARY_DATA);
   }
 
-  state.data = libraryData || cloneData(DEFAULT_LIBRARY_DATA);
+  state.data = mergeDefaultStarterData(libraryData || cloneData(DEFAULT_LIBRARY_DATA));
   const importedItems = cleanupImportedItemDuplicates();
   const baseItems = [
     ...(state.data.items || []),
@@ -796,6 +1187,32 @@ async function loadLibrary() {
   ].filter((item) => item?.id && !deletedItemIds().has(item.id));
   state.data.items = applyLocalItemEdits(baseItems);
   state.itemsById = new Map(state.data.items.map((item) => [item.id, item]));
+}
+
+function mergeDefaultStarterData(libraryData) {
+  const merged = cloneData(libraryData || {});
+  const defaults = cloneData(DEFAULT_LIBRARY_DATA);
+
+  merged.items = mergeById(merged.items || [], defaults.items || []);
+  merged.quickIndexes = mergeById(merged.quickIndexes || [], defaults.quickIndexes || []);
+  merged.setlists = mergeById(merged.setlists || [], defaults.setlists || []);
+
+  const favorites = new Set(merged.favorites || []);
+  (defaults.favorites || []).forEach((id) => favorites.add(id));
+  merged.favorites = Array.from(favorites);
+
+  return merged;
+}
+
+function mergeById(primaryItems, fallbackItems) {
+  const merged = [...primaryItems];
+  const existingIds = new Set(merged.map((item) => item?.id).filter(Boolean));
+  fallbackItems.forEach((item) => {
+    if (!item?.id || existingIds.has(item.id)) return;
+    merged.push(item);
+    existingIds.add(item.id);
+  });
+  return merged;
 }
 
 function showLoadError(error) {
@@ -815,9 +1232,22 @@ function showLoadError(error) {
 function loadLocalState() {
   // localStorage keeps private, device-only preferences and planning state.
   // Clearing browser site data resets these values without changing library.json.
+  syncStarterDataVersion();
   state.favorites = new Set(readJson(STORAGE_KEYS.favorites, []));
   applyStarterFavorites();
   state.lists = loadUnifiedLists();
+}
+
+function syncStarterDataVersion() {
+  const savedVersion = localStorage.getItem(STORAGE_KEYS.starterDataVersion);
+  if (savedVersion === STARTER_DATA_VERSION) return;
+
+  // Keep user-created lists and favorites, but allow new built-in starter
+  // content to merge in when this package is updated.
+  localStorage.removeItem(STORAGE_KEYS.starterFavorites);
+  localStorage.removeItem(STORAGE_KEYS.starterLists);
+  localStorage.setItem(STORAGE_KEYS.starterDataVersion, STARTER_DATA_VERSION);
+  shouldApplyStarterListOrder = true;
 }
 
 function applyStarterFavorites() {
@@ -829,7 +1259,8 @@ function applyStarterFavorites() {
   let appliedChanged = false;
 
   starterFavorites.forEach((id) => {
-    if (applied.has(id) || !state.itemsById.has(id)) return;
+    const isValidStarterFavorite = state.itemsById.has(id) || isFavoriteDividerId(id);
+    if (applied.has(id) || !isValidStarterFavorite) return;
     state.favorites.add(id);
     applied.add(id);
     favoritesChanged = true;
@@ -894,9 +1325,11 @@ function syncStarterLists(lists) {
 
   starterLists.forEach((starter) => {
     const starterEntries = (starter.entries || []).filter((entry) => state.itemsById.has(entry.itemId));
-    if (applied.has(starter.id) || !starterEntries.length) return;
+    if (!starterEntries.length) return;
 
     const existing = listById.get(starter.id);
+    if (applied.has(starter.id) && existing) return;
+
     if (existing) {
       const existingItems = new Set((existing.entries || []).map((entry) => entry.itemId));
       starterEntries.forEach((entry) => {
@@ -914,6 +1347,21 @@ function syncStarterLists(lists) {
     applied.add(starter.id);
     appliedChanged = true;
   });
+
+  if (shouldApplyStarterListOrder) {
+    const starterOrder = new Map(starterLists.map((list, index) => [list.id, index]));
+    const originalOrder = new Map(lists.map((list, index) => [list.id, index]));
+    lists.sort((a, b) => {
+      const aStarter = starterOrder.has(a.id);
+      const bStarter = starterOrder.has(b.id);
+      if (aStarter && bStarter) return starterOrder.get(a.id) - starterOrder.get(b.id);
+      if (aStarter) return -1;
+      if (bStarter) return 1;
+      return originalOrder.get(a.id) - originalOrder.get(b.id);
+    });
+    listsChanged = true;
+    shouldApplyStarterListOrder = false;
+  }
 
   if (appliedChanged) writeJson(STORAGE_KEYS.starterLists, Array.from(applied));
   if (listsChanged) writeJson(STORAGE_KEYS.lists, lists);
@@ -1009,7 +1457,7 @@ function populateSelect(select, options) {
 
 function openInitialSection() {
   if (!showSectionFromHash()) {
-    showSection("favorites");
+    showSection("lists");
   }
 }
 
@@ -2159,6 +2607,7 @@ function renderAll() {
   renderLinks();
   renderFavorites();
   renderSearch();
+  updateAllBatchDeleteControls();
 }
 
 function goHome() {
@@ -2180,6 +2629,8 @@ function goHome() {
 
 function showSection(sectionName) {
   if (!el.sections[sectionName]) return;
+  if (sectionName !== "tuner") stopTuner();
+  if (sectionName !== "pitch") stopPitch();
 
   if (sectionName !== "detail" && !el.pdfViewer.classList.contains("hidden")) {
     closePdfViewer();
@@ -2205,7 +2656,12 @@ function renderLibrary() {
   const query = el.librarySearch.value;
   const fileItems = state.data.items.filter(isFileItem);
   const filtered = filterItems(fileItems, query);
-  renderItemList(el.libraryContent, sortLibraryItems(filtered, el.librarySort.value), { compact: true, compactAction: "edit" });
+  renderItemList(el.libraryContent, sortLibraryItems(filtered, el.librarySort.value), {
+    compact: true,
+    compactAction: "edit",
+    batchDeleteSection: "library"
+  });
+  updateBatchDeleteControls("library");
 }
 
 function renderGroupedItems(container, items) {
@@ -2240,6 +2696,7 @@ function renderItemList(container, items, options = {}) {
   container.classList.toggle("compact-index-list", Boolean(options.compact));
   container.classList.toggle("favorite-list", Boolean(options.favoriteList));
   container.classList.toggle("favorite-reorder-list", Boolean(options.reorderFavorites));
+  container.classList.toggle("batch-delete-list", isBatchDeleteMode(options.batchDeleteSection));
   if (!items.length) {
     container.appendChild(emptyState());
     return;
@@ -2249,12 +2706,18 @@ function renderItemList(container, items, options = {}) {
 
 function createItemCard(item, options = {}) {
   const article = document.createElement("article");
-  const deleteAction = itemDeleteActionHtml(item);
+  const batchMode = isBatchDeleteMode(options.batchDeleteSection);
+  const deleteAction = batchMode ? "" : itemDeleteActionHtml(item);
   const title = itemDisplayTitle(item);
-  article.className = `${options.compact ? "item-card compact-item-card" : "item-card"}${deleteAction ? " swipe-row" : ""}${options.reorderFavorites ? " favorite-reorder-row" : ""}`;
+  const selected = batchMode && state.batchDeleteSelections[options.batchDeleteSection]?.has(item.id);
+  article.className = `${options.compact ? "item-card compact-item-card" : "item-card"}${deleteAction ? " swipe-row" : ""}${options.reorderFavorites ? " favorite-reorder-row" : ""}${batchMode ? " batch-delete-row" : ""}${selected ? " batch-selected" : ""}`;
   article.dataset.id = item.id;
   if (options.reorderFavorites) article.dataset.favoriteRow = item.id;
   if (options.compact) {
+    if (batchMode) {
+      article.innerHTML = batchDeleteRowHtml(item, options.batchDeleteSection, selected);
+      return article;
+    }
     const reorderHandle = options.reorderFavorites
       ? `<button class="favorite-drag-handle" type="button" data-favorite-drag="${escapeHtml(item.id)}" aria-label="Drag to reorder ${escapeHtml(title)}" title="Drag to reorder"><span aria-hidden="true"></span></button>`
       : "";
@@ -2275,7 +2738,7 @@ function createItemCard(item, options = {}) {
     ${deleteAction}
     <div class="swipe-content item-card-content">
       <button class="icon-button favorite-toggle ${state.favorites.has(item.id) ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(item.id)}" aria-label="Toggle favorite">
-        ${state.favorites.has(item.id) ? "★" : "☆"}
+        ${state.favorites.has(item.id) ? "ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" : "ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â "}
       </button>
       <button class="item-open" type="button" data-open="${escapeHtml(item.id)}">
         <h3>${escapeHtml(title)} <span class="type-pill">${escapeHtml(item.type)}</span></h3>
@@ -2298,8 +2761,9 @@ function itemDeleteActionHtml(item) {
 }
 
 function compactItemRowHtml(item, options = {}) {
-  const meta = compactLibraryMetaText(item);
-  const title = itemDisplayTitle(item);
+  const meta = options.favoriteList ? "" : compactLibraryMetaText(item);
+  const title = options.favoriteList ? itemDisplayTitleWithInlinePage(item) : itemDisplayTitle(item);
+  const typeLabel = compactTypeLabel(item);
   const compactAction = options.compactAction === "edit"
     ? `
     <button class="icon-button info-button compact-info-button" type="button" data-edit-item="${escapeHtml(item.id)}" aria-label="Edit ${escapeHtml(title)}" title="Edit">
@@ -2314,10 +2778,138 @@ function compactItemRowHtml(item, options = {}) {
       <span class="compact-item-line">
         <span class="compact-title">${escapeHtml(title)}</span>
         ${meta ? `<span class="compact-meta">${escapeHtml(meta)}</span>` : ""}
+        <span class="type-pill compact-type">${escapeHtml(typeLabel)}</span>
       </span>
     </button>
     ${compactAction}
   `;
+}
+
+function batchDeleteRowHtml(item, section, selected) {
+  const meta = compactLibraryMetaText(item);
+  const title = itemDisplayTitle(item);
+  return `
+    <div class="item-card-content compact-item-card-content batch-delete-content">
+      <label class="batch-select-cell" title="Select ${escapeHtml(title)}">
+        <input type="checkbox" data-batch-select="${escapeHtml(section)}" value="${escapeHtml(item.id)}" ${selected ? "checked" : ""}>
+        <span class="sr-only">Select ${escapeHtml(title)}</span>
+      </label>
+      <button class="item-open compact-item-open batch-toggle-open" type="button" data-batch-toggle="${escapeHtml(section)}" data-batch-item="${escapeHtml(item.id)}">
+        <span class="compact-item-line">
+          <span class="compact-title">${escapeHtml(title)}</span>
+          ${meta ? `<span class="compact-meta">${escapeHtml(meta)}</span>` : ""}
+        </span>
+      </button>
+    </div>
+  `;
+}
+
+function isBatchDeleteMode(section) {
+  return Boolean(section && state.batchDeleteMode[section]);
+}
+
+function isBatchDeleteSection(section) {
+  return BATCH_DELETE_SECTIONS.includes(section);
+}
+
+function enterBatchDeleteMode(section) {
+  if (!isBatchDeleteSection(section)) return;
+  closeSwipeRows();
+  state.batchDeleteMode[section] = true;
+  state.batchDeleteSelections[section].clear();
+  renderBatchDeleteSection(section);
+}
+
+function cancelBatchDeleteMode(section) {
+  if (!isBatchDeleteSection(section)) return;
+  state.batchDeleteMode[section] = false;
+  state.batchDeleteSelections[section].clear();
+  renderBatchDeleteSection(section);
+}
+
+function toggleBatchDeleteSelection(section, itemId) {
+  if (!isBatchDeleteSection(section) || !state.batchDeleteMode[section]) return;
+  const selections = state.batchDeleteSelections[section];
+  if (selections.has(itemId)) {
+    selections.delete(itemId);
+  } else {
+    selections.add(itemId);
+  }
+  renderBatchDeleteSection(section);
+}
+
+function setBatchDeleteSelection(section, itemId, selected) {
+  if (!isBatchDeleteSection(section) || !state.batchDeleteMode[section]) return;
+  const selections = state.batchDeleteSelections[section];
+  if (selected) {
+    selections.add(itemId);
+  } else {
+    selections.delete(itemId);
+  }
+  updateBatchDeleteControls(section);
+}
+
+async function deleteBatchSelectedItems(section) {
+  if (!isBatchDeleteSection(section)) return;
+  const ids = Array.from(state.batchDeleteSelections[section])
+    .filter((id) => state.itemsById.has(id) && isDeletableItem(id));
+  if (!ids.length) {
+    updateBatchDeleteControls(section);
+    return;
+  }
+
+  const label = ids.length === 1 ? "selected item" : "selected items";
+  const ok = window.confirm(`Delete ${ids.length} ${label}? This cannot be undone.`);
+  if (!ok) return;
+
+  for (const itemId of ids) {
+    await deleteUserItem(itemId);
+  }
+
+  state.batchDeleteSelections[section].clear();
+  state.batchDeleteMode[section] = false;
+  pruneBatchDeleteSelections();
+  renderAll();
+}
+
+function pruneBatchDeleteSelections() {
+  BATCH_DELETE_SECTIONS.forEach((section) => {
+    state.batchDeleteSelections[section].forEach((itemId) => {
+      if (!state.itemsById.has(itemId)) state.batchDeleteSelections[section].delete(itemId);
+    });
+  });
+}
+
+function renderBatchDeleteSection(section) {
+  if (section === "library") renderLibrary();
+  if (section === "cards") renderCards();
+  if (section === "links") renderLinks();
+  updateBatchDeleteControls(section);
+}
+
+function updateAllBatchDeleteControls() {
+  BATCH_DELETE_SECTIONS.forEach(updateBatchDeleteControls);
+}
+
+function updateBatchDeleteControls(section) {
+  if (!isBatchDeleteSection(section) || !el.batchDeleteControls) return;
+  const controls = el.batchDeleteControls[section];
+  if (!controls?.editButton) return;
+
+  const active = state.batchDeleteMode[section];
+  const selectedCount = state.batchDeleteSelections[section].size;
+  controls.editButton.classList.toggle("active-tool", active);
+  controls.editButton.textContent = active ? "Editing" : "Edit";
+  controls.editButton.setAttribute("aria-pressed", active ? "true" : "false");
+  controls.bar?.classList.toggle("hidden", !active);
+  if (controls.status) {
+    controls.status.textContent = selectedCount
+      ? `${selectedCount} selected`
+      : "Select items to delete";
+  }
+  if (controls.deleteButton) {
+    controls.deleteButton.disabled = selectedCount === 0;
+  }
 }
 
 function renderLists() {
@@ -2332,6 +2924,10 @@ function renderLists() {
     el.listEditButton.title = "Edit list";
     el.listEditButton.disabled = true;
     el.listMoreButton.disabled = false;
+    el.listReorderButton.classList.add("hidden");
+    el.listReorderButton.classList.remove("active-tool");
+    el.listReorderButton.setAttribute("aria-pressed", "false");
+    state.listReorderMode = false;
     el.listItemAddButton.disabled = true;
     el.listItemAddButton.classList.add("hidden");
     el.listEditButton.classList.remove("active-tool");
@@ -2350,9 +2946,15 @@ function renderLists() {
   if (state.expandedListId && !state.lists.some((list) => list.id === state.expandedListId)) {
     state.expandedListId = "";
   }
+  if (state.lists.length < 2) {
+    state.listReorderMode = false;
+  }
   el.listSelect.value = active.id;
   renderListTabs(active);
 
+  el.listReorderButton.classList.toggle("hidden", state.lists.length < 2);
+  el.listReorderButton.classList.toggle("active-tool", state.listReorderMode);
+  el.listReorderButton.setAttribute("aria-pressed", state.listReorderMode ? "true" : "false");
   el.listEditButton.innerHTML = state.listEditMode ? "&#10003;" : "&#9998;";
   el.listEditButton.setAttribute("aria-label", state.listEditMode ? "Save list changes" : "Edit list");
   el.listEditButton.title = state.listEditMode ? "Save list changes" : "Edit list";
@@ -2368,21 +2970,27 @@ function renderLists() {
 }
 
 function renderListTabs(active) {
+  el.listTabs.classList.toggle("list-reorder-list", state.listReorderMode);
   el.listTabs.innerHTML = state.lists.map((list) => {
     const itemCount = getResolvedListEntries(list).length;
     const activeClass = list.id === active.id ? " active" : "";
     const expandedClass = list.id === state.expandedListId ? " expanded" : "";
+    const reorderClass = state.listReorderMode ? " list-reorder-row" : "";
     const expanded = list.id === state.expandedListId ? "true" : "false";
     const selected = list.id === active.id ? "true" : "false";
     const title = list.title || "Untitled List";
+    const reorderHandle = state.listReorderMode
+      ? `<button class="favorite-drag-handle list-drag-handle" type="button" data-list-drag="${escapeHtml(list.id)}" aria-label="Drag to reorder ${escapeHtml(title)}" title="Drag to reorder"><span aria-hidden="true"></span></button>`
+      : "";
     return `
-      <div class="list-tab-group${activeClass}${expandedClass}" role="option" aria-selected="${selected}">
+      <div class="list-tab-group${activeClass}${expandedClass}${reorderClass}" role="option" aria-selected="${selected}" data-list-row="${escapeHtml(list.id)}">
         <div class="list-tab-row">
         <button class="list-tab-main" type="button" data-select-list="${escapeHtml(list.id)}" title="${escapeHtml(title)}" aria-expanded="${expanded}">
           <span class="list-tab-title">${escapeHtml(title)}</span>
           ${itemCount ? `<span class="list-tab-count">${itemCount}</span>` : ""}
         </button>
         <button class="icon-button list-row-edit-button" type="button" data-edit-list-row="${escapeHtml(list.id)}" aria-label="Edit ${escapeHtml(title)}" title="Edit list">&#9998;</button>
+        ${reorderHandle}
         </div>
         ${list.id === state.expandedListId ? renderInlineListItems(list) : ""}
       </div>
@@ -2400,14 +3008,9 @@ function renderInlineListItems(list) {
   return `
     <div class="inline-list-items">
       ${entries.map((entry) => {
-        const title = itemDisplayTitle(entry.item);
-        const page = entry.page || entry.item.page;
+        const title = itemDisplayTitleWithInlinePage(entry.item, entry.page);
         const favorite = state.favorites.has(entry.item.id);
-        const meta = [
-          page ? `p. ${page}` : "",
-          entry.item.book || entry.item.category || "",
-          entry.item.type || ""
-        ].filter(Boolean).join(" - ");
+        const typeLabel = compactTypeLabel(entry.item);
         return `
           <div class="inline-list-row">
             <button class="icon-button favorite-toggle inline-list-favorite ${favorite ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(entry.item.id)}" aria-label="Toggle favorite for ${escapeHtml(title)}" title="Toggle favorite">
@@ -2415,7 +3018,7 @@ function renderInlineListItems(list) {
             </button>
             <button class="inline-list-item" type="button" data-open="${escapeHtml(entry.item.id)}">
               <span class="compact-title">${escapeHtml(title)}</span>
-              ${meta ? `<span class="compact-meta">${escapeHtml(meta)}</span>` : ""}
+              <span class="type-pill compact-type">${escapeHtml(typeLabel)}</span>
             </button>
             <button class="icon-button inline-list-edit-button" type="button" data-edit-item="${escapeHtml(entry.item.id)}" data-edit-context="lists" aria-label="Edit ${escapeHtml(title)}" title="Edit item">&#9998;</button>
           </div>
@@ -2623,7 +3226,8 @@ function updateListPickerOptions(listId = state.activeListId) {
 function renderCards() {
   const cards = state.data.items.filter((item) => item.type === "card").sort(compareTitle);
   el.cardsContent.classList.remove("cards-grid");
-  renderItemList(el.cardsContent, cards, { compact: true });
+  renderItemList(el.cardsContent, cards, { compact: true, batchDeleteSection: "cards" });
+  updateBatchDeleteControls("cards");
 }
 
 function renderCardPreviews() {
@@ -2648,7 +3252,7 @@ function renderCardPreviews() {
             ${card.key ? `<p class="quick-meta">Key: ${escapeHtml(card.key)}</p>` : ""}
           </button>
           <button class="icon-button favorite-toggle ${state.favorites.has(card.id) ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(card.id)}" aria-label="Toggle favorite">
-            ${state.favorites.has(card.id) ? "★" : "☆"}
+            ${state.favorites.has(card.id) ? "ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" : "ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â "}
           </button>
         </div>
         ${card.imageFileId ? localImageSlotHtml(card) : ""}
@@ -2663,7 +3267,8 @@ function renderCardPreviews() {
 
 function renderLinks() {
   const links = state.data.items.filter((item) => item.type === "link").sort(compareTitle);
-  renderItemList(el.linksContent, links, { compact: true });
+  renderItemList(el.linksContent, links, { compact: true, batchDeleteSection: "links" });
+  updateBatchDeleteControls("links");
 }
 
 function renderFavorites() {
@@ -2872,6 +3477,12 @@ async function handleBodyClick(event) {
     return;
   }
 
+  const batchToggleButton = event.target.closest("[data-batch-toggle]");
+  if (batchToggleButton) {
+    toggleBatchDeleteSelection(batchToggleButton.dataset.batchToggle, batchToggleButton.dataset.batchItem);
+    return;
+  }
+
   const addListButton = event.target.closest("[data-add-list]");
   if (addListButton) {
     addItemToList(
@@ -3062,9 +3673,97 @@ function finishFavoriteDrag(saveOrder) {
   }
 }
 
+function handleListDragPointerDown(event) {
+  if (!state.listReorderMode) return;
+  const handle = event.target.closest("[data-list-drag]");
+  if (!handle) return;
+
+  const row = handle.closest("[data-list-row]");
+  const container = row?.parentElement;
+  if (!row || !container) return;
+
+  event.preventDefault();
+  closeSwipeRows();
+  state.listDrag = {
+    row,
+    container,
+    pointerId: event.pointerId,
+    startY: event.clientY,
+    moved: false
+  };
+  row.classList.add("is-dragging");
+  container.classList.add("list-reorder-active");
+  handle.setPointerCapture?.(event.pointerId);
+}
+
+function handleListDragPointerMove(event) {
+  const drag = state.listDrag;
+  if (!drag.row || event.pointerId !== drag.pointerId) return;
+
+  const deltaY = event.clientY - drag.startY;
+  if (Math.abs(deltaY) > 4) drag.moved = true;
+  event.preventDefault();
+
+  const rows = Array.from(drag.container.querySelectorAll("[data-list-row]"))
+    .filter((row) => row !== drag.row);
+  const beforeRow = rows.find((row) => {
+    const rect = row.getBoundingClientRect();
+    return event.clientY < rect.top + rect.height / 2;
+  });
+
+  if (beforeRow) {
+    drag.container.insertBefore(drag.row, beforeRow);
+  } else {
+    drag.container.appendChild(drag.row);
+  }
+}
+
+function handleListDragPointerUp(event) {
+  const drag = state.listDrag;
+  if (!drag.row || event.pointerId !== drag.pointerId) return;
+  finishListDrag(true);
+}
+
+function handleListDragPointerCancel(event) {
+  const drag = state.listDrag;
+  if (!drag.row || event.pointerId !== drag.pointerId) return;
+  finishListDrag(false);
+}
+
+function finishListDrag(saveOrder) {
+  const drag = state.listDrag;
+  if (!drag.row || !drag.container) return;
+
+  const orderedIds = Array.from(drag.container.querySelectorAll("[data-list-row]"))
+    .map((row) => row.dataset.listRow)
+    .filter(Boolean);
+
+  drag.row.classList.remove("is-dragging");
+  drag.container.classList.remove("list-reorder-active");
+
+  const shouldSave = saveOrder && drag.moved;
+  state.listDrag = {
+    row: null,
+    container: null,
+    pointerId: null,
+    startY: 0,
+    moved: false
+  };
+
+  if (shouldSave) {
+    saveListOrder(orderedIds);
+    state.swipe.suppressClick = true;
+    window.setTimeout(() => {
+      state.swipe.suppressClick = false;
+    }, 250);
+  } else if (!saveOrder) {
+    renderLists();
+  }
+}
+
 function handleSwipePointerDown(event) {
   if (event.pointerType && event.pointerType !== "touch" && event.pointerType !== "pen") return;
-  if (event.target.closest(".swipe-delete-action, .favorite-drag-handle, input, textarea, select")) return;
+  if (event.target.closest(".swipe-delete-action, .favorite-drag-handle, .list-drag-handle, input, textarea, select")) return;
 
   const row = event.target.closest(".swipe-row");
   if (!row) return;
@@ -3116,6 +3815,12 @@ function closeSwipeRows(exceptRow = null) {
 }
 
 function handleBodyChange(event) {
+  const batchSelect = event.target.closest("[data-batch-select]");
+  if (batchSelect) {
+    setBatchDeleteSelection(batchSelect.dataset.batchSelect, batchSelect.value, batchSelect.checked);
+    return;
+  }
+
   const listModalCheckbox = event.target.closest("[data-list-modal-check]");
   if (listModalCheckbox) {
     toggleListItemFromModal(listModalCheckbox.dataset.listModalCheck, listModalCheckbox.checked);
@@ -3288,7 +3993,7 @@ function cardFactsHtml(item) {
     item.capo ? `Capo: ${item.capo}` : "",
     item.startingNote ? `Starting note: ${item.startingNote}` : ""
   ].filter(Boolean);
-  return facts.length ? `<p class="quick-meta">${escapeHtml(facts.join(" · "))}</p>` : "";
+  return facts.length ? `<p class="quick-meta">${escapeHtml(facts.join(" ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· "))}</p>` : "";
 }
 
 function cardContentHtml(item, options = {}) {
@@ -3322,6 +4027,7 @@ async function openPdf(item) {
   showPdfMessage("Loading PDF...");
   document.body.classList.add("pdf-open");
   el.pdfViewer.classList.remove("hidden");
+  hidePdfTips();
 
   if (!window.pdfjsLib) {
     showPdfMessage("PDF.js could not be loaded. Check your internet connection or download PDF.js for local use.");
@@ -3342,10 +4048,18 @@ async function openPdf(item) {
   } catch (error) {
     const message = item.fileId
       ? "This imported PDF was not found in local browser storage. Try importing it again from this device."
-      : "This PDF file was not found. Check the filename or folder path in library.json.";
+      : getBundledPdfErrorMessage();
     showPdfMessage(message);
     el.pdfPageStatus.textContent = "PDF unavailable";
   }
+}
+
+function getBundledPdfErrorMessage() {
+  if (window.location.protocol === "file:") {
+    return "This PDF could not be opened from a file folder. Start the local web server or use the GitHub Pages link so PDF.js can read the PDF files.";
+  }
+
+  return "This PDF file was not found. Check that the PDF is in the music folder and that the filename matches library.json exactly.";
 }
 
 function openLinkItem(item) {
@@ -3376,7 +4090,7 @@ async function getPdfSource(item) {
   if (!item.file) {
     throw new Error("PDF path missing");
   }
-  return item.file;
+  return item.file.split("/").map((part) => encodeURIComponent(part)).join("/");
 }
 
 function releasePdfObjectUrl() {
@@ -3444,6 +4158,40 @@ function updatePdfStatus() {
   el.pdfPageStatus.textContent = `Page ${state.currentPdf.pageNumber} of ${state.currentPdf.pageCount}`;
 }
 
+function openMetronomeFromPdf() {
+  closePdfViewer();
+  showSection("metronome");
+}
+function returnFromPdfViewer() {
+  const targetSection = state.activeSection && state.activeSection !== "detail"
+    ? state.activeSection
+    : state.previousSection || "lists";
+  closePdfViewer();
+  showSection(targetSection);
+}
+
+function togglePdfTips() {
+  const showTips = !el.pdfViewer.classList.contains("show-tips");
+  setPdfTipsVisible(showTips);
+}
+
+function setPdfTipsVisible(showTips) {
+  window.clearTimeout(state.currentPdf.tipsTimer);
+  state.currentPdf.tipsTimer = null;
+  el.pdfViewer.classList.toggle("show-tips", showTips);
+  el.pdfTipsButton.setAttribute("aria-pressed", showTips ? "true" : "false");
+  if (showTips) {
+    state.currentPdf.tipsTimer = window.setTimeout(() => {
+      setPdfTipsVisible(false);
+    }, 4500);
+  }
+}
+
+function hidePdfTips() {
+  if (!el.pdfViewer || !el.pdfTipsButton) return;
+  setPdfTipsVisible(false);
+}
+
 function previousPdfPage() {
   if (!state.currentPdf.doc || state.currentPdf.pageNumber <= 1) return;
   goToPdfPage(state.currentPdf.pageNumber - 1);
@@ -3471,6 +4219,7 @@ function goToPdfPage(pageNumber) {
 }
 
 function closePdfViewer() {
+  hidePdfTips();
   el.pdfViewer.classList.add("hidden");
   document.body.classList.remove("pdf-open");
   resetPdfZoom();
@@ -3663,6 +4412,546 @@ function clampPdfPan() {
   state.currentPdf.panY = clamp(state.currentPdf.panY, minPanY, maxPanY);
 }
 
+function loadPitchSettings() {
+  const saved = readJson(STORAGE_KEYS.pitch, {});
+  state.pitch.preset = PITCH_PRESETS[saved.preset] ? saved.preset : "chromatic";
+  state.pitch.note = getPitchNotes(state.pitch.preset).some((note) => note.label === saved.note)
+    ? saved.note
+    : PITCH_PRESETS[state.pitch.preset].defaultNote;
+}
+
+function savePitchSettings() {
+  writeJson(STORAGE_KEYS.pitch, {
+    preset: state.pitch.preset,
+    note: state.pitch.note
+  });
+}
+
+function renderPitch() {
+  if (!el.pitchPreset) return;
+  const notes = getPitchNotes(state.pitch.preset);
+  el.pitchPreset.value = state.pitch.preset;
+  el.pitchNote.innerHTML = "";
+  notes.forEach((note) => {
+    const option = document.createElement("option");
+    option.value = note.label;
+    option.textContent = note.label;
+    el.pitchNote.appendChild(option);
+  });
+  if (!notes.some((note) => note.label === state.pitch.note)) {
+    state.pitch.note = PITCH_PRESETS[state.pitch.preset].defaultNote;
+  }
+  el.pitchNote.value = state.pitch.note;
+  const selected = getSelectedPitchNote();
+  el.pitchNoteName.textContent = selected.label;
+  el.pitchFrequency.textContent = `${selected.frequency.toFixed(1)} Hz`;
+  el.pitchStatus.textContent = state.pitch.playing ? "Playing" : "Ready";
+  el.pitchPlayButton.textContent = state.pitch.playing ? "Change pitch" : "Play pitch";
+  renderPitchQuickButtons(notes);
+}
+
+function renderPitchQuickButtons(notes) {
+  if (!el.pitchQuickButtons) return;
+  el.pitchQuickButtons.innerHTML = "";
+  const preset = PITCH_PRESETS[state.pitch.preset];
+  const quickNotes = preset.notes ? notes : notes.filter((note) => ["C", "D", "E", "F", "G", "A", "B"].includes(note.label.replace(/\d+$/, "")));
+  quickNotes.slice(0, 18).forEach((note) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "pitch-note-button";
+    button.dataset.pitchNote = note.label;
+    button.textContent = note.label;
+    button.classList.toggle("active", note.label === state.pitch.note);
+    el.pitchQuickButtons.appendChild(button);
+  });
+}
+
+function getPitchNotes(presetKey) {
+  const preset = PITCH_PRESETS[presetKey] || PITCH_PRESETS.chromatic;
+  if (preset.notes) return preset.notes.map((note) => ({ ...note }));
+  const notes = [];
+  for (let midi = preset.midiStart; midi <= preset.midiEnd; midi += 1) {
+    notes.push(pitchNoteFromMidi(midi));
+  }
+  return notes;
+}
+
+function pitchNoteFromMidi(midi) {
+  const noteIndex = ((midi % 12) + 12) % 12;
+  const octave = Math.floor(midi / 12) - 1;
+  return {
+    label: `${TUNER_NOTE_NAMES[noteIndex]}${octave}`,
+    frequency: 440 * Math.pow(2, (midi - 69) / 12)
+  };
+}
+
+function getSelectedPitchNote() {
+  return getPitchNotes(state.pitch.preset).find((note) => note.label === state.pitch.note) || pitchNoteFromMidi(69);
+}
+
+function setPitchPreset(value) {
+  const nextPreset = PITCH_PRESETS[value] ? value : "chromatic";
+  const nextNotes = getPitchNotes(nextPreset);
+  state.pitch.preset = nextPreset;
+  if (!nextNotes.some((note) => note.label === state.pitch.note)) {
+    state.pitch.note = PITCH_PRESETS[nextPreset].defaultNote;
+  }
+  savePitchSettings();
+  if (state.pitch.playing) {
+    playPitch();
+  } else {
+    renderPitch();
+  }
+}
+
+function setPitchNote(value) {
+  const notes = getPitchNotes(state.pitch.preset);
+  state.pitch.note = notes.some((note) => note.label === value) ? value : PITCH_PRESETS[state.pitch.preset].defaultNote;
+  savePitchSettings();
+  if (state.pitch.playing) {
+    playPitch();
+  } else {
+    renderPitch();
+  }
+}
+
+function handlePitchQuickButtonClick(event) {
+  const button = event.target.closest("[data-pitch-note]");
+  if (!button) return;
+  setPitchNote(button.dataset.pitchNote);
+  playPitch();
+}
+
+async function playPitch() {
+  const note = getSelectedPitchNote();
+  const audioContext = await ensurePitchAudio();
+  if (!audioContext) return;
+  stopPitchTone(false);
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(note.frequency, audioContext.currentTime);
+  gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.28, audioContext.currentTime + 0.02);
+  oscillator.connect(gain).connect(audioContext.destination);
+  oscillator.start();
+  state.pitch.oscillator = oscillator;
+  state.pitch.gain = gain;
+  state.pitch.playing = true;
+  renderPitch();
+}
+
+async function ensurePitchAudio() {
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextCtor) {
+    window.alert("This browser cannot play pitch audio.");
+    return null;
+  }
+  if (!state.pitch.audioContext || state.pitch.audioContext.state === "closed") {
+    state.pitch.audioContext = new AudioContextCtor();
+  }
+  if (state.pitch.audioContext.state === "suspended") {
+    await state.pitch.audioContext.resume();
+  }
+  return state.pitch.audioContext;
+}
+
+function stopPitch() {
+  stopPitchTone(true);
+  if (state.pitch.audioContext) {
+    state.pitch.audioContext.close?.();
+    state.pitch.audioContext = null;
+  }
+}
+
+function stopPitchTone(shouldRender = true) {
+  if (state.pitch.gain && state.pitch.audioContext && state.pitch.audioContext.state !== "closed") {
+    const now = state.pitch.audioContext.currentTime;
+    try {
+      state.pitch.gain.gain.cancelScheduledValues(now);
+      state.pitch.gain.gain.setValueAtTime(Math.max(state.pitch.gain.gain.value, 0.0001), now);
+      state.pitch.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+    } catch (error) { /* Ignore gain ramp errors during shutdown. */ }
+  }
+  if (state.pitch.oscillator) {
+    try { state.pitch.oscillator.stop(state.pitch.audioContext.currentTime + 0.04); } catch (error) { /* Ignore repeated stop calls. */ }
+    try { state.pitch.oscillator.disconnect(); } catch (error) { /* Ignore disconnect errors. */ }
+  }
+  if (state.pitch.gain) {
+    try { state.pitch.gain.disconnect(); } catch (error) { /* Ignore disconnect errors. */ }
+  }
+  state.pitch.oscillator = null;
+  state.pitch.gain = null;
+  state.pitch.playing = false;
+  if (shouldRender) renderPitch();
+}
+function loadTunerSettings() {
+  const saved = readJson(STORAGE_KEYS.tuner, {});
+  state.tuner.instrument = TUNER_INSTRUMENTS[saved.instrument] ? saved.instrument : "chromatic";
+}
+
+function saveTunerSettings() {
+  writeJson(STORAGE_KEYS.tuner, { instrument: state.tuner.instrument });
+}
+
+function renderTuner() {
+  if (!el.tunerInstrument) return;
+  el.tunerInstrument.value = state.tuner.instrument;
+  el.tunerStatus.textContent = state.tuner.running ? "Listening" : "Microphone off";
+  el.tunerStartButton.textContent = state.tuner.running ? "Stop tuner" : "Start tuner";
+  renderTunerStrings();
+  if (!state.tuner.running) {
+    el.tunerNote.textContent = "--";
+    el.tunerFrequency.textContent = "Tap Start and play a note";
+    el.tunerTarget.textContent = "";
+    el.tunerNeedle.style.left = "50%";
+  }
+}
+
+function renderTunerStrings(activeLabel = "") {
+  if (!el.tunerStrings) return;
+  const instrument = TUNER_INSTRUMENTS[state.tuner.instrument] || TUNER_INSTRUMENTS.chromatic;
+  el.tunerStrings.innerHTML = "";
+  if (!instrument.targets.length) {
+    el.tunerStrings.classList.add("hidden");
+    return;
+  }
+  el.tunerStrings.classList.remove("hidden");
+  instrument.targets.forEach((target) => {
+    const chip = document.createElement("span");
+    chip.textContent = target.label;
+    chip.className = "tuner-string-chip";
+    chip.classList.toggle("active", target.label === activeLabel);
+    el.tunerStrings.appendChild(chip);
+  });
+}
+
+function setTunerInstrument(value) {
+  state.tuner.instrument = TUNER_INSTRUMENTS[value] ? value : "chromatic";
+  saveTunerSettings();
+  renderTuner();
+}
+
+async function toggleTuner() {
+  if (state.tuner.running) {
+    stopTuner();
+    return;
+  }
+  await startTuner();
+}
+
+async function startTuner() {
+  if (!window.isSecureContext && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+    el.tunerMessage.textContent = "Microphone access needs HTTPS. Use the GitHub Pages link for the tuner.";
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    el.tunerMessage.textContent = "This browser does not provide microphone access.";
+    return;
+  }
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextCtor) {
+    el.tunerMessage.textContent = "This browser cannot run the tuner audio engine.";
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false
+      }
+    });
+    const audioContext = new AudioContextCtor();
+    if (audioContext.state === "suspended") await audioContext.resume();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 4096;
+    analyser.smoothingTimeConstant = 0;
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+    state.tuner.stream = stream;
+    state.tuner.audioContext = audioContext;
+    state.tuner.analyser = analyser;
+    state.tuner.source = source;
+    state.tuner.buffer = new Float32Array(analyser.fftSize);
+    state.tuner.running = true;
+    state.tuner.lastAnalysisAt = 0;
+    el.tunerMessage.textContent = "Play one steady note near the microphone.";
+    renderTuner();
+    updateTunerLoop();
+  } catch (error) {
+    el.tunerMessage.textContent = "Microphone permission was not granted.";
+    stopTuner();
+  }
+}
+
+function stopTuner() {
+  if (state.tuner.rafId) {
+    cancelAnimationFrame(state.tuner.rafId);
+    state.tuner.rafId = null;
+  }
+  if (state.tuner.source) {
+    try { state.tuner.source.disconnect(); } catch (error) { /* Ignore disconnect errors. */ }
+  }
+  if (state.tuner.stream) {
+    state.tuner.stream.getTracks().forEach((track) => track.stop());
+  }
+  if (state.tuner.audioContext) {
+    state.tuner.audioContext.close?.();
+  }
+  state.tuner.running = false;
+  state.tuner.audioContext = null;
+  state.tuner.analyser = null;
+  state.tuner.source = null;
+  state.tuner.stream = null;
+  state.tuner.buffer = null;
+  state.tuner.lastFrequency = 0;
+  renderTuner();
+}
+
+function updateTunerLoop(timestamp = 0) {
+  if (!state.tuner.running || !state.tuner.analyser || !state.tuner.buffer) return;
+  if (timestamp - state.tuner.lastAnalysisAt > 80) {
+    state.tuner.lastAnalysisAt = timestamp;
+    state.tuner.analyser.getFloatTimeDomainData(state.tuner.buffer);
+    const frequency = detectPitch(state.tuner.buffer, state.tuner.audioContext.sampleRate);
+    updateTunerReadout(frequency);
+  }
+  state.tuner.rafId = requestAnimationFrame(updateTunerLoop);
+}
+
+function updateTunerReadout(frequency) {
+  if (!frequency) {
+    el.tunerFrequency.textContent = "Play one steady note";
+    el.tunerTarget.textContent = "";
+    el.tunerNeedle.style.left = "50%";
+    renderTunerStrings();
+    return;
+  }
+  const measurement = getTunerMeasurement(frequency);
+  const cents = clampNumber(measurement.cents, -50, 50);
+  el.tunerNote.textContent = measurement.noteLabel;
+  el.tunerFrequency.textContent = `${frequency.toFixed(1)} Hz`;
+  el.tunerTarget.textContent = measurement.targetLabel;
+  el.tunerNeedle.style.left = `${50 + cents}%`;
+  renderTunerStrings(measurement.targetChip);
+}
+
+function getTunerMeasurement(frequency) {
+  const instrument = TUNER_INSTRUMENTS[state.tuner.instrument] || TUNER_INSTRUMENTS.chromatic;
+  if (instrument.targets.length) {
+    let bestTarget = instrument.targets[0];
+    let bestCents = centsBetween(frequency, bestTarget.frequency);
+    instrument.targets.forEach((target) => {
+      const cents = centsBetween(frequency, target.frequency);
+      if (Math.abs(cents) < Math.abs(bestCents)) {
+        bestTarget = target;
+        bestCents = cents;
+      }
+    });
+    return {
+      noteLabel: bestTarget.label,
+      cents: Math.round(bestCents),
+      targetLabel: `${Math.round(bestCents)} cents`,
+      targetChip: bestTarget.label
+    };
+  }
+  const note = noteFromFrequency(frequency);
+  return {
+    noteLabel: note.label,
+    cents: note.cents,
+    targetLabel: `${note.cents} cents`,
+    targetChip: ""
+  };
+}
+
+function noteFromFrequency(frequency) {
+  const midi = Math.round(69 + 12 * Math.log2(frequency / 440));
+  const noteIndex = ((midi % 12) + 12) % 12;
+  const octave = Math.floor(midi / 12) - 1;
+  const targetFrequency = 440 * Math.pow(2, (midi - 69) / 12);
+  return {
+    label: `${TUNER_NOTE_NAMES[noteIndex]}${octave}`,
+    cents: Math.round(centsBetween(frequency, targetFrequency))
+  };
+}
+
+function centsBetween(frequency, targetFrequency) {
+  return 1200 * Math.log2(frequency / targetFrequency);
+}
+
+function detectPitch(buffer, sampleRate) {
+  let rms = 0;
+  for (let index = 0; index < buffer.length; index += 1) {
+    rms += buffer[index] * buffer[index];
+  }
+  rms = Math.sqrt(rms / buffer.length);
+  if (rms < 0.012) return null;
+
+  const minFrequency = 60;
+  const maxFrequency = 2000;
+  const minOffset = Math.max(2, Math.floor(sampleRate / maxFrequency));
+  const maxOffset = Math.min(Math.floor(sampleRate / minFrequency), Math.floor(buffer.length / 2));
+  const sampleCount = buffer.length - maxOffset;
+  let bestOffset = -1;
+  let bestCorrelation = 0;
+  let previousCorrelation = 1;
+
+  for (let offset = minOffset; offset <= maxOffset; offset += 1) {
+    let difference = 0;
+    for (let index = 0; index < sampleCount; index += 1) {
+      difference += Math.abs(buffer[index] - buffer[index + offset]);
+    }
+    const correlation = 1 - difference / sampleCount;
+    if (correlation > 0.62 && correlation > previousCorrelation && correlation > bestCorrelation) {
+      bestCorrelation = correlation;
+      bestOffset = offset;
+    }
+    previousCorrelation = correlation;
+  }
+
+  if (bestOffset < 0) return null;
+  return sampleRate / bestOffset;
+}
+function loadMetronomeSettings() {
+  const saved = readJson(STORAGE_KEYS.metronome, {});
+  const savedBpm = Number(saved.bpm);
+  const savedBeats = Number(saved.beatsPerMeasure);
+  state.metronome.bpm = clampNumber(Number.isFinite(savedBpm) ? savedBpm : 90, 40, 220);
+  state.metronome.beatsPerMeasure = [2, 3, 4, 6].includes(savedBeats) ? savedBeats : 4;
+}
+
+function saveMetronomeSettings() {
+  writeJson(STORAGE_KEYS.metronome, {
+    bpm: state.metronome.bpm,
+    beatsPerMeasure: state.metronome.beatsPerMeasure
+  });
+}
+
+function renderMetronome() {
+  if (!el.metronomeBpm) return;
+  el.metronomeBpm.value = String(state.metronome.bpm);
+  el.metronomeBpmOutput.value = String(state.metronome.bpm);
+  el.metronomeBeats.value = String(state.metronome.beatsPerMeasure);
+  el.metronomeStartButton.textContent = state.metronome.running ? "Stop" : "Start";
+  el.metronomeStatus.textContent = state.metronome.running ? "Playing" : "Stopped";
+  renderMetronomeDots(state.metronome.running ? state.metronome.currentBeat : -1);
+}
+
+function renderMetronomeDots(activeBeat) {
+  if (!el.metronomeBeatDots) return;
+  el.metronomeBeatDots.innerHTML = "";
+  for (let index = 0; index < state.metronome.beatsPerMeasure; index += 1) {
+    const dot = document.createElement("span");
+    dot.className = "metronome-dot";
+    dot.classList.toggle("active", index === activeBeat);
+    dot.classList.toggle("accent", index === 0);
+    el.metronomeBeatDots.appendChild(dot);
+  }
+}
+
+function setMetronomeBpm(value) {
+  state.metronome.bpm = clampNumber(Math.round(Number(value) || 90), 40, 220);
+  saveMetronomeSettings();
+  renderMetronome();
+}
+
+function setMetronomeBeats(value) {
+  state.metronome.beatsPerMeasure = [2, 3, 4, 6].includes(value) ? value : 4;
+  state.metronome.currentBeat = 0;
+  saveMetronomeSettings();
+  renderMetronome();
+}
+
+async function toggleMetronome() {
+  if (state.metronome.running) {
+    stopMetronome();
+    return;
+  }
+  await startMetronome();
+}
+
+async function startMetronome() {
+  const audioContext = await ensureMetronomeAudio();
+  if (!audioContext) return;
+  state.metronome.running = true;
+  state.metronome.currentBeat = 0;
+  state.metronome.nextNoteTime = audioContext.currentTime + 0.06;
+  window.clearInterval(state.metronome.schedulerId);
+  state.metronome.schedulerId = window.setInterval(scheduleMetronome, 25);
+  scheduleMetronome();
+  renderMetronome();
+}
+
+function stopMetronome() {
+  if (!state.metronome.running && !state.metronome.schedulerId) return;
+  state.metronome.running = false;
+  window.clearInterval(state.metronome.schedulerId);
+  state.metronome.schedulerId = null;
+  state.metronome.currentBeat = 0;
+  renderMetronome();
+}
+
+async function ensureMetronomeAudio() {
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextCtor) {
+    window.alert("This browser cannot play metronome audio.");
+    return null;
+  }
+  if (!state.metronome.audioContext) {
+    state.metronome.audioContext = new AudioContextCtor();
+  }
+  if (state.metronome.audioContext.state === "suspended") {
+    await state.metronome.audioContext.resume();
+  }
+  return state.metronome.audioContext;
+}
+
+function scheduleMetronome() {
+  const audioContext = state.metronome.audioContext;
+  if (!audioContext || !state.metronome.running) return;
+  const lookaheadSeconds = 0.12;
+  while (state.metronome.nextNoteTime < audioContext.currentTime + lookaheadSeconds) {
+    const beatIndex = state.metronome.currentBeat % state.metronome.beatsPerMeasure;
+    const clickTime = state.metronome.nextNoteTime;
+    playMetronomeClick(clickTime, beatIndex === 0);
+    window.setTimeout(() => {
+      if (state.metronome.running) {
+        renderMetronomeDots(beatIndex);
+      }
+    }, Math.max(0, (clickTime - audioContext.currentTime) * 1000));
+    state.metronome.currentBeat = (state.metronome.currentBeat + 1) % state.metronome.beatsPerMeasure;
+    state.metronome.nextNoteTime += 60 / state.metronome.bpm;
+  }
+}
+
+function playMetronomeClick(time, isAccent) {
+  const audioContext = state.metronome.audioContext;
+  if (!audioContext) return;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(isAccent ? 1150 : 850, time);
+  gain.gain.setValueAtTime(0.0001, time);
+  gain.gain.exponentialRampToValueAtTime(isAccent ? 0.42 : 0.26, time + 0.004);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.055);
+  oscillator.connect(gain).connect(audioContext.destination);
+  oscillator.start(time);
+  oscillator.stop(time + 0.06);
+}
+
+function tapMetronomeTempo() {
+  const now = performance.now();
+  state.metronome.tapTimes = state.metronome.tapTimes.filter((time) => now - time < 2500);
+  state.metronome.tapTimes.push(now);
+  if (state.metronome.tapTimes.length < 2) return;
+  const intervals = [];
+  for (let index = 1; index < state.metronome.tapTimes.length; index += 1) {
+    intervals.push(state.metronome.tapTimes[index] - state.metronome.tapTimes[index - 1]);
+  }
+  const averageInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+  setMetronomeBpm(60000 / averageInterval);
+}
 function toggleFavorite(id) {
   if (state.favorites.has(id)) {
     state.favorites.delete(id);
@@ -3750,6 +5039,35 @@ function saveLists() {
   writeJson(STORAGE_KEYS.lists, state.lists);
 }
 
+function toggleListReorderMode() {
+  if (state.lists.length < 2) return;
+  state.listReorderMode = !state.listReorderMode;
+  if (state.listReorderMode) {
+    state.listEditMode = false;
+    state.listPickerOpen = false;
+    state.listPickerMessage = "";
+    closeListMoreMenu();
+  }
+  renderLists();
+}
+
+function saveListOrder(orderedIds) {
+  const listById = new Map(state.lists.map((list) => [list.id, list]));
+  const nextLists = orderedIds
+    .map((id) => listById.get(id))
+    .filter(Boolean);
+
+  state.lists.forEach((list) => {
+    if (!orderedIds.includes(list.id)) nextLists.push(list);
+  });
+
+  state.lists = nextLists;
+  saveLists();
+  populateSelect(el.listSelect, state.lists);
+  el.listSelect.value = state.activeListId;
+  renderLists();
+}
+
 function toggleListEditMode() {
   if (state.listEditMode) {
     const active = getActiveList();
@@ -3762,6 +5080,7 @@ function toggleListEditMode() {
     return;
   }
   state.listEditMode = !state.listEditMode;
+  state.listReorderMode = false;
   state.listPickerOpen = false;
   state.listPickerMessage = "";
   renderLists();
@@ -3786,6 +5105,7 @@ function selectList(listId) {
   state.listPickerOpen = false;
   state.listPickerMessage = "";
   state.listEditMode = false;
+  state.listReorderMode = false;
   closeListMoreMenu();
   renderLists();
 }
@@ -3803,6 +5123,7 @@ function openListEditModal(listId) {
   state.expandedListId = list.id;
   state.editingListId = list.id;
   state.listEditMode = false;
+  state.listReorderMode = false;
   state.listPickerOpen = false;
   state.listPickerMessage = "";
   closeListMoreMenu();
@@ -3969,6 +5290,7 @@ function createList(title = "", entries = []) {
   populateSelect(el.listSelect, state.lists);
   el.listSelect.value = list.id;
   state.listEditMode = false;
+  state.listReorderMode = false;
   state.listPickerOpen = false;
   state.listPickerMessage = "";
   renderLists();
@@ -4082,6 +5404,28 @@ function itemDisplayTitle(item) {
     if (title) return title;
   }
   return "Untitled";
+}
+
+function itemDisplayTitleWithInlinePage(item, pageOverride = null) {
+  const title = itemDisplayTitle(item);
+  const page = normalizeVisibleText(pageOverride ?? item?.page);
+  if (!page || titleContainsPage(title, page)) return title;
+
+  const pdfMatch = title.match(/\.pdf$/i);
+  if (pdfMatch) {
+    return `${title.slice(0, -pdfMatch[0].length)}, ${page}${pdfMatch[0]}`;
+  }
+
+  return `${title}, ${page}`;
+}
+
+function titleContainsPage(title, page) {
+  const escapedPage = escapeRegExp(page);
+  return new RegExp(`(^|[^0-9])${escapedPage}([^0-9]|$)`).test(title);
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function normalizeVisibleText(value) {
@@ -4204,10 +5548,14 @@ function metaHtml(item) {
 
 function compactLibraryMetaText(item) {
   const pieces = [];
-  if (item.page) pieces.push(`p. ${item.page}`);
+  if (item.page && !titleContainsPage(itemDisplayTitle(item), item.page)) pieces.push(`p. ${item.page}`);
   const locator = item.book || item.composer || item.category || "";
   if (locator) pieces.push(locator);
   return pieces.join(" \u00b7 ");
+}
+
+function compactTypeLabel(item) {
+  return item?.type || "item";
 }
 
 function setlistMeta(item, entry) {
@@ -4217,7 +5565,7 @@ function setlistMeta(item, entry) {
     item.type,
     entry.notes || item.notes || ""
   ].filter(Boolean);
-  return escapeHtml(pieces.join(" · "));
+  return escapeHtml(pieces.join(" ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· "));
 }
 
 function tagsHtml(tags) {
