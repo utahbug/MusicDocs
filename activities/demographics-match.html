@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#375e73">
+    <meta name="description" content="Match Utah cities with counties or demographic terms with definitions.">
+    <link rel="icon" href="../assets/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+    <title>Utah Demographics Match | UtahBug</title>
+    <link rel="stylesheet" href="../utahbug-playground-20260714c.css?v=20260725s">
+    <link rel="stylesheet" href="../demographics.css?v=20260725b">
+  </head>
+  <body class="demographics-page">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html" aria-label="Return to the UtahBug home page">
+          <span><strong>UtahBug</strong></span>
+        </a>
+      </div>
+    </header>
+
+    <main class="demographics-main">
+      <header class="demographics-heading">
+        <div>
+          <h1>UTAH DEMOGRAPHICS</h1>
+          <p>Match places or demographic terms.</p>
+        </div>
+        <nav class="demographics-mode-links" aria-label="Utah demographics activities">
+          <a href="demographics.html">Explore</a>
+          <a aria-current="page" href="demographics-match.html">Match</a>
+          <a href="demographics-sprint.html">Sprint</a>
+        </nav>
+      </header>
+
+      <section class="demographics-game-shell" aria-labelledby="demographics-match-status">
+        <div class="demographics-game-status">
+          <p id="demographics-match-status">0 matches</p>
+          <div class="demographics-categories two-options" role="group" aria-label="Choose matching category">
+            <button type="button" data-category="places" aria-pressed="true">Places</button>
+            <button type="button" data-category="terms" aria-pressed="false">Terms</button>
+          </div>
+          <button class="demographics-game-button" id="demographics-new-match" type="button">New round</button>
+        </div>
+
+        <div class="demographics-match-board" id="demographics-match-board" aria-label="Demographics matching board"></div>
+        <p class="demographics-game-message" id="demographics-match-message" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <footer class="demographics-footer">
+      <span>&copy; 2026 UtahBug</span>
+      <a href="demographics.html">Explore Utah demographics</a>
+    </footer>
+
+    <script src="../demographics-data.js?v=20260725a"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        const board = document.querySelector("#demographics-match-board");
+        const status = document.querySelector("#demographics-match-status");
+        const message = document.querySelector("#demographics-match-message");
+        const newRound = document.querySelector("#demographics-new-match");
+        const categoryButtons = document.querySelectorAll("[data-category]");
+        let activeCategory = "places";
+        let firstCard = null;
+        let secondCard = null;
+        let locked = false;
+        let matches = 0;
+        let attempts = 0;
+        let mismatchTimer = null;
+
+        function shuffle(items) {
+          const result = [...items];
+          for (let index = result.length - 1; index > 0; index -= 1) {
+            const swapIndex = Math.floor(Math.random() * (index + 1));
+            [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+          }
+          return result;
+        }
+
+        function pairs() {
+          if (activeCategory === "terms") {
+            return window.UTAH_DEMOGRAPHICS_TERM_PAIRS.map((item) => ({
+              id: item.id,
+              first: item.term,
+              second: item.definition,
+            }));
+          }
+          return shuffle(window.UTAH_DEMOGRAPHICS_PLACES).slice(0, 6).map((item) => ({
+            id: item.id,
+            first: item.place,
+            second: item.county,
+          }));
+        }
+
+        function updateStatus() {
+          status.textContent = `${matches} of 6 matches · ${attempts} ${attempts === 1 ? "attempt" : "attempts"}`;
+        }
+
+        function showCover(card) {
+          const cover = document.createElement("span");
+          cover.className = "demographics-match-cover";
+          cover.textContent = "?";
+          card.classList.remove("is-open");
+          card.replaceChildren(cover);
+          card.setAttribute("aria-label", "Hidden matching card");
+        }
+
+        function showCard(card) {
+          const copy = document.createElement("span");
+          copy.className = "demographics-match-copy";
+          copy.textContent = card.cardData.text;
+          card.classList.add("is-open");
+          card.replaceChildren(copy);
+          card.setAttribute("aria-label", copy.textContent);
+        }
+
+        function closeMismatch() {
+          showCover(firstCard);
+          showCover(secondCard);
+          firstCard = null;
+          secondCard = null;
+          locked = false;
+          mismatchTimer = null;
+        }
+
+        function chooseCard(card) {
+          if (locked || card === firstCard || card.classList.contains("is-matched")) return;
+          showCard(card);
+
+          if (!firstCard) {
+            firstCard = card;
+            return;
+          }
+
+          secondCard = card;
+          locked = true;
+          attempts += 1;
+
+          if (
+            firstCard.cardData.id === secondCard.cardData.id &&
+            firstCard.cardData.side !== secondCard.cardData.side
+          ) {
+            firstCard.classList.add("is-matched");
+            secondCard.classList.add("is-matched");
+            firstCard.disabled = true;
+            secondCard.disabled = true;
+            matches += 1;
+            firstCard = null;
+            secondCard = null;
+            locked = false;
+            message.textContent = matches === 6 ? "All pairs matched!" : "Match!";
+            updateStatus();
+            return;
+          }
+
+          message.textContent = "Try another pair.";
+          updateStatus();
+          mismatchTimer = window.setTimeout(closeMismatch, 2200);
+        }
+
+        function startRound() {
+          if (mismatchTimer) window.clearTimeout(mismatchTimer);
+          const cards = shuffle(
+            pairs().flatMap((pair) => [
+              { id: pair.id, side: "first", text: pair.first },
+              { id: pair.id, side: "second", text: pair.second },
+            ]),
+          );
+          const fragment = document.createDocumentFragment();
+
+          firstCard = null;
+          secondCard = null;
+          locked = false;
+          matches = 0;
+          attempts = 0;
+          mismatchTimer = null;
+          message.textContent = activeCategory === "places"
+            ? "Match each Utah place with its county."
+            : "Match each term with its meaning.";
+          updateStatus();
+
+          cards.forEach((cardData) => {
+            const card = document.createElement("button");
+            card.className = "demographics-match-card";
+            card.type = "button";
+            card.cardData = cardData;
+            showCover(card);
+            card.addEventListener("click", () => chooseCard(card));
+            fragment.append(card);
+          });
+          board.replaceChildren(fragment);
+        }
+
+        categoryButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            activeCategory = button.dataset.category;
+            categoryButtons.forEach((item) => {
+              item.setAttribute("aria-pressed", String(item === button));
+            });
+            startRound();
+          });
+        });
+
+        newRound.addEventListener("click", startRound);
+        startRound();
+      })();
+    </script>
+  </body>
+</html>

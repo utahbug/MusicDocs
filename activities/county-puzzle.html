@@ -91,31 +91,26 @@
       }
 
       .puzzle-toolbar {
-        display: inline-flex;
-        width: auto;
-        max-width: min(var(--puzzle-map-max), 100%);
+        display: flex;
+        width: 100%;
         align-items: center;
         justify-content: flex-start;
-        margin: 0 0 10px;
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        padding: 4px 4px 4px 28px;
-        background: rgba(255, 253, 248, .78);
+        margin: 0;
       }
 
       .puzzle-toolbar-actions {
-        display: flex;
-        justify-content: flex-start;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 6px;
-        width: auto;
+        width: 100%;
       }
 
       .puzzle-tool {
         min-height: 38px;
-        border: 0;
+        border: 1px solid #aebdb7;
         border-radius: 7px;
         padding: 7px 12px;
-        background: transparent;
+        background: rgba(255, 255, 255, .72);
         color: #245b50;
         font: inherit;
         font-size: .88rem;
@@ -153,9 +148,19 @@
       .puzzle-workspace {
         display: grid;
         grid-template-columns: minmax(0, 1.7fr) minmax(230px, .7fr);
-        grid-template-areas: "map piece";
+        grid-template-areas:
+          "tools piece"
+          "map piece";
         gap: 14px;
         align-items: start;
+      }
+
+      .desktop-toolbar-slot {
+        grid-area: tools;
+        min-height: 46px;
+        display: flex;
+        align-items: center;
+        padding: 3px 10px;
       }
 
       .puzzle-map-panel,
@@ -269,6 +274,14 @@
         animation: placed-pop 420ms ease-out;
         transform-box: fill-box;
         transform-origin: center;
+      }
+
+      .puzzle-map.is-complete .placed-county {
+        animation: state-complete-fill 1800ms ease-out;
+      }
+
+      .puzzle-map.is-complete .state-outline {
+        animation: state-complete-outline 1800ms ease-out;
       }
 
       .puzzle-piece-panel {
@@ -437,6 +450,40 @@
         line-height: 1;
       }
 
+      .completion-actions {
+        display: grid;
+        gap: 7px;
+      }
+
+      .completion-actions[hidden] {
+        display: none;
+      }
+
+      .completion-actions button {
+        min-height: 38px;
+        border: 1px solid #aebdb7;
+        border-radius: 8px;
+        padding: 7px 10px;
+        color: #245b50;
+        background: rgba(255, 255, 255, .82);
+        font: inherit;
+        font-size: .82rem;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .completion-actions .next-level {
+        border-color: #7fa99b;
+        background: #dcece6;
+        box-shadow: inset 0 -2px 0 #7fa99b;
+      }
+
+      .puzzle-piece-panel.is-complete .puzzle-toolbar,
+      .puzzle-piece-panel.is-complete .piece-help,
+      .puzzle-piece-panel.is-complete .puzzle-skip {
+        display: none;
+      }
+
       .floating-piece {
         position: fixed;
         z-index: 1000;
@@ -456,6 +503,26 @@
         0% { opacity: .3; transform: scale(.76); }
         70% { opacity: 1; transform: scale(1.05); }
         100% { transform: scale(1); }
+      }
+
+      @keyframes state-complete-fill {
+        35% {
+          filter: brightness(1.16) saturate(1.12) drop-shadow(0 0 5px rgba(210, 163, 66, .55));
+        }
+        100% { filter: none; }
+      }
+
+      @keyframes state-complete-outline {
+        35% {
+          stroke: #d2a342;
+          stroke-width: 5;
+          filter: drop-shadow(0 0 7px rgba(210, 163, 66, .7));
+        }
+        100% {
+          stroke: #657b72;
+          stroke-width: 2.4;
+          filter: none;
+        }
       }
 
       @keyframes weber-bat-panel {
@@ -505,13 +572,25 @@
           --puzzle-map-max: 520px;
         }
 
+        .puzzle-map-current-county {
+          font-size: 42px;
+          dominant-baseline: middle;
+        }
+
+        .puzzle-map-current-county,
+        .puzzle-map-progress {
+          transform: translateY(42px);
+        }
+
         .county-puzzle-page .page-main {
-          padding-top: 17px;
+          padding-top: 10px;
         }
 
         .puzzle-heading {
           align-items: stretch;
           flex-direction: column;
+          gap: 8px;
+          margin-bottom: 8px;
         }
 
         .county-mode-links {
@@ -526,10 +605,6 @@
           padding-inline: 7px;
         }
 
-        .puzzle-toolbar {
-          padding-left: 22px;
-        }
-
         .puzzle-workspace {
           grid-template-columns: 1fr;
           grid-template-areas:
@@ -537,22 +612,52 @@
             "map";
         }
 
+        .desktop-toolbar-slot {
+          display: none;
+        }
+
         .puzzle-piece-panel {
           position: static;
           grid-template-columns: minmax(0, 1fr) 132px;
           grid-template-areas:
+            "tools tray"
             "status tray"
-            "skip tray"
-            "help tray";
+            "help tray"
+            "skip skip";
           gap: 4px 12px;
           align-items: center;
           padding: 12px;
           text-align: left;
         }
 
-        .puzzle-status { grid-area: status; }
+        .puzzle-toolbar {
+          grid-area: tools;
+          align-self: end;
+        }
+        .completion-actions {
+          grid-column: 1 / -1;
+        }
+        .puzzle-toolbar-actions {
+          gap: 3px;
+        }
+        .puzzle-tool {
+          min-width: 0;
+          min-height: 32px;
+          padding: 3px 4px;
+          font-size: .72rem;
+          line-height: 1.05;
+          white-space: normal;
+        }
+        .puzzle-status {
+          grid-area: status;
+          align-self: end;
+        }
         .puzzle-skip { grid-area: skip; justify-self: start; }
-        .piece-help { grid-area: help; min-height: 0; }
+        .piece-help {
+          grid-area: help;
+          min-height: 0;
+          align-self: start;
+        }
         .piece-tray {
           grid-area: tray;
           min-height: 132px;
@@ -585,20 +690,16 @@
           font-size: .8rem;
         }
 
-        .puzzle-toolbar {
-          padding-left: 18px;
-        }
-
         .puzzle-toolbar-actions {
           gap: 3px;
         }
 
         .puzzle-tool {
           min-width: 0;
-          min-height: 38px;
-          padding: 5px 6px;
-          font-size: .76rem;
-          line-height: 1.15;
+          min-height: 30px;
+          padding: 3px;
+          font-size: .68rem;
+          line-height: 1.05;
         }
 
         .puzzle-piece-panel {
@@ -620,6 +721,7 @@
         .county-guide,
         .county-target,
         .placed-county,
+        .puzzle-map.is-complete .state-outline,
         .puzzle-piece-panel.is-weber-bat .piece-button path,
         .puzzle-piece-panel.is-davis-horse .piece-button path,
         .puzzle-piece-panel.is-utah-boot .piece-button path,
@@ -643,7 +745,6 @@
       <div class="puzzle-heading">
         <div>
           <h1>UTAH COUNTIES</h1>
-          <p>Place each county in its correct location.</p>
         </div>
         <nav class="county-mode-links" aria-label="Utah county activities">
           <a href="county-explore.html">Explore</a>
@@ -651,15 +752,8 @@
           <button class="puzzle-reset" id="reset-puzzle" type="button">Reset</button>
         </nav>
       </div>
-      <div class="puzzle-toolbar">
-        <div class="puzzle-toolbar-actions">
-          <button class="puzzle-tool" id="hint-button" type="button">Hint</button>
-          <button class="puzzle-tool" id="guide-button" type="button" aria-pressed="false">Hide outlines</button>
-          <button class="puzzle-tool" id="name-button" type="button" aria-pressed="false">Hide county name</button>
-        </div>
-      </div>
-
       <section class="puzzle-workspace" aria-label="Utah county placement puzzle">
+        <div class="desktop-toolbar-slot" id="desktop-toolbar-slot" aria-hidden="true"></div>
         <div class="puzzle-map-panel">
           <svg class="puzzle-map" id="puzzle-map" viewBox="0 0 760 920" role="img" aria-labelledby="puzzle-map-title puzzle-map-description">
             <title id="puzzle-map-title">Utah counties puzzle map</title>
@@ -670,6 +764,13 @@
         </div>
 
         <aside class="puzzle-piece-panel" id="piece-panel">
+          <div class="puzzle-toolbar">
+            <div class="puzzle-toolbar-actions">
+              <button class="puzzle-tool" id="hint-button" type="button">Hint</button>
+              <button class="puzzle-tool" id="guide-button" type="button" aria-pressed="false">Hide outlines</button>
+              <button class="puzzle-tool" id="name-button" type="button" aria-pressed="false">Hide county name</button>
+            </div>
+          </div>
           <div class="piece-tray" id="piece-tray">
             <button class="piece-button" id="piece-button" type="button" aria-pressed="false" disabled>
               <svg id="piece-preview" role="img" aria-label="Current county puzzle piece"></svg>
@@ -677,7 +778,11 @@
           </div>
           <p class="puzzle-status" id="puzzle-status" aria-live="polite">Preparing the puzzle…</p>
           <button class="puzzle-skip" id="skip-button" type="button" hidden>Skip for now</button>
-          <p class="piece-help">Drag, or tap this piece and then its location.</p>
+          <p class="piece-help">Drag or tap.</p>
+          <div class="completion-actions" id="completion-actions" hidden>
+            <button class="next-level" id="next-level-button" type="button">Try the next level</button>
+            <button id="replay-level-button" type="button">Replay this level</button>
+          </div>
         </aside>
       </section>
     </main>
@@ -689,6 +794,6 @@
     </footer>
 
     <script src="../county-map-data.js?v=20260725a"></script>
-    <script src="../county-puzzle.js?v=20260725r"></script>
+    <script src="../county-puzzle.js?v=20260726f"></script>
   </body>
 </html>

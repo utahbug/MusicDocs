@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#345d70">
+  <meta name="description" content="Identify Utah parks and national monuments from quick clues.">
+  <title>Utah Parks Sprint | UtahBug</title>
+  <link rel="icon" href="../assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="../parks.css?v=20260725a">
+</head>
+<body>
+  <header class="parks-header">
+    <div class="parks-header-inner">
+      <a class="parks-home" href="../index.html" aria-label="Return to the UtahBug home page">
+        <strong>UtahBug</strong>
+      </a>
+    </div>
+  </header>
+
+  <main class="parks-main">
+    <header class="parks-heading">
+      <div>
+        <h1>UTAH PARKS</h1>
+        <p>Identify the place from one signature clue.</p>
+      </div>
+      <nav class="parks-mode-links" aria-label="Utah parks activities">
+        <a href="national-parks.html">Explore</a>
+        <a href="parks-match.html">Match</a>
+        <a aria-current="page" href="parks-sprint.html">Sprint</a>
+      </nav>
+    </header>
+
+    <section class="parks-game-shell">
+      <div class="parks-game-status">
+        <p id="parks-sprint-status">Question 1</p>
+        <div class="parks-game-categories" role="group" aria-label="Choose park group">
+          <button type="button" data-category="national-parks" aria-pressed="true">National Parks</button>
+          <button type="button" data-category="national-monuments" aria-pressed="false">Monuments</button>
+          <button type="button" data-category="state-parks" aria-pressed="false">State Parks</button>
+        </div>
+        <button class="parks-game-button" id="parks-restart-sprint" type="button">Restart</button>
+      </div>
+
+      <div class="parks-sprint-panel" id="parks-sprint-panel">
+        <p class="parks-sprint-kicker" id="parks-sprint-kicker"></p>
+        <p class="parks-sprint-clue" id="parks-sprint-clue"></p>
+        <p class="parks-sprint-question">Which place is it?</p>
+        <div class="parks-sprint-choices" id="parks-sprint-choices"></div>
+      </div>
+
+      <div class="parks-sprint-actions">
+        <p class="parks-sprint-feedback" id="parks-sprint-feedback" aria-live="polite"></p>
+        <button class="parks-game-button" id="parks-sprint-next" type="button" hidden>Next</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="parks-footer">
+    <span>&copy; 2026 UtahBug</span>
+    <span><a href="national-parks.html">Explore Utah parks</a></span>
+  </footer>
+
+  <script src="../parks-data.js?v=20260725a"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      const status = document.querySelector("#parks-sprint-status");
+      const panel = document.querySelector("#parks-sprint-panel");
+      let kicker = document.querySelector("#parks-sprint-kicker");
+      let clue = document.querySelector("#parks-sprint-clue");
+      let choices = document.querySelector("#parks-sprint-choices");
+      const feedback = document.querySelector("#parks-sprint-feedback");
+      const nextButton = document.querySelector("#parks-sprint-next");
+      const restartButton = document.querySelector("#parks-restart-sprint");
+      const categoryButtons = document.querySelectorAll("[data-category]");
+      let activeCategory = "national-parks";
+      let remaining = [];
+      let questions = [];
+      let questionIndex = 0;
+      let score = 0;
+      let answered = false;
+      let missed = false;
+
+      function shuffle(items) {
+        const result = [...items];
+        for (let index = result.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+        }
+        return result;
+      }
+
+      function pool() {
+        return window.UTAH_PARKS.filter((place) => place.group === activeCategory);
+      }
+
+      function groupLabel() {
+        return window.UTAH_PARK_GROUPS.find((group) => group.id === activeCategory).shortLabel;
+      }
+
+      function resetDeck() {
+        remaining = shuffle(pool());
+      }
+
+      function drawQuestions() {
+        const source = pool();
+        const count = Math.min(10, source.length);
+        const selected = [];
+        const selectedIds = new Set();
+
+        while (selected.length < count) {
+          if (remaining.length === 0) resetDeck();
+          const place = remaining.shift();
+          if (selectedIds.has(place.id)) {
+            remaining.push(place);
+            continue;
+          }
+          selected.push(place);
+          selectedIds.add(place.id);
+        }
+        return selected;
+      }
+
+      function distractorsFor(place) {
+        return shuffle(pool().filter((item) => item.id !== place.id))
+          .slice(0, 2)
+          .map((item) => item.name);
+      }
+
+      function answer(button, answerName, place) {
+        if (answered || button.disabled) return;
+
+        if (answerName !== place.name) {
+          missed = true;
+          button.classList.add("is-wrong");
+          button.disabled = true;
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+          feedback.textContent = "Not quite — try again.";
+          return;
+        }
+
+        answered = true;
+        choices.querySelectorAll("button").forEach((choiceButton) => {
+          choiceButton.disabled = true;
+          if (choiceButton.dataset.name === place.name) {
+            choiceButton.classList.add("is-correct");
+          }
+        });
+
+        if (!missed) score += 1;
+        feedback.classList.remove("is-wrong");
+        feedback.classList.add("is-correct");
+        feedback.textContent = missed
+          ? `Correct on the retry — ${place.name}.`
+          : `Correct — ${place.name}.`;
+        status.textContent = `Question ${questionIndex + 1} of ${questions.length} · Score ${score}`;
+        nextButton.textContent = questionIndex === questions.length - 1 ? "See score" : "Next";
+        nextButton.hidden = false;
+      }
+
+      function renderQuestion() {
+        const place = questions[questionIndex];
+        const answerNames = shuffle([place.name, ...distractorsFor(place)]);
+        const fragment = document.createDocumentFragment();
+
+        answered = false;
+        missed = false;
+        status.textContent = `Question ${questionIndex + 1} of ${questions.length} · Score ${score}`;
+        kicker.textContent = groupLabel();
+        clue.textContent = place.clue;
+        feedback.classList.remove("is-correct", "is-wrong");
+        feedback.textContent = "";
+        nextButton.hidden = true;
+
+        answerNames.forEach((name) => {
+          const button = document.createElement("button");
+          button.className = "parks-sprint-choice";
+          button.type = "button";
+          button.dataset.name = name;
+          button.textContent = name;
+          button.addEventListener("click", () => answer(button, name, place));
+          fragment.append(button);
+        });
+
+        choices.replaceChildren(fragment);
+      }
+
+      function showResult() {
+        const result = document.createElement("div");
+        const heading = document.createElement("h2");
+        const copy = document.createElement("p");
+        const button = document.createElement("button");
+
+        result.className = "parks-sprint-result";
+        heading.textContent = `${score} of ${questions.length} correct`;
+        copy.textContent = score === questions.length
+          ? "Perfect sprint!"
+          : "Play again for a different set of places.";
+        button.className = "parks-game-button";
+        button.type = "button";
+        button.textContent = "Play again";
+        button.addEventListener("click", startSprint);
+        result.append(heading, copy, button);
+        panel.replaceChildren(result);
+        feedback.classList.remove("is-correct", "is-wrong");
+        feedback.textContent = "";
+        nextButton.hidden = true;
+        status.textContent = `Finished · Score ${score} of ${questions.length}`;
+      }
+
+      function nextQuestion() {
+        if (questionIndex === questions.length - 1) {
+          showResult();
+          return;
+        }
+        questionIndex += 1;
+        renderQuestion();
+      }
+
+      function startSprint() {
+        questions = drawQuestions();
+        questionIndex = 0;
+        score = 0;
+        panel.innerHTML = `
+          <p class="parks-sprint-kicker" id="parks-sprint-kicker"></p>
+          <p class="parks-sprint-clue" id="parks-sprint-clue"></p>
+          <p class="parks-sprint-question">Which place is it?</p>
+          <div class="parks-sprint-choices" id="parks-sprint-choices"></div>
+        `;
+        kicker = panel.querySelector("#parks-sprint-kicker");
+        clue = panel.querySelector("#parks-sprint-clue");
+        choices = panel.querySelector("#parks-sprint-choices");
+        renderQuestion();
+      }
+
+      categoryButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          activeCategory = button.dataset.category;
+          categoryButtons.forEach((item) => {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+          resetDeck();
+          startSprint();
+        });
+      });
+
+      nextButton.addEventListener("click", nextQuestion);
+      restartButton.addEventListener("click", startSprint);
+      resetDeck();
+      startSprint();
+    })();
+  </script>
+</body>
+</html>

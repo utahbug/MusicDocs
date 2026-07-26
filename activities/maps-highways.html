@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#3f6577"><title>Utah Highway Challenge | UtahBug</title>
+  <link rel="icon" href="../assets/favicon.ico" sizes="any"><link rel="stylesheet" href="../feature-hubs.css?v=20260726a">
+</head>
+<body>
+  <header class="hub-header"><div class="hub-header-inner"><a class="hub-home" href="../index.html"><strong>UtahBug</strong></a></div></header>
+  <main class="hub-main">
+    <header class="hub-heading">
+      <div><h1>MAPS &amp; TRAVEL</h1><p>Identify Utah&rsquo;s main highways from their routes.</p></div>
+      <nav class="hub-mode-links"><a href="maps-travel.html">Explore</a><a aria-current="page" href="maps-highways.html">Highways</a><a href="maps-match.html">Map Match</a></nav>
+    </header>
+    <section class="hub-game">
+      <div class="hub-game-bar"><p id="status">Question 1</p><button class="hub-button" id="restart">Restart</button></div>
+      <div class="hub-question"><p class="hub-kicker">Utah route</p><p class="hub-prompt" id="prompt"></p><div class="hub-choices" id="choices"></div></div>
+      <p class="hub-feedback" id="feedback" aria-live="polite"></p><button class="hub-button" id="next" hidden>Next</button>
+    </section>
+  </main>
+  <footer class="hub-footer"><span>&copy; 2026 UtahBug</span><a href="maps-travel.html">Explore Utah maps</a></footer>
+  <script src="../maps-travel-data.js?v=20260726a"></script>
+  <script>
+    (() => {
+      const shuffle = a => [...a].sort(() => Math.random() - .5);
+      const prompt = document.querySelector("#prompt"), choices = document.querySelector("#choices"), feedback = document.querySelector("#feedback"), status = document.querySelector("#status"), next = document.querySelector("#next");
+      let deck, index, score;
+      function start(){ deck=shuffle(window.UTAH_ROUTE_QUESTIONS); index=0; score=0; render(); }
+      function render(){ const item=deck[index]; status.textContent=`Question ${index+1} of ${deck.length} · Score ${score}`; prompt.textContent=item.clue; feedback.textContent=""; next.hidden=true;
+        const names=shuffle([item.route,...shuffle(window.UTAH_ROUTE_QUESTIONS.filter(x=>x!==item)).slice(0,2).map(x=>x.route)]);
+        choices.replaceChildren(...names.map(name=>{const b=document.createElement("button");b.className="hub-choice";b.textContent=name;b.onclick=()=>{if(name!==item.route){b.classList.add("is-wrong");b.disabled=true;feedback.textContent="Not quite — try again.";return;}b.classList.add("is-correct");score++;feedback.textContent=`Correct — ${item.route}.`;choices.querySelectorAll("button").forEach(x=>x.disabled=true);next.hidden=false;};return b;}));
+      }
+      next.onclick=()=>{if(++index>=deck.length){feedback.textContent=`Route round complete — ${score} of ${deck.length}.`;next.hidden=true;}else render();}; document.querySelector("#restart").onclick=start; start();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#375e73">
+    <meta name="description" content="Test your knowledge of Utah place patterns and demographic concepts.">
+    <link rel="icon" href="../assets/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+    <title>Utah Demographics Sprint | UtahBug</title>
+    <link rel="stylesheet" href="../utahbug-playground-20260714c.css?v=20260725s">
+    <link rel="stylesheet" href="../demographics.css?v=20260725b">
+  </head>
+  <body class="demographics-page">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html" aria-label="Return to the UtahBug home page">
+          <span><strong>UtahBug</strong></span>
+        </a>
+      </div>
+    </header>
+
+    <main class="demographics-main">
+      <header class="demographics-heading">
+        <div>
+          <h1>UTAH DEMOGRAPHICS</h1>
+          <p>Quick questions about people and places.</p>
+        </div>
+        <nav class="demographics-mode-links" aria-label="Utah demographics activities">
+          <a href="demographics.html">Explore</a>
+          <a href="demographics-match.html">Match</a>
+          <a aria-current="page" href="demographics-sprint.html">Sprint</a>
+        </nav>
+      </header>
+
+      <section class="demographics-game-shell">
+        <div class="demographics-game-status">
+          <p id="demographics-sprint-status">Question 1</p>
+          <div class="demographics-categories" role="group" aria-label="Choose question category">
+            <button type="button" data-category="mixed" aria-pressed="true">Mixed</button>
+            <button type="button" data-category="places" aria-pressed="false">Places</button>
+            <button type="button" data-category="concepts" aria-pressed="false">Concepts</button>
+          </div>
+          <button class="demographics-game-button" id="demographics-restart-sprint" type="button">Restart</button>
+        </div>
+
+        <div class="demographics-sprint-panel" id="demographics-sprint-panel">
+          <p class="demographics-sprint-kicker" id="demographics-sprint-kicker"></p>
+          <p class="demographics-sprint-question" id="demographics-sprint-question"></p>
+          <p class="demographics-sprint-prompt">Choose the best answer.</p>
+          <div class="demographics-sprint-choices" id="demographics-sprint-choices"></div>
+        </div>
+
+        <div class="demographics-sprint-actions">
+          <p class="demographics-feedback" id="demographics-sprint-feedback" aria-live="polite"></p>
+          <button class="demographics-game-button" id="demographics-sprint-next" type="button" hidden>Next</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="demographics-footer">
+      <span>&copy; 2026 UtahBug</span>
+      <a href="demographics.html">Explore Utah demographics</a>
+    </footer>
+
+    <script src="../demographics-data.js?v=20260725a"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        const status = document.querySelector("#demographics-sprint-status");
+        const panel = document.querySelector("#demographics-sprint-panel");
+        let kicker = document.querySelector("#demographics-sprint-kicker");
+        let questionText = document.querySelector("#demographics-sprint-question");
+        let choices = document.querySelector("#demographics-sprint-choices");
+        const feedback = document.querySelector("#demographics-sprint-feedback");
+        const nextButton = document.querySelector("#demographics-sprint-next");
+        const restartButton = document.querySelector("#demographics-restart-sprint");
+        const categoryButtons = document.querySelectorAll("[data-category]");
+        let activeCategory = "mixed";
+        let questions = [];
+        let questionIndex = 0;
+        let score = 0;
+        let answered = false;
+        let missed = false;
+
+        function shuffle(items) {
+          const result = [...items];
+          for (let index = result.length - 1; index > 0; index -= 1) {
+            const swapIndex = Math.floor(Math.random() * (index + 1));
+            [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+          }
+          return result;
+        }
+
+        function pool() {
+          if (activeCategory === "mixed") return window.UTAH_DEMOGRAPHICS_QUESTIONS;
+          return window.UTAH_DEMOGRAPHICS_QUESTIONS.filter((item) => item.category === activeCategory);
+        }
+
+        function categoryLabel(question) {
+          return question.category === "places" ? "Utah places" : "Demographic concepts";
+        }
+
+        function answer(button, choice, question) {
+          if (answered || button.disabled) return;
+
+          if (choice !== question.answer) {
+            missed = true;
+            button.disabled = true;
+            button.classList.add("is-wrong");
+            feedback.className = "demographics-feedback is-wrong";
+            feedback.textContent = "Not quite — try again.";
+            return;
+          }
+
+          answered = true;
+          choices.querySelectorAll("button").forEach((choiceButton) => {
+            choiceButton.disabled = true;
+            if (choiceButton.dataset.answer === question.answer) {
+              choiceButton.classList.add("is-correct");
+            }
+          });
+
+          if (!missed) score += 1;
+          feedback.className = "demographics-feedback is-correct";
+          feedback.textContent = missed
+            ? `Correct on the retry. ${question.explanation}`
+            : `Correct. ${question.explanation}`;
+          status.textContent = `Question ${questionIndex + 1} of ${questions.length} · Score ${score}`;
+          nextButton.textContent = questionIndex === questions.length - 1 ? "See score" : "Next";
+          nextButton.hidden = false;
+        }
+
+        function renderQuestion() {
+          const question = questions[questionIndex];
+          const fragment = document.createDocumentFragment();
+          answered = false;
+          missed = false;
+          status.textContent = `Question ${questionIndex + 1} of ${questions.length} · Score ${score}`;
+          kicker.textContent = categoryLabel(question);
+          questionText.textContent = question.prompt;
+          feedback.className = "demographics-feedback";
+          feedback.textContent = "";
+          nextButton.hidden = true;
+
+          shuffle(question.choices).forEach((choice) => {
+            const button = document.createElement("button");
+            button.className = "demographics-sprint-choice";
+            button.type = "button";
+            button.dataset.answer = choice;
+            button.textContent = choice;
+            button.addEventListener("click", () => answer(button, choice, question));
+            fragment.append(button);
+          });
+          choices.replaceChildren(fragment);
+        }
+
+        function showResult() {
+          const result = document.createElement("div");
+          const heading = document.createElement("h2");
+          const copy = document.createElement("p");
+          const button = document.createElement("button");
+          result.className = "demographics-sprint-result";
+          heading.textContent = `${score} of ${questions.length} correct`;
+          copy.textContent = score === questions.length
+            ? "Perfect sprint!"
+            : "Play again for a different mix of questions.";
+          button.className = "demographics-game-button";
+          button.type = "button";
+          button.textContent = "Play again";
+          button.addEventListener("click", startSprint);
+          result.append(heading, copy, button);
+          panel.replaceChildren(result);
+          feedback.className = "demographics-feedback";
+          feedback.textContent = "";
+          nextButton.hidden = true;
+          status.textContent = `Finished · Score ${score} of ${questions.length}`;
+        }
+
+        function nextQuestion() {
+          if (questionIndex === questions.length - 1) {
+            showResult();
+            return;
+          }
+          questionIndex += 1;
+          renderQuestion();
+        }
+
+        function startSprint() {
+          const count = activeCategory === "mixed" ? 10 : 8;
+          questions = shuffle(pool()).slice(0, count);
+          questionIndex = 0;
+          score = 0;
+          panel.innerHTML = `
+            <p class="demographics-sprint-kicker" id="demographics-sprint-kicker"></p>
+            <p class="demographics-sprint-question" id="demographics-sprint-question"></p>
+            <p class="demographics-sprint-prompt">Choose the best answer.</p>
+            <div class="demographics-sprint-choices" id="demographics-sprint-choices"></div>
+          `;
+          kicker = panel.querySelector("#demographics-sprint-kicker");
+          questionText = panel.querySelector("#demographics-sprint-question");
+          choices = panel.querySelector("#demographics-sprint-choices");
+          renderQuestion();
+        }
+
+        categoryButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            activeCategory = button.dataset.category;
+            categoryButtons.forEach((item) => {
+              item.setAttribute("aria-pressed", String(item === button));
+            });
+            startSprint();
+          });
+        });
+
+        nextButton.addEventListener("click", nextQuestion);
+        restartButton.addEventListener("click", startSprint);
+        startSprint();
+      })();
+    </script>
+  </body>
+</html>

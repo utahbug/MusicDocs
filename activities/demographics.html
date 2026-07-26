@@ -3,89 +3,112 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#5f7f70">
+    <meta name="theme-color" content="#375e73">
+    <meta name="description" content="Explore Utah demographics through durable population concepts and place patterns.">
     <link rel="icon" href="../assets/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="../assets/utahbug-icon-512.png">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
-    <title>Demographics | UtahBug</title>
-    <link rel="stylesheet" href="../utahbug-playground-20260714c.css?v=20260725r">
+    <title>Explore Utah Demographics | UtahBug</title>
+    <link rel="stylesheet" href="../utahbug-playground-20260714c.css?v=20260725s">
+    <link rel="stylesheet" href="../demographics.css?v=20260725b">
   </head>
-  <body>
+  <body class="demographics-page">
     <header class="site-header">
       <div class="header-inner">
-        <a class="brand" href="../index.html">
-          <span>
-            <strong>UtahBug</strong>
-          </span>
+        <a class="brand" href="../index.html" aria-label="Return to the UtahBug home page">
+          <span><strong>UtahBug</strong></span>
         </a>
       </div>
     </header>
-    <main class="page-main">
-      <section class="activity-hero">
-        <p class="kicker">People and places</p>
-        <h1>Utah Demographics</h1>
-        <p>Starter reveal prompts about Utah's people and counties. This draft avoids fast-changing rankings so the answers age more gracefully.</p>
-        <div class="source-links">
-          <a href="https://www.census.gov/quickfacts/UT" target="_blank" rel="noopener">Census QuickFacts Utah</a>
-          <a href="https://gardner.utah.edu/" target="_blank" rel="noopener">Kem C. Gardner Policy Institute</a>
+
+    <main class="demographics-main">
+      <header class="demographics-heading">
+        <div>
+          <h1>UTAH DEMOGRAPHICS</h1>
+          <p>People, places, and patterns.</p>
         </div>
+        <nav class="demographics-mode-links" aria-label="Utah demographics activities">
+          <a aria-current="page" href="demographics.html">Explore</a>
+          <a href="demographics-match.html">Match</a>
+          <a href="demographics-sprint.html">Sprint</a>
+        </nav>
+      </header>
+
+      <section class="demographics-snapshot" id="demographics-snapshot" aria-label="Utah population snapshot"></section>
+
+      <section class="demographics-section" aria-labelledby="demographics-concepts-title">
+        <header class="demographics-section-heading">
+          <h2 id="demographics-concepts-title">What demographics can show</h2>
+          <p>Demographics describes people and communities through measurable patterns.</p>
+        </header>
+        <div class="demographics-concept-grid" id="demographics-concept-grid"></div>
       </section>
-      <div class="reveal-grid ">
-        <button class="reveal-card" type="button" data-answer="Salt Lake County" data-note="">
-          <span class="prompt">Which Utah county contains Salt Lake City?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Salt Lake County" data-note="">
-          <span class="prompt">Which Utah county contains the state capitol building?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="The U.S. Census" data-note="">
-          <span class="prompt">What official count happens every 10 years in the United States?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="People patterns: population, age, households, income, education, migration, and place." data-note="">
-          <span class="prompt">What does 'demographics' usually mean?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Utah County" data-note="">
-          <span class="prompt">Which Utah county contains Provo and Orem?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Weber County" data-note="">
-          <span class="prompt">Which county contains Ogden?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Washington County" data-note="">
-          <span class="prompt">Which county contains St. George?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Cache County" data-note="">
-          <span class="prompt">Which county contains Logan?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Summit County" data-note="">
-          <span class="prompt">Which county contains Park City?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Grand County" data-note="">
-          <span class="prompt">Which county contains Moab?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Uintah County" data-note="">
-          <span class="prompt">Which county contains Vernal?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="A population density map" data-note="">
-          <span class="prompt">What kind of map helps show where people live?</span>
-          <span class="answer" aria-live="polite">Tap to reveal</span>
-        </button>
-      </div>
+
+      <section class="demographics-section" aria-labelledby="demographics-places-title">
+        <header class="demographics-section-heading">
+          <h2 id="demographics-places-title">Utah place patterns</h2>
+          <p>Familiar cities can help connect population patterns with Utah geography.</p>
+        </header>
+        <div class="demographics-place-grid" id="demographics-place-grid"></div>
+      </section>
+
     </main>
-    <footer class="site-footer">
-      <span>UtahBug draft playground</span>
-      <a href="https://www.utah.gov/search.html" target="_blank" rel="noopener">Search Utah.gov</a>
+
+    <footer class="demographics-footer">
+      <span>&copy; 2026 UtahBug</span>
+      <span>Population figure: 2020 U.S. Census</span>
+      <span class="demographics-sources" aria-label="Official demographics resources">
+        <a href="https://www.census.gov/quickfacts/UT" target="_blank" rel="noopener">Census QuickFacts: Utah ↗</a>
+        <a href="https://gardner.utah.edu/" target="_blank" rel="noopener">Kem C. Gardner Policy Institute ↗</a>
+      </span>
     </footer>
-    <script src="../script.js"></script>
+
+    <script src="../demographics-data.js?v=20260725a"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        const snapshot = document.querySelector("#demographics-snapshot");
+        const conceptGrid = document.querySelector("#demographics-concept-grid");
+        const placeGrid = document.querySelector("#demographics-place-grid");
+
+        window.UTAH_DEMOGRAPHICS_SNAPSHOT.forEach((stat) => {
+          const item = document.createElement("div");
+          const value = document.createElement("strong");
+          const label = document.createElement("span");
+          const note = document.createElement("small");
+          item.className = "demographics-stat";
+          value.textContent = stat.value;
+          label.textContent = stat.label;
+          note.textContent = stat.note;
+          item.append(value, label, note);
+          snapshot.append(item);
+        });
+
+        window.UTAH_DEMOGRAPHICS_CONCEPTS.forEach((concept) => {
+          const card = document.createElement("article");
+          const title = document.createElement("h3");
+          const summary = document.createElement("p");
+          card.className = "demographics-concept-card";
+          title.textContent = concept.title;
+          summary.textContent = concept.summary;
+          card.append(title, summary);
+          conceptGrid.append(card);
+        });
+
+        window.UTAH_DEMOGRAPHICS_PLACES.forEach((place) => {
+          const card = document.createElement("article");
+          const city = document.createElement("strong");
+          const county = document.createElement("span");
+          const region = document.createElement("small");
+          card.className = "demographics-place-card";
+          city.textContent = place.place;
+          county.textContent = place.county;
+          region.textContent = place.region;
+          card.append(city, county, region);
+          placeGrid.append(card);
+        });
+      })();
+    </script>
   </body>
 </html>

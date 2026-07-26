@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#3f6577"><title>Utah 2034 Venue Match | UtahBug</title>
+  <link rel="icon" href="../assets/favicon.ico" sizes="any"><link rel="stylesheet" href="../feature-hubs.css?v=20260726a">
+</head>
+<body>
+  <header class="hub-header"><div class="hub-header-inner"><a class="hub-home" href="../index.html"><strong>UtahBug</strong></a></div></header>
+  <main class="hub-main">
+    <header class="hub-heading">
+      <div><h1>UTAH 2034</h1><p>Match each winter sport with its planned Utah venue.</p></div>
+      <nav class="hub-mode-links"><a href="olympics-2034.html">Explore</a><a aria-current="page" href="olympics-2034-venues.html">Venues</a><a href="olympics-2034-sprint.html">Sprint</a></nav>
+    </header>
+    <section class="hub-game">
+      <div class="hub-game-bar"><p id="status">Question 1</p><button class="hub-button" id="restart" type="button">Restart</button></div>
+      <div class="hub-question"><p class="hub-kicker">Find the venue</p><p class="hub-prompt" id="prompt"></p><div class="hub-choices" id="choices"></div></div>
+      <p class="hub-feedback" id="feedback" aria-live="polite"></p>
+      <button class="hub-button" id="next" type="button" hidden>Next</button>
+    </section>
+  </main>
+  <footer class="hub-footer"><span>&copy; 2026 UtahBug</span><span>Future UtahBug feature</span></footer>
+  <script src="../olympics-2034-data.js?v=20260726a"></script>
+  <script>
+    (() => {
+      const shuffle = (items) => [...items].sort(() => Math.random() - .5);
+      const prompt = document.querySelector("#prompt"), choices = document.querySelector("#choices");
+      const feedback = document.querySelector("#feedback"), status = document.querySelector("#status");
+      const next = document.querySelector("#next"), restart = document.querySelector("#restart");
+      let deck = [], index = 0, score = 0, answered = false;
+      function start() { deck = shuffle(window.UTAH_OLYMPICS_2034).slice(0, 6); index = 0; score = 0; render(); }
+      function render() {
+        const item = deck[index]; answered = false; feedback.textContent = ""; next.hidden = true;
+        status.textContent = `Question ${index + 1} of ${deck.length} · Score ${score}`;
+        prompt.textContent = item.focus;
+        const options = shuffle([item, ...shuffle(window.UTAH_OLYMPICS_2034.filter(x => x !== item)).slice(0, 2)]);
+        choices.replaceChildren(...options.map((option) => {
+          const button = document.createElement("button"); button.className = "hub-choice"; button.textContent = option.venue;
+          button.onclick = () => {
+            if (answered) return;
+            if (option !== item) { button.classList.add("is-wrong"); feedback.textContent = "Not quite — try again."; return; }
+            answered = true; score += 1; button.classList.add("is-correct"); feedback.textContent = `Correct — ${item.venue}.`; next.hidden = false;
+          };
+          return button;
+        }));
+      }
+      next.onclick = () => { index += 1; if (index >= deck.length) { feedback.textContent = `Round complete — ${score} of ${deck.length}.`; next.hidden = true; } else render(); };
+      restart.onclick = start; start();
+    })();
+  </script>
+</body>
+</html>

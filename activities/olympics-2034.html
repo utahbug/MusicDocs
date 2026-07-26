@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#3f6577">
+  <meta name="description" content="Explore Utah's planned 2034 Olympic and Paralympic Winter Games venues and legacy.">
+  <title>Utah 2034 Olympics | UtahBug</title>
+  <link rel="icon" href="../assets/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="../feature-hubs.css?v=20260726a">
+</head>
+<body>
+  <header class="hub-header"><div class="hub-header-inner"><a class="hub-home" href="../index.html" aria-label="Return to UtahBug home"><strong>UtahBug</strong></a></div></header>
+  <main class="hub-main">
+    <header class="hub-heading">
+      <div><h1>UTAH 2034</h1><p>Utah&rsquo;s Olympic and Paralympic Winter Games return.</p></div>
+      <nav class="hub-mode-links" aria-label="Utah 2034 activities">
+        <a aria-current="page" href="olympics-2034.html">Explore</a>
+        <a href="olympics-2034-venues.html">Venues</a>
+        <a href="olympics-2034-sprint.html">Sprint</a>
+      </nav>
+    </header>
+    <p class="hub-note">A working look at the 2034 plan. Venue assignments may evolve as the Games approach.</p>
+    <section class="hub-card-grid" id="olympics-grid" aria-label="Planned Utah 2034 venues"></section>
+  </main>
+  <footer class="hub-footer"><span>&copy; 2026 UtahBug</span><a href="https://slc-ut2034.org/" target="_blank" rel="noopener">Official Salt Lake City-Utah 2034 site &#8599;</a></footer>
+  <script src="../olympics-2034-data.js?v=20260726a"></script>
+  <script>
+    (() => {
+      const grid = document.querySelector("#olympics-grid");
+      const fragment = document.createDocumentFragment();
+      window.UTAH_OLYMPICS_2034.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "hub-card";
+        card.innerHTML = `<h2>${item.venue}</h2><p>${item.focus}</p><small>${item.place}</small>`;
+        fragment.append(card);
+      });
+      grid.replaceChildren(fragment);
+    })();
+  </script>
+</body>
+</html>
