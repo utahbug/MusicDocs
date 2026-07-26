@@ -12,6 +12,12 @@
   const hintButton = document.getElementById("hint-button");
   const guideButton = document.getElementById("guide-button");
   const nameButton = document.getElementById("name-button");
+  const toolbar = document.querySelector(".puzzle-toolbar");
+  const desktopToolbarSlot = document.getElementById("desktop-toolbar-slot");
+  const completionActions = document.getElementById("completion-actions");
+  const nextLevelButton = document.getElementById("next-level-button");
+  const replayLevelButton = document.getElementById("replay-level-button");
+  const preferencesKey = "utahbug-county-puzzle-preferences";
   const palette = ["#78a99b", "#d5a84b", "#c77c5a", "#80aeca", "#9b82b6"];
   const borderCountyNames = new Set([
     "Box Elder", "Cache", "Rich", "Daggett", "Uintah", "Grand", "San Juan",
@@ -44,6 +50,47 @@
   let countyKissPlayed = false;
   let countyKissTimer = 0;
   let currentFailureCount = 0;
+
+  function placeToolbarForScreen() {
+    const useDesktopSlot = window.matchMedia("(min-width: 721px)").matches;
+    if (useDesktopSlot) {
+      desktopToolbarSlot.append(toolbar);
+      desktopToolbarSlot.removeAttribute("aria-hidden");
+    } else {
+      piecePanel.prepend(toolbar);
+      desktopToolbarSlot.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  function savePreferences() {
+    try {
+      window.localStorage.setItem(
+        preferencesKey,
+        JSON.stringify({
+          hideGuides: map.classList.contains("hide-guides"),
+          hideCountyName: countyNameHidden
+        })
+      );
+    } catch {
+      // The puzzle still works when browser storage is unavailable.
+    }
+  }
+
+  function restorePreferences() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(preferencesKey) || "{}");
+      const hideGuides = saved.hideGuides === true;
+      countyNameHidden = saved.hideCountyName === true;
+      map.classList.toggle("hide-guides", hideGuides);
+      guideButton.setAttribute("aria-pressed", String(hideGuides));
+      guideButton.textContent = hideGuides ? "Show outlines" : "Hide outlines";
+      currentCounty.classList.toggle("is-hidden", countyNameHidden);
+      nameButton.setAttribute("aria-pressed", String(countyNameHidden));
+      nameButton.textContent = countyNameHidden ? "Show county name" : "Hide county name";
+    } catch {
+      // Ignore damaged or blocked browser storage.
+    }
+  }
 
   function createSvgElement(tagName) {
     return document.createElementNS(svgNS, tagName);
@@ -146,11 +193,25 @@
     }
   }
 
+  function setNotchName(label) {
+    currentCounty.style.removeProperty("font-size");
+    currentCounty.textContent = label;
+    window.requestAnimationFrame(() => {
+      const availableWidth = 270;
+      const measuredWidth = currentCounty.getComputedTextLength();
+      if (measuredWidth <= availableWidth) return;
+      const currentSize = Number.parseFloat(window.getComputedStyle(currentCounty).fontSize);
+      currentCounty.style.fontSize = `${currentSize * (availableWidth / measuredWidth)}px`;
+    });
+  }
+
   function showCurrentPiece() {
     locked = false;
     pieceSelected = false;
+    map.classList.remove("is-complete");
     currentFailureCount = 0;
     skipButton.hidden = true;
+    completionActions.hidden = true;
     pieceButton.setAttribute("aria-pressed", "false");
     piecePanel.classList.remove("is-complete");
     piecePanel.classList.remove(
@@ -163,7 +224,8 @@
 
     if (queueIndex >= queue.length) {
       current = null;
-      currentCounty.textContent = "Utah complete!";
+      currentCounty.classList.remove("is-hidden");
+      setNotchName("Utah complete!");
       pieceButton.hidden = true;
       pieceButton.disabled = true;
       const completion = document.createElement("span");
@@ -172,24 +234,32 @@
       completion.textContent = "✓";
       document.getElementById("piece-tray").replaceChildren(completion);
       piecePanel.classList.add("is-complete");
+      map.classList.add("is-complete");
       status.textContent = "All 29 counties are in place.";
       progress.textContent = "29 of 29";
       hintButton.disabled = true;
+      completionActions.hidden = false;
+      nextLevelButton.textContent = !countyNameHidden
+        ? "Next: Hide county names"
+        : map.classList.contains("hide-guides")
+          ? "Play expert again"
+          : "Next: Hide names & outlines";
       return;
     }
 
     current = queue[queueIndex];
+    currentCounty.classList.toggle("is-hidden", countyNameHidden);
     piecePanel.classList.toggle("is-weber-bat", current.name === "Weber");
     piecePanel.classList.toggle("is-davis-horse", current.name === "Davis");
     piecePanel.classList.toggle("is-tooele-horse-body", current.name === "Tooele");
     piecePanel.classList.toggle("is-utah-boot", current.name === "Utah");
     piecePanel.classList.toggle("is-salt-lake-ghost", current.name === "Salt Lake");
-    currentCounty.textContent = `${current.name} County`;
+    setNotchName(current.name);
     pieceButton.hidden = false;
     pieceButton.disabled = false;
     hintButton.disabled = false;
     setPreview(piecePreview, current, currentTargetBox());
-    status.textContent = "Place this county on the map.";
+    status.textContent = "Move to the Utah map";
     progress.textContent = `${queueIndex} of ${queue.length}`;
   }
 
@@ -300,7 +370,7 @@
   function attemptPlacement(countyId) {
     if (!current || locked) return;
     if (!countyId) {
-      registerPlacementFailure("Drop the piece on the Utah map.");
+      registerPlacementFailure("Move to the Utah map");
       return;
     }
 
@@ -491,6 +561,7 @@
     map.classList.toggle("hide-guides", willHide);
     guideButton.setAttribute("aria-pressed", String(willHide));
     guideButton.textContent = willHide ? "Show outlines" : "Hide outlines";
+    savePreferences();
   });
 
   nameButton.addEventListener("click", () => {
@@ -501,6 +572,7 @@
     status.textContent = countyNameHidden
       ? "County names are hidden."
       : "County names are shown.";
+    savePreferences();
   });
 
   skipButton.addEventListener("click", () => {
@@ -513,6 +585,27 @@
   });
 
   resetButton.addEventListener("click", beginPuzzle);
+
+  nextLevelButton.addEventListener("click", () => {
+    if (!countyNameHidden) {
+      countyNameHidden = true;
+    } else if (!map.classList.contains("hide-guides")) {
+      map.classList.add("hide-guides");
+    }
+    currentCounty.classList.toggle("is-hidden", countyNameHidden);
+    guideButton.setAttribute("aria-pressed", String(map.classList.contains("hide-guides")));
+    guideButton.textContent = map.classList.contains("hide-guides") ? "Show outlines" : "Hide outlines";
+    nameButton.setAttribute("aria-pressed", String(countyNameHidden));
+    nameButton.textContent = countyNameHidden ? "Show county name" : "Hide county name";
+    savePreferences();
+    beginPuzzle();
+  });
+
+  replayLevelButton.addEventListener("click", beginPuzzle);
+
+  placeToolbarForScreen();
+  window.matchMedia("(min-width: 721px)").addEventListener("change", placeToolbarForScreen);
+  restorePreferences();
 
   loadCountyData()
     .then((loadedData) => {

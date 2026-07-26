@@ -183,6 +183,9 @@ h1 {
 .home-section-heading {
   margin-bottom: 13px;
 }
+.home-categories > .home-section-heading {
+  margin-bottom: 7px;
+}
 .home-section-heading h1,
 .home-section-heading h2 {
   margin: 0;

@@ -310,8 +310,10 @@ function renderStateStage(card, stage) {
   const name = card.dataset.name || "State";
   const capital = card.dataset.capital || "";
   const area = card.dataset.area || "";
+  const areaRank = card.dataset.areaRank || "";
   const landArea = card.dataset.landArea || area;
   const population = card.dataset.population || "";
+  const populationRank = card.dataset.populationRank || "";
   const capitalPopulation = card.dataset.capitalPopulation || "";
   const flag = card.dataset.flag || "";
   const closeMap = card.dataset.closeMap || "";
@@ -379,7 +381,7 @@ function renderStateStage(card, stage) {
     if (isTerritoryPage) {
       slot.innerHTML = '<span class="state-facts"><span>Total area: ' + escapeHtml(area) + ' sq mi</span><span>Land area: ' + escapeHtml(landArea) + ' sq mi</span><span>2020 population: ' + escapeHtml(population) + '</span><span>Capital population: ' + escapeHtml(capitalPopulation) + '</span></span>';
     } else {
-      slot.innerHTML = '<span class="state-facts"><span>Capital: ' + escapeHtml(capital) + '</span><span>Motto: ' + escapeHtml(stateMotto) + '</span><span>Area: ' + escapeHtml(area) + ' sq mi</span><span>2020 population: ' + escapeHtml(population) + '</span><span>National Parks: ' + nationalParks + '</span><span>National Monuments: ' + nationalMonuments + '</span></span>';
+      slot.innerHTML = '<span class="state-facts"><span>Capital: ' + escapeHtml(capital) + '</span><span>Motto: ' + escapeHtml(stateMotto) + '</span><span>Area: ' + escapeHtml(area) + ' sq mi' + (areaRank ? ', rank: ' + escapeHtml(areaRank) : '') + '</span><span>2020 population: ' + escapeHtml(population) + (populationRank ? ', rank: ' + escapeHtml(populationRank) : '') + '</span><span>National Parks: ' + nationalParks + '</span><span>National Monuments: ' + nationalMonuments + '</span></span>';
     }
   }
 
@@ -405,7 +407,7 @@ function renderStateStage(card, stage) {
 
   if (stage === 5 && !isTerritoryPage) {
     card.classList.add("stage-all");
-    slot.innerHTML = '<span class="cycle-label">All together</span><ul class="state-bullets"><li><strong>Capital:</strong> ' + escapeHtml(capital) + '</li><li><strong>Motto:</strong> ' + escapeHtml(stateMotto) + '</li><li><strong>Area:</strong> ' + escapeHtml(area) + ' sq mi</li><li><strong>2020 population:</strong> ' + escapeHtml(population) + '</li><li><strong>National Parks:</strong> ' + nationalParks + '</li><li><strong>National Monuments:</strong> ' + nationalMonuments + '</li></ul>';
+    slot.innerHTML = '<span class="cycle-label">All together</span><ul class="state-bullets"><li><strong>Capital:</strong> ' + escapeHtml(capital) + '</li><li><strong>Motto:</strong> ' + escapeHtml(stateMotto) + '</li><li><strong>Area:</strong> ' + escapeHtml(area) + ' sq mi' + (areaRank ? ', rank: ' + escapeHtml(areaRank) : '') + '</li><li><strong>2020 population:</strong> ' + escapeHtml(population) + (populationRank ? ', rank: ' + escapeHtml(populationRank) : '') + '</li><li><strong>National Parks:</strong> ' + nationalParks + '</li><li><strong>National Monuments:</strong> ' + nationalMonuments + '</li></ul>';
   }
 
   if (surface) surface.setAttribute("aria-label", "Show next " + name + " detail");
