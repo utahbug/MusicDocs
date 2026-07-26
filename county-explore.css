@@ -1,0 +1,403 @@
+.county-explore-page .county-explore-main {
+  width: min(1080px, calc(100% - 28px));
+  padding-top: 22px;
+}
+
+.explore-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.explore-heading h1 {
+  margin: 0;
+  font-size: clamp(1.32rem, 4.2vw, 2rem);
+  line-height: 1.12;
+  letter-spacing: .04em;
+}
+
+.explore-heading p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.county-mode-links {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 253, 248, .78);
+}
+
+.county-mode-links a {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  padding: 7px 12px;
+  color: #285d52;
+  font-size: .88rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.county-mode-links a[aria-current="page"] {
+  background: #dcece6;
+  box-shadow: inset 0 -2px 0 #7fa99b;
+}
+
+.county-mode-links a:hover,
+.county-mode-links a:focus-visible {
+  background: #e8f1ed;
+  outline: none;
+}
+
+.explore-loading,
+.explore-error {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 22px;
+  background: rgba(255, 253, 248, .9);
+  color: var(--muted);
+}
+
+.explore-error a {
+  color: #285d52;
+  font-weight: 800;
+}
+
+.county-chronology {
+  padding: clamp(16px, 2.5vw, 26px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .86);
+  box-shadow: 0 7px 18px rgba(56, 68, 61, .08);
+}
+
+.county-chronology h2,
+.county-chronology h3 {
+  margin: 0;
+  color: var(--ink);
+}
+
+.county-chronology h2 {
+  font-size: 1.2rem;
+}
+
+.county-chronology .statehood-title {
+  margin-top: 22px;
+}
+
+.county-chronology .creation-dates-title {
+  margin-top: 0;
+}
+
+.county-chronology .former-counties-title {
+  margin-top: 24px;
+}
+
+.utah-counties-details {
+  padding-top: 4px;
+}
+
+.statehood-counties {
+  color: var(--muted);
+}
+
+.statehood-counties-toggle {
+  appearance: none;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #286659;
+  font: inherit;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.statehood-counties-toggle:hover,
+.statehood-counties-toggle:focus-visible {
+  color: var(--ink);
+}
+
+.statehood-county-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 5px 22px;
+  margin: 10px 0 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 16px 12px 34px;
+  background: rgba(237, 245, 232, .72);
+}
+
+.statehood-county-list[hidden] {
+  display: none;
+}
+
+.statehood-county-list li::marker,
+.former-county-list li::marker {
+  color: #8fa39c;
+  font-size: .72em;
+}
+
+.former-county-list {
+  margin: 0;
+  padding-left: 1.35rem;
+}
+
+.former-county-list li {
+  border-bottom: 1px solid #e7ece8;
+  padding: 7px 0;
+  font-size: .88rem;
+  line-height: 1.45;
+}
+
+.county-sort-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px 14px;
+  margin: 8px 0 12px;
+}
+
+.county-sort-controls label {
+  display: grid;
+  gap: 3px;
+  color: var(--muted);
+  font-size: .74rem;
+  font-weight: 750;
+}
+
+.county-sort-controls select {
+  min-width: 180px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px 30px 8px 10px;
+  background: rgba(255, 255, 255, .92);
+  color: var(--ink);
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 500;
+}
+
+.county-sort-controls select:focus-visible {
+  outline: 2px solid #6f9b8e;
+  outline-offset: 2px;
+}
+
+.county-history-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.county-history-list.is-masonry {
+  position: relative;
+  display: block;
+}
+
+.county-history-list.is-masonry > li {
+  position: absolute;
+  margin: 0;
+}
+
+.county-history-list > li {
+  overflow: hidden;
+  border: 1px solid #d8e2de;
+  border-left: 5px solid var(--card-accent, #9db5ad);
+  border-radius: 8px;
+  background: var(--card-tint, rgba(255, 255, 255, .62));
+  font-size: .84rem;
+  line-height: 1.4;
+}
+
+.county-history-toggle {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  width: 100%;
+  border: 0;
+  padding: 11px 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+.county-history-toggle:hover,
+.county-history-toggle:focus-visible {
+  background: rgba(255, 255, 255, .4);
+}
+
+.county-history-toggle:focus-visible {
+  outline: 2px solid #6f9b8e;
+  outline-offset: -2px;
+}
+
+.county-card-summary {
+  min-width: 0;
+}
+
+.county-card-summary .county-origin {
+  display: block;
+  margin-top: 3px;
+}
+
+.county-card-chevron {
+  align-self: center;
+  margin-left: 10px;
+  color: #2d675b;
+  font-size: 1rem;
+  transition: transform .18s ease;
+}
+
+.county-history-toggle[aria-expanded="true"] .county-card-chevron {
+  transform: rotate(180deg);
+}
+
+.county-detail {
+  border-top: 1px solid #d8e2de;
+  padding: 14px 18px 14px 24px;
+  background: var(--card-detail, #f7faf8);
+}
+
+.county-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 18px;
+  margin: 0;
+}
+
+.county-detail-grid div {
+  min-width: 0;
+}
+
+.county-detail-grid dt {
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.county-detail-grid dd {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-weight: 400;
+}
+
+.county-detail-grid .park-detail {
+  grid-column: 1 / -1;
+}
+
+.county-history-list time {
+  color: #285f54;
+  font-weight: 800;
+}
+
+.county-origin {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: .76rem;
+}
+
+.chronology-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+.chronology-note a,
+.external-resource a {
+  color: #285f54;
+}
+
+.external-resource {
+  margin: 20px 0 0;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.county-explore-footer {
+  width: min(1080px, calc(100% - 28px));
+  justify-content: flex-start;
+}
+
+.county-explore-footer .county-footer-nav {
+  align-self: flex-start;
+}
+
+@media (max-width: 700px) {
+  .explore-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .county-mode-links {
+    align-self: stretch;
+  }
+
+  .county-mode-links a {
+    flex: 1;
+  }
+
+  .county-explore-footer .county-footer-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .county-explore-footer .county-footer-nav a {
+    min-width: 0;
+    padding-inline: 6px;
+    text-align: center;
+  }
+
+  .county-sort-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .county-sort-controls select {
+    width: 100%;
+  }
+
+  .county-history-list {
+    grid-template-columns: 1fr;
+  }
+
+  .county-history-list.is-masonry {
+    height: auto !important;
+  }
+
+  .county-history-list.is-masonry > li {
+    position: static;
+    width: auto !important;
+    margin-bottom: 10px;
+  }
+
+  .county-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .county-detail-grid .park-detail {
+    grid-column: auto;
+  }
+}

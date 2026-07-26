@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#334f60">
+    <meta name="description" content="Put Utah history events in chronological order.">
+    <link rel="icon" href="../assets/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+    <title>Utah History Order Game | UtahBug</title>
+    <link rel="stylesheet" href="../utahbug-playground-20260714c.css?v=20260725r">
+    <link rel="stylesheet" href="../history.css?v=20260725a">
+  </head>
+  <body class="history-hub-page">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html" aria-label="Return to the UtahBug home page">
+          <span><strong>UtahBug</strong></span>
+        </a>
+      </div>
+    </header>
+
+    <main class="history-main">
+      <header class="history-heading">
+        <div>
+          <h1>UTAH HISTORY</h1>
+          <p>Choose the events from earliest to latest.</p>
+        </div>
+        <nav class="history-mode-links" aria-label="Utah history activities">
+          <a href="history.html">Explore</a>
+          <a aria-current="page" href="history-order.html">Order</a>
+          <a href="history-sprint.html">Sprint</a>
+        </nav>
+      </header>
+
+      <section class="history-game-shell order-game">
+        <div class="history-game-status">
+          <p id="order-progress">0 of 5 placed</p>
+          <button class="history-game-button" id="new-order-round" type="button">New round</button>
+        </div>
+        <div class="order-instructions">
+          <h2>What happened first?</h2>
+          <p>Tap the five events in chronological order. Dates appear as you place them.</p>
+        </div>
+        <div class="order-board" id="order-board"></div>
+        <p class="history-game-feedback" id="order-feedback" aria-live="polite">
+          Start with the earliest event.
+        </p>
+      </section>
+    </main>
+
+    <footer class="history-site-footer">
+      <span>&copy; 2026 UtahBug</span>
+      <a href="history.html">Explore the Utah history timeline</a>
+    </footer>
+
+    <script src="../history-data.js?v=20260725a"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        const board = document.querySelector("#order-board");
+        const progress = document.querySelector("#order-progress");
+        const feedback = document.querySelector("#order-feedback");
+        const newRoundButton = document.querySelector("#new-order-round");
+        let round = [];
+        let nextIndex = 0;
+
+        function shuffle(items) {
+          const copy = [...items];
+          for (let index = copy.length - 1; index > 0; index -= 1) {
+            const randomIndex = Math.floor(Math.random() * (index + 1));
+            [copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]];
+          }
+          return copy;
+        }
+
+        function buildRound() {
+          const pool = shuffle(window.UTAH_HISTORY_EVENTS);
+          round = pool.slice(0, 5).sort((a, b) => a.sortKey - b.sortKey);
+          const displayed = shuffle(round);
+          nextIndex = 0;
+          board.replaceChildren();
+          progress.textContent = "0 of 5 placed";
+          feedback.textContent = "Start with the earliest event.";
+          feedback.className = "history-game-feedback";
+
+          displayed.forEach((event) => {
+            const button = document.createElement("button");
+            const title = document.createElement("strong");
+            const date = document.createElement("span");
+
+            button.type = "button";
+            button.className = "order-event";
+            button.dataset.id = event.id;
+            title.textContent = event.title;
+            date.className = "order-date";
+            date.textContent = event.date;
+            date.hidden = true;
+            button.append(title, date);
+            button.addEventListener("click", () => chooseEvent(button, event));
+            board.append(button);
+          });
+        }
+
+        function chooseEvent(button, event) {
+          if (button.disabled) return;
+          const expected = round[nextIndex];
+
+          if (event.id !== expected.id) {
+            button.classList.remove("is-wrong");
+            void button.offsetWidth;
+            button.classList.add("is-wrong");
+            feedback.textContent = "Not yet — choose an earlier event.";
+            feedback.className = "history-game-feedback is-wrong";
+            return;
+          }
+
+          nextIndex += 1;
+          button.disabled = true;
+          button.classList.remove("is-wrong");
+          button.classList.add("is-placed");
+          button.querySelector(".order-date").hidden = false;
+          button.style.setProperty("--order-number", `"${nextIndex}"`);
+          progress.textContent = `${nextIndex} of 5 placed`;
+
+          if (nextIndex === round.length) {
+            feedback.textContent = "You built the timeline!";
+            feedback.className = "history-game-feedback is-correct";
+          } else {
+            feedback.textContent = "Correct. What comes next?";
+            feedback.className = "history-game-feedback is-correct";
+          }
+        }
+
+        newRoundButton.addEventListener("click", buildRound);
+        buildRound();
+      })();
+    </script>
+  </body>
+</html>

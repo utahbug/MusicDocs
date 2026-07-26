@@ -53,10 +53,20 @@ a { color: inherit; }
   align-items: center;
 }
 .brand {
-  display: inline-flex;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
   align-items: center;
   gap: 11px;
+  padding: 16px max(14px, calc((100% - 1180px) / 2));
   text-decoration: none;
+  cursor: pointer;
+}
+.brand:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, .9);
+  outline-offset: -5px;
 }
 .brand-mark {
   display: grid;
@@ -421,6 +431,54 @@ h1 {
   margin: 0;
   font-size: 1.18rem;
 }
+.official-source-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.official-source-card {
+  min-height: 112px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 5px;
+  border: 1px solid #c8d0cb;
+  border-left: 5px solid #6f9d8d;
+  border-radius: 9px;
+  padding: 13px 14px 11px;
+  background: #fffdf8;
+  color: #1f2428;
+  text-decoration: none;
+}
+.official-source-card:nth-child(2n) {
+  border-left-color: #b88642;
+}
+.official-source-card strong {
+  color: #245b50;
+  font-size: 1rem;
+}
+.official-source-card span {
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.35;
+}
+.official-source-card small {
+  color: #6a756f;
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.official-source-card small::after {
+  content: "  \2197";
+  font-size: .85rem;
+}
+.official-source-card:hover,
+.official-source-card:focus-visible {
+  border-color: #6b9183;
+  border-left-color: #245b50;
+  box-shadow: 0 0 0 3px rgba(73, 122, 88, .14);
+  outline: none;
+}
 .daily-feed-heading a {
   color: #245b50;
   font-size: .86rem;
@@ -450,6 +508,20 @@ h1 {
 }
 .weather-feed > p {
   margin: 4px 0 12px;
+  color: var(--muted);
+}
+.weather-alerts {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.weather-alerts h3 {
+  margin: 0 0 6px;
+  color: #245b50;
+  font-size: 1rem;
+}
+.weather-alerts > p {
+  margin: 0 0 10px;
   color: var(--muted);
 }
 .weather-feed ul {
@@ -494,6 +566,14 @@ h1 {
   border-color: #5f91aa;
   box-shadow: 0 0 0 3px rgba(45, 111, 139, .15);
   outline: none;
+}
+@media (max-width: 520px) {
+  .official-source-list {
+    grid-template-columns: 1fr;
+  }
+  .official-source-card {
+    min-height: 96px;
+  }
 }
 .help-stack {
   display: grid;
@@ -723,34 +803,206 @@ h1 {
   padding: 16px;
   background: transparent;
 }
+.official-websites-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.official-websites-page {
+  padding-top: 6px;
+}
+.official-websites-heading .quiz-page-label {
+  margin-bottom: 0;
+}
+.official-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.official-search-toggle {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #aebdb9;
+  border-radius: 50%;
+  padding: 0;
+  background: rgba(255, 253, 248, .74);
+  color: #315c59;
+  cursor: pointer;
+}
+.official-search-toggle:hover,
+.official-search-toggle:focus-visible,
+.official-search-toggle[aria-expanded="true"] {
+  border-color: #718f88;
+  background: #fffdf8;
+  outline: none;
+}
+.official-search-glyph {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: block;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+.official-search-glyph::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 2px;
+  right: -6px;
+  bottom: -3px;
+  border-radius: 2px;
+  background: currentColor;
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+.official-search-panel[hidden] {
+  display: none;
+}
 .official-search-panel .official-search {
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
 }
-.official-websites-page .directory-card {
-  border-width: 2px;
-  gap: 0;
+.external-link-key {
+  margin: 14px 2px -8px;
+  color: #687179;
+  font-size: .82rem;
+  text-align: right;
 }
-.official-websites-page .directory-card:nth-child(5n + 1) {
-  background: #d7eee5;
-  border-color: #75a994;
+.resource-category-grid {
+  width: min(980px, 100%);
+  margin: 12px auto 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px 16px;
 }
-.official-websites-page .directory-card:nth-child(5n + 2) {
-  background: #f5e5a9;
-  border-color: #c8aa45;
+
+.resource-category {
+  aspect-ratio: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: stretch;
+  border: 0;
+  border-radius: 14px;
+  padding: 6px;
+  background: transparent;
+  color: #304f52;
+  font: inherit;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .18s ease, transform .18s ease;
 }
-.official-websites-page .directory-card:nth-child(5n + 3) {
-  background: #f1cdb9;
-  border-color: #c9805a;
+
+.resource-category img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+  object-fit: cover;
+  -webkit-mask-image: radial-gradient(ellipse 78% 74% at center, #000 56%, rgba(0, 0, 0, .88) 72%, transparent 100%);
+  mask-image: radial-gradient(ellipse 78% 74% at center, #000 56%, rgba(0, 0, 0, .88) 72%, transparent 100%);
 }
-.official-websites-page .directory-card:nth-child(5n + 4) {
-  background: #d5e9f3;
-  border-color: #74a7c0;
+
+.resource-category-copy {
+  display: flex;
+  min-height: 46px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px 5px 5px;
 }
-.official-websites-page .directory-card:nth-child(5n) {
-  background: #e3d8ef;
-  border-color: #9c80b9;
+
+.resource-category-copy strong {
+  font-size: 1.04rem;
+  line-height: 1.2;
+}
+
+.resource-category-copy small {
+  color: #707a7b;
+  font-size: .74rem;
+}
+
+.external-directory-page .directory-card[target="_blank"] strong::after {
+  content: " ↗";
+  color: #778581;
+  font-size: .82em;
+  font-weight: 600;
+}
+
+.resource-category:hover,
+.resource-category:focus-visible {
+  background: rgba(255, 253, 248, .58);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.resource-dialog {
+  width: min(440px, calc(100% - 28px));
+  border: 1px solid #bfc8c4;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fffdf8;
+  color: #20272b;
+  box-shadow: 0 20px 60px rgba(31, 36, 40, .25);
+}
+
+.resource-dialog::backdrop {
+  background: rgba(24, 31, 34, .46);
+}
+
+.resource-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.resource-dialog-heading h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.resource-dialog-heading button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: #edf0ed;
+  color: #304f52;
+  font-size: 1.55rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.resource-dialog-links {
+  display: grid;
+}
+
+.resource-dialog-links a {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #ddd7cd;
+  padding: 10px 4px;
+  color: #315c59;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.resource-dialog-links a:hover,
+.resource-dialog-links a:focus-visible {
+  color: #1f403d;
+  text-decoration: underline;
+  outline: none;
 }
 .official-search label {
   display: block;
@@ -1257,6 +1509,7 @@ input {
 }
 
 .states-page .state-sort-section {
+  width: min(100%, 760px);
   margin-top: 10px;
   padding: 8px;
 }
@@ -1268,6 +1521,11 @@ input {
 .utah-reference-card {
   margin-top: 10px;
   scroll-margin-top: 10px;
+}
+@media (min-width: 640px) and (pointer: fine) {
+  .states-page .utah-reference-card {
+    width: min(100%, 410px);
+  }
 }
 
 .all-states-divider {
@@ -1386,6 +1644,11 @@ input {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
+@media (min-width: 901px) {
+  .states-page .state-cycle-grid:has(.state-cycle-card.is-active) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 .dc-memorial-feature {
   grid-column: 1 / -1;
   width: min(100%, 760px);
@@ -1415,9 +1678,10 @@ input {
   grid-column: 1;
 }
 .state-illustration {
-  grid-column: 1 / -1;
-  min-height: 110px;
-  margin: 2px 0;
+  grid-column: auto;
+  min-height: 72px;
+  margin: 0;
+  padding: 3px 10px;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -1427,8 +1691,8 @@ input {
 .state-illustration img {
   display: block;
   width: auto;
-  max-width: 74%;
-  max-height: 106px;
+  max-width: 100%;
+  max-height: 72px;
   object-fit: contain;
 }
 .state-image-left {
@@ -1685,28 +1949,40 @@ input {
 }
 
 body:not(.territory-page) .state-cycle-card[data-card-color="0"] {
-  --state-card-color: #d7eee5;
-  --state-card-border: #79aa9b;
+  --state-card-accent: #52778a;
+  --state-card-wash: rgba(82, 119, 138, .10);
+  --state-card-border: #94abb5;
 }
 body:not(.territory-page) .state-cycle-card[data-card-color="1"] {
-  --state-card-color: #f5e5a9;
-  --state-card-border: #c8a83d;
+  --state-card-accent: #a45d3d;
+  --state-card-wash: rgba(164, 93, 61, .09);
+  --state-card-border: #c59a84;
 }
 body:not(.territory-page) .state-cycle-card[data-card-color="2"] {
-  --state-card-color: #f1cdb9;
-  --state-card-border: #cc7c58;
+  --state-card-accent: #65706f;
+  --state-card-wash: rgba(101, 112, 111, .08);
+  --state-card-border: #a8b0ae;
 }
 body:not(.territory-page) .state-cycle-card[data-card-color="3"] {
-  --state-card-color: #d5e9f3;
-  --state-card-border: #72a9c1;
+  --state-card-accent: #6a8494;
+  --state-card-wash: rgba(106, 132, 148, .10);
+  --state-card-border: #9eb0ba;
 }
 body:not(.territory-page) .state-cycle-card[data-card-color="4"] {
-  --state-card-color: #e3d8ef;
-  --state-card-border: #9d7ab5;
+  --state-card-accent: #8f634f;
+  --state-card-wash: rgba(143, 99, 79, .09);
+  --state-card-border: #b99d90;
 }
 body:not(.territory-page) .state-cycle-card[data-card-color] .state-cycle-surface,
 body:not(.territory-page) .state-cycle-card[data-card-color].is-active .state-cycle-surface {
-  background: var(--state-card-color);
+  background:
+    linear-gradient(90deg, var(--state-card-accent) 0 4px, transparent 4px),
+    linear-gradient(
+      145deg,
+      var(--state-card-wash) 0%,
+      rgba(255, 253, 248, .96) 58%,
+      rgba(244, 242, 236, .96) 100%
+    );
   border-color: var(--state-card-border);
 }
 body.states-page .state-cycle-card[data-name="Utah"] .state-name {
@@ -1733,6 +2009,19 @@ body.states-page .state-cycle-card[data-name="Utah"][data-stage="0"] .state-name
   flex-basis: 54px;
   width: 54px;
   height: 66px;
+}
+body.states-page .utah-reference-card .state-cycle-card[data-name="Utah"] .state-cycle-surface,
+body.states-page .utah-reference-card .state-cycle-card[data-name="Utah"].is-active .state-cycle-surface {
+  background:
+    linear-gradient(90deg, #a45d3d 0 5px, transparent 5px),
+    linear-gradient(
+      135deg,
+      rgba(226, 208, 184, .62),
+      rgba(255, 252, 246, .96) 56%,
+      rgba(226, 235, 239, .72)
+    );
+  border-color: #a45d3d;
+  box-shadow: 0 3px 0 rgba(107, 75, 58, .12);
 }
 body.states-page .utah-position-marker {
   min-height: 72px;
@@ -2089,11 +2378,22 @@ body.states-page .utah-position-marker:focus-visible {
 .state-cycle-card.stage-flag .state-media img {
   height: auto;
 }
+.states-page .utah-reference-card .state-cycle-card.stage-flag .state-media {
+  width: min(100%, 380px);
+  min-height: 0;
+  aspect-ratio: auto;
+}
+.states-page .utah-reference-card .state-cycle-card.stage-flag .state-media img {
+  width: 100%;
+  height: auto;
+  max-height: 240px;
+  object-fit: contain;
+}
 .state-facts {
   display: grid;
   gap: 6px;
-  color: #245b50;
-  font-weight: 850;
+  color: #3f5652;
+  font-weight: 500;
 }
 .state-bullets {
   margin: 0;
@@ -2288,7 +2588,7 @@ body.states-page .utah-position-marker:focus-visible {
     min-height: 128px;
   }
   .brand {
-    align-items: flex-start;
+    align-items: center;
   }
   .brand-mark {
     width: 42px;
@@ -2331,6 +2631,13 @@ body.states-page .utah-position-marker:focus-visible {
   }
   .directory-grid {
     grid-template-columns: 1fr;
+  }
+  .resource-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 8px;
+  }
+  .resource-category-copy strong {
+    font-size: .94rem;
   }
   .quiz-page .directory-card {
     min-height: 92px;

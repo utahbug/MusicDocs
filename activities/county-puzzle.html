@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5f7f70">
+    <meta name="description" content="Place all 29 Utah counties into an interactive map puzzle.">
+    <link rel="icon" href="../assets/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../assets/utahbug-icon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+    <title>Utah Counties Puzzle | UtahBug</title>
+    <link rel="stylesheet" href="../utahbug-playground-20260714c.css?v=20260725r">
+    <style>
+      .county-puzzle-page .page-main {
+        --puzzle-map-max: 650px;
+        width: min(1080px, calc(100% - 28px));
+        padding-top: 15px;
+      }
+
+      .county-puzzle-page .site-header,
+      .county-puzzle-page .header-inner {
+        min-height: 92px;
+      }
+
+      .county-puzzle-page .brand strong {
+        font-size: clamp(2.15rem, 6vw, 3.25rem);
+      }
+
+      .puzzle-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 14px;
+      }
+
+      .puzzle-heading h1 {
+        margin: 0;
+        font-size: clamp(1.32rem, 4.2vw, 2rem);
+        line-height: 1.12;
+        letter-spacing: .04em;
+      }
+
+      .puzzle-heading p {
+        margin: 6px 0 0;
+        color: var(--muted);
+      }
+
+      .county-mode-links {
+        display: flex;
+        flex: 0 0 auto;
+        gap: 6px;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: rgba(255, 253, 248, .78);
+      }
+
+      .county-mode-links a,
+      .county-mode-links button {
+        appearance: none;
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 7px;
+        padding: 7px 12px;
+        color: #245b50;
+        background: transparent;
+        font: inherit;
+        font-size: .88rem;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .county-mode-links .puzzle-reset {
+        background: #dcece6;
+        box-shadow: inset 0 -2px 0 #7fa99b;
+      }
+
+      .county-mode-links a:hover,
+      .county-mode-links a:focus-visible,
+      .county-mode-links button:hover,
+      .county-mode-links button:focus-visible {
+        background: #e8f1ed;
+        outline: none;
+      }
+
+      .puzzle-toolbar {
+        display: inline-flex;
+        width: auto;
+        max-width: min(var(--puzzle-map-max), 100%);
+        align-items: center;
+        justify-content: flex-start;
+        margin: 0 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 4px 4px 4px 28px;
+        background: rgba(255, 253, 248, .78);
+      }
+
+      .puzzle-toolbar-actions {
+        display: flex;
+        justify-content: flex-start;
+        gap: 6px;
+        width: auto;
+      }
+
+      .puzzle-tool {
+        min-height: 38px;
+        border: 0;
+        border-radius: 7px;
+        padding: 7px 12px;
+        background: transparent;
+        color: #245b50;
+        font: inherit;
+        font-size: .88rem;
+        font-weight: 800;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .puzzle-tool[aria-pressed="true"] {
+        background: #dcece6;
+        box-shadow: inset 0 -2px 0 #7fa99b;
+      }
+
+      .puzzle-tool:hover,
+      .puzzle-tool:focus-visible {
+        background: #e5efea;
+        outline: none;
+      }
+
+      .county-puzzle-page .site-footer {
+        width: min(650px, calc(100% - 48px));
+        margin: 0 0 0 max(14px, calc((100% - 1080px) / 2));
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .county-puzzle-page .site-footer a {
+        min-width: 0;
+        justify-content: center;
+        padding-inline: 6px;
+        text-align: center;
+      }
+
+      .puzzle-workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(230px, .7fr);
+        grid-template-areas: "map piece";
+        gap: 14px;
+        align-items: start;
+      }
+
+      .puzzle-map-panel,
+      .puzzle-piece-panel {
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: rgba(255, 253, 248, .94);
+        box-shadow: 0 7px 0 rgba(31, 36, 40, .07);
+      }
+
+      .puzzle-map-panel {
+        grid-area: map;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        padding: 10px;
+      }
+
+      .puzzle-map {
+        display: block;
+        width: min(100%, 650px);
+        height: auto;
+        max-height: 70vh;
+        touch-action: manipulation;
+      }
+
+      .puzzle-map-current-county,
+      .puzzle-map-progress {
+        fill: #245b50;
+        font-weight: 850;
+        pointer-events: none;
+        text-anchor: start;
+      }
+
+      .puzzle-map-current-county {
+        font-size: 21px;
+      }
+
+      .puzzle-map-current-county.is-hidden {
+        display: none;
+      }
+
+      .puzzle-map-progress {
+        font-size: 18px;
+      }
+
+      .state-silhouette {
+        fill: #f0eee6;
+        stroke: none;
+      }
+
+      .state-outline {
+        fill: none;
+        stroke: #657b72;
+        stroke-width: 2.4;
+        pointer-events: none;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .county-guide {
+        fill: none;
+        stroke: #9eaaa4;
+        stroke-width: 1.45;
+        stroke-dasharray: 4 3;
+        vector-effect: non-scaling-stroke;
+        transition: opacity 180ms ease;
+      }
+
+      .puzzle-map.hide-guides .county-guide {
+        opacity: 0;
+      }
+
+      .county-target {
+        fill: rgba(255, 255, 255, .001);
+        stroke: transparent;
+        stroke-width: 7;
+        cursor: crosshair;
+        pointer-events: all;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .county-target:focus {
+        outline: none;
+      }
+
+      .county-target:focus-visible {
+        fill: rgba(95, 127, 112, .12);
+        stroke: #5f7f70;
+        stroke-width: 2.5;
+      }
+
+      .county-target.is-hint {
+        fill: rgba(210, 163, 66, .34);
+        stroke: #b57d22;
+        animation: hint-pulse 720ms ease-in-out 2;
+      }
+
+      .county-target.is-wrong {
+        fill: rgba(180, 87, 55, .28);
+        stroke: #b45737;
+        animation: wrong-shake 240ms ease-in-out 2;
+      }
+
+      .placed-county {
+        stroke: #fffdf8;
+        stroke-width: 1.6;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .placed-county.is-new {
+        animation: placed-pop 420ms ease-out;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      .puzzle-piece-panel {
+        grid-area: piece;
+        position: sticky;
+        top: 10px;
+        display: grid;
+        gap: 10px;
+        padding: 16px;
+        text-align: center;
+      }
+
+      .piece-tray {
+        min-height: 190px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border: 1px dashed #9dafaa;
+        border-radius: 10px;
+        padding: 10px;
+        background:
+          radial-gradient(circle at 50% 40%, rgba(45, 111, 139, .10), transparent 68%),
+          #f8f5ed;
+      }
+
+      .piece-button {
+        width: min(170px, 100%);
+        height: 150px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border: 0;
+        border-radius: 9px;
+        padding: 8px;
+        background: transparent;
+        color: #245b50;
+        cursor: grab;
+        touch-action: none;
+      }
+
+      .piece-button:active {
+        cursor: grabbing;
+      }
+
+      .piece-button.is-dragging {
+        cursor: grabbing;
+      }
+
+      .piece-button.is-dragging path {
+        animation: none !important;
+        opacity: .16;
+      }
+
+      .piece-button[aria-pressed="true"] {
+        background: rgba(210, 163, 66, .16);
+        box-shadow: 0 0 0 3px rgba(181, 125, 34, .25);
+      }
+
+      .piece-button:focus-visible {
+        box-shadow: 0 0 0 3px rgba(73, 122, 88, .23);
+        outline: none;
+      }
+
+      .piece-button svg {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        filter: drop-shadow(0 4px 3px rgba(31, 36, 40, .18));
+      }
+
+      .piece-button path,
+      .floating-piece path {
+        fill: #d69b3b;
+        stroke: #8d5a1f;
+        stroke-width: 2.2;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .puzzle-piece-panel.is-weber-bat .piece-button path,
+      .floating-piece.is-weber-bat path {
+        fill: #171a1d;
+        stroke: #6f604e;
+      }
+
+      .puzzle-piece-panel.is-davis-horse .piece-button path,
+      .puzzle-piece-panel.is-tooele-horse-body .piece-button path,
+      .floating-piece.is-davis-horse path,
+      .floating-piece.is-tooele-horse-body path {
+        fill: #9b6038;
+        stroke: #65391f;
+      }
+
+      .puzzle-piece-panel.is-weber-bat .piece-button path {
+        animation: weber-bat-panel 900ms ease-in-out;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      .puzzle-piece-panel.is-davis-horse .piece-button path {
+        animation: davis-horse-nod 780ms ease-in-out;
+        transform-box: fill-box;
+        transform-origin: 65% 75%;
+      }
+
+      .puzzle-piece-panel.is-utah-boot .piece-button path {
+        animation: utah-boot-kick 760ms ease-in-out;
+        transform-box: fill-box;
+        transform-origin: 82% 42%;
+      }
+
+      .puzzle-piece-panel.is-salt-lake-ghost .piece-button path {
+        animation: salt-lake-ghost-float 1050ms ease-out;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      .piece-help {
+        min-height: 42px;
+        margin: 0;
+        color: var(--muted);
+        font-size: .9rem;
+      }
+
+      .puzzle-status {
+        min-height: 28px;
+        margin: 2px 0 0;
+        color: #245b50;
+        font-weight: 800;
+      }
+
+      .puzzle-skip {
+        justify-self: center;
+        min-height: 36px;
+        border: 1px solid #97aca3;
+        border-radius: 7px;
+        padding: 6px 12px;
+        background: #fffdf8;
+        color: #245b50;
+        font: inherit;
+        font-size: .88rem;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .puzzle-skip:hover,
+      .puzzle-skip:focus-visible {
+        border-color: #4e7e70;
+        background: #e8f1ed;
+        outline: none;
+      }
+
+      .puzzle-skip[hidden] {
+        display: none;
+      }
+
+      .puzzle-piece-panel.is-complete .piece-tray {
+        min-height: 150px;
+        border-style: solid;
+        border-color: #d2a342;
+        background: #fbf1cf;
+      }
+
+      .completion-mark {
+        color: #8d651b;
+        font-size: 2.8rem;
+        line-height: 1;
+      }
+
+      .floating-piece {
+        position: fixed;
+        z-index: 1000;
+        width: 116px;
+        height: 116px;
+        pointer-events: none;
+        filter: drop-shadow(0 9px 7px rgba(31, 36, 40, .24));
+      }
+
+      .floating-piece svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+
+      @keyframes placed-pop {
+        0% { opacity: .3; transform: scale(.76); }
+        70% { opacity: 1; transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+
+      @keyframes weber-bat-panel {
+        0%, 100% { transform: translateY(0) scale(1); }
+        18% { transform: translateY(-3px) scaleX(1.08) scaleY(.66) rotate(-2deg); }
+        36% { transform: translateY(-1px) scaleX(.92) scaleY(1.1) rotate(1deg); }
+        54% { transform: translateY(-3px) scaleX(1.07) scaleY(.68) rotate(-1deg); }
+        72% { transform: translateY(-1px) scaleX(.95) scaleY(1.06); }
+        86% { transform: translateY(-2px) scaleX(1.03) scaleY(.78); }
+      }
+
+      @keyframes davis-horse-nod {
+        0%, 100% { transform: translateY(0) rotate(0); }
+        25% { transform: translateY(-3px) rotate(-4deg); }
+        48% { transform: translateY(2px) rotate(3deg); }
+        68% { transform: translateY(-1px) rotate(-2deg); }
+        84% { transform: translateY(1px) rotate(1deg); }
+      }
+
+      @keyframes utah-boot-kick {
+        0%, 100% { transform: translate(0) rotate(0); }
+        22% { transform: translate(1px, 1px) rotate(-3deg); }
+        48% { transform: translate(0, -3px) rotate(14deg); }
+        68% { transform: translate(0, 1px) rotate(-4deg); }
+        84% { transform: translate(0, -1px) rotate(5deg); }
+      }
+
+      @keyframes salt-lake-ghost-float {
+        0% { opacity: .08; transform: translate(-22px, 2px) rotate(-2deg); }
+        35% { opacity: .48; transform: translate(-6px, -3px) rotate(1deg); }
+        68% { opacity: .78; transform: translate(8px, 1px) rotate(-1deg); }
+        86% { opacity: .94; transform: translate(-2px, -1px) rotate(.5deg); }
+        100% { opacity: 1; transform: translate(0) rotate(0); }
+      }
+
+      @keyframes hint-pulse {
+        50% { fill: rgba(210, 163, 66, .62); }
+      }
+
+      @keyframes wrong-shake {
+        25% { transform: translateX(-3px); }
+        75% { transform: translateX(3px); }
+      }
+
+      @media (max-width: 720px) {
+        .county-puzzle-page .page-main {
+          --puzzle-map-max: 520px;
+        }
+
+        .county-puzzle-page .page-main {
+          padding-top: 17px;
+        }
+
+        .puzzle-heading {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .county-mode-links {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          width: 100%;
+        }
+
+        .county-mode-links a,
+        .county-mode-links button {
+          min-width: 0;
+          padding-inline: 7px;
+        }
+
+        .puzzle-toolbar {
+          padding-left: 22px;
+        }
+
+        .puzzle-workspace {
+          grid-template-columns: 1fr;
+          grid-template-areas:
+            "piece"
+            "map";
+        }
+
+        .puzzle-piece-panel {
+          position: static;
+          grid-template-columns: minmax(0, 1fr) 132px;
+          grid-template-areas:
+            "status tray"
+            "skip tray"
+            "help tray";
+          gap: 4px 12px;
+          align-items: center;
+          padding: 12px;
+          text-align: left;
+        }
+
+        .puzzle-status { grid-area: status; }
+        .puzzle-skip { grid-area: skip; justify-self: start; }
+        .piece-help { grid-area: help; min-height: 0; }
+        .piece-tray {
+          grid-area: tray;
+          min-height: 132px;
+          height: 132px;
+          padding: 4px;
+        }
+        .piece-button {
+          width: 122px;
+          height: 122px;
+          padding: 5px;
+        }
+        .puzzle-map {
+          width: min(100%, 520px);
+          max-height: none;
+        }
+      }
+
+      @media (max-width: 430px) {
+        .county-puzzle-page .site-header,
+        .county-puzzle-page .header-inner {
+          min-height: 78px;
+        }
+
+        .county-puzzle-page .brand strong {
+          font-size: 2.1rem;
+        }
+
+        .county-mode-links a,
+        .county-mode-links button {
+          font-size: .8rem;
+        }
+
+        .puzzle-toolbar {
+          padding-left: 18px;
+        }
+
+        .puzzle-toolbar-actions {
+          gap: 3px;
+        }
+
+        .puzzle-tool {
+          min-width: 0;
+          min-height: 38px;
+          padding: 5px 6px;
+          font-size: .76rem;
+          line-height: 1.15;
+        }
+
+        .puzzle-piece-panel {
+          grid-template-columns: minmax(0, 1fr) 112px;
+        }
+
+        .piece-tray {
+          min-height: 112px;
+          height: 112px;
+        }
+
+        .piece-button {
+          width: 102px;
+          height: 102px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .county-guide,
+        .county-target,
+        .placed-county,
+        .puzzle-piece-panel.is-weber-bat .piece-button path,
+        .puzzle-piece-panel.is-davis-horse .piece-button path,
+        .puzzle-piece-panel.is-utah-boot .piece-button path,
+        .puzzle-piece-panel.is-salt-lake-ghost .piece-button path {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="county-puzzle-page">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html" aria-label="UtahBug home">
+          <span><strong>UtahBug</strong></span>
+        </a>
+      </div>
+    </header>
+
+    <main class="page-main">
+      <div class="puzzle-heading">
+        <div>
+          <h1>UTAH COUNTIES</h1>
+          <p>Place each county in its correct location.</p>
+        </div>
+        <nav class="county-mode-links" aria-label="Utah county activities">
+          <a href="county-explore.html">Explore</a>
+          <a href="county-map.html">Reveal</a>
+          <button class="puzzle-reset" id="reset-puzzle" type="button">Reset</button>
+        </nav>
+      </div>
+      <div class="puzzle-toolbar">
+        <div class="puzzle-toolbar-actions">
+          <button class="puzzle-tool" id="hint-button" type="button">Hint</button>
+          <button class="puzzle-tool" id="guide-button" type="button" aria-pressed="false">Hide outlines</button>
+          <button class="puzzle-tool" id="name-button" type="button" aria-pressed="false">Hide county name</button>
+        </div>
+      </div>
+
+      <section class="puzzle-workspace" aria-label="Utah county placement puzzle">
+        <div class="puzzle-map-panel">
+          <svg class="puzzle-map" id="puzzle-map" viewBox="0 0 760 920" role="img" aria-labelledby="puzzle-map-title puzzle-map-description">
+            <title id="puzzle-map-title">Utah counties puzzle map</title>
+            <desc id="puzzle-map-description">Place the displayed county into its correct position on the Utah map.</desc>
+            <text class="puzzle-map-current-county" id="current-county" x="472" y="82" role="status" aria-live="polite">Loading counties&hellip;</text>
+            <text class="puzzle-map-progress" id="puzzle-progress" x="472" y="125" role="status" aria-live="polite">0 of 29</text>
+          </svg>
+        </div>
+
+        <aside class="puzzle-piece-panel" id="piece-panel">
+          <div class="piece-tray" id="piece-tray">
+            <button class="piece-button" id="piece-button" type="button" aria-pressed="false" disabled>
+              <svg id="piece-preview" role="img" aria-label="Current county puzzle piece"></svg>
+            </button>
+          </div>
+          <p class="puzzle-status" id="puzzle-status" aria-live="polite">Preparing the puzzle…</p>
+          <button class="puzzle-skip" id="skip-button" type="button" hidden>Skip for now</button>
+          <p class="piece-help">Drag, or tap this piece and then its location.</p>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a href="../index.html">Home</a>
+      <a href="county-explore.html">County Explore</a>
+      <a href="county-map.html">County Map</a>
+    </footer>
+
+    <script src="../county-map-data.js?v=20260725a"></script>
+    <script src="../county-puzzle.js?v=20260725r"></script>
+  </body>
+</html>

@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="../assets/utahbug-icon-512.png">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
     <title>Official Websites | UtahBug</title>
-    <link rel="stylesheet" href="../utahbug-playground-20260714c.css">
+    <link rel="stylesheet" href="../utahbug-playground-20260714c.css?v=20260725r">
   </head>
   <body>
     <header class="site-header">
@@ -20,59 +20,192 @@
       </div>
     </header>
     <main class="page-main official-websites-page">
-      <h1 class="quiz-page-label">Official Websites</h1>
-      <section class="activity-hero official-search-panel">
+      <header class="official-websites-heading">
+        <h1 class="quiz-page-label">OFFICIAL WEBSITES</h1>
+        <div class="official-heading-actions">
+          <button class="official-search-toggle" type="button" aria-label="Open Utah.gov search" aria-controls="official-search-panel" aria-expanded="false">
+            <span class="official-search-glyph" aria-hidden="true"></span>
+          </button>
+        </div>
+      </header>
+      <section class="activity-hero official-search-panel" id="official-search-panel" hidden>
         <form class="official-search" action="https://www.utah.gov/search.html" method="get" target="_blank">
           <label for="official-utah-search">Search the official Utah.gov site</label>
           <div class="search-row">
             <input id="official-utah-search" name="q" type="search" placeholder="parks, elections, driver license">
-            <button type="submit">Search Utah.gov</button>
+            <button type="submit">Search Utah.gov <span aria-hidden="true">↗</span></button>
           </div>
         </form>
       </section>
 
-      <section class="directory-grid" aria-label="Official Utah websites">
-        <a class="directory-card" href="https://www.utah.gov/index.html" target="_blank" rel="noopener">
-          <strong>Utah.gov</strong>
-        </a>
-        <a class="directory-card" href="https://www.utah.gov/government/index.html" target="_blank" rel="noopener">
-          <strong>Utah Government</strong>
-        </a>
-        <a class="directory-card" href="https://www.ulct.utah.gov/utahs-cities-and-towns/" target="_blank" rel="noopener">
-          <strong>City Websites</strong>
-        </a>
-        <a class="directory-card" href="https://www.utah.gov/government/cityCounty.html" target="_blank" rel="noopener">
-          <strong>County Websites</strong>
-        </a>
-        <a class="directory-card" href="https://le.utah.gov/" target="_blank" rel="noopener">
-          <strong>Utah Legislature</strong>
-        </a>
-        <a class="directory-card" href="https://vote.utah.gov/" target="_blank" rel="noopener">
-          <strong>Vote Utah</strong>
-        </a>
-        <a class="directory-card" href="https://stateparks.utah.gov/" target="_blank" rel="noopener">
-          <strong>Utah State Parks</strong>
-        </a>
-        <a class="directory-card" href="official-national-parks.html">
-          <strong>Utah National Parks</strong>
-        </a>
-        <a class="directory-card" href="https://dmv.utah.gov/" target="_blank" rel="noopener">
-          <strong>Utah DMV</strong>
-        </a>
-        <a class="directory-card" href="https://dld.utah.gov/" target="_blank" rel="noopener">
-          <strong>Driver License Division</strong>
-        </a>
-        <a class="directory-card" href="https://dcp.utah.gov/" target="_blank" rel="noopener">
-          <strong>Division of Consumer Protection</strong>
-        </a>
-        <a class="directory-card" href="https://indian.utah.gov/tribalnations/" target="_blank" rel="noopener">
-          <strong>Utah Tribal Nations</strong>
-        </a>
+      <section class="resource-category-grid" aria-label="Official Utah resource categories">
+        <button class="resource-category" type="button" data-resource-group="auto">
+          <img src="../assets/official-resources/transportation.webp" alt="" width="960" height="640">
+          <span class="resource-category-copy"><strong>Auto</strong><small>3 links</small></span>
+        </button>
+        <button class="resource-category" type="button" data-resource-group="business">
+          <img src="../assets/official-resources/consumer-protection.webp" alt="" width="960" height="640">
+          <span class="resource-category-copy"><strong>Business</strong><small>2 links</small></span>
+        </button>
+        <button class="resource-category" type="button" data-resource-group="government">
+          <img src="../assets/official-resources/government.webp" alt="" width="960" height="640" loading="lazy">
+          <span class="resource-category-copy"><strong>State Government</strong><small>3 links</small></span>
+        </button>
+        <button class="resource-category" type="button" data-resource-group="local">
+          <img src="../assets/official-resources/municipal.webp" alt="" width="960" height="640" loading="lazy">
+          <span class="resource-category-copy"><strong>Local Government</strong><small>2 links</small></span>
+        </button>
+        <button class="resource-category" type="button" data-resource-group="parks">
+          <img src="../assets/official-resources/parks.webp" alt="" width="960" height="640" loading="lazy">
+          <span class="resource-category-copy"><strong>Parks</strong><small>3 links</small></span>
+        </button>
+        <button class="resource-category" type="button" data-resource-group="elections">
+          <img src="../assets/official-resources/elections.webp" alt="" width="960" height="640" loading="lazy">
+          <span class="resource-category-copy"><strong>Elections</strong></span>
+        </button>
+        <button class="resource-category" type="button" data-resource-group="archives">
+          <img src="../assets/official-resources/archives.webp" alt="" width="960" height="640" loading="lazy">
+          <span class="resource-category-copy"><strong>State Archives</strong></span>
+        </button>
+        <button class="resource-category" type="button" data-resource-group="tribal">
+          <img src="../assets/official-resources/tribal-nations.webp" alt="" width="960" height="640" loading="lazy">
+          <span class="resource-category-copy"><strong>Tribal Nations</strong></span>
+        </button>
       </section>
+
+      <dialog class="resource-dialog" id="resource-dialog" aria-labelledby="resource-dialog-title">
+        <div class="resource-dialog-heading">
+          <h2 id="resource-dialog-title"></h2>
+          <button type="button" data-close-resource-dialog aria-label="Close resource choices">×</button>
+        </div>
+        <nav class="resource-dialog-links" id="resource-dialog-links" aria-label="Official resource links"></nav>
+      </dialog>
     </main>
     <footer class="site-footer">
       <a href="../index.html">Home</a>
       <a href="https://www.utah.gov/index.html" target="_blank" rel="noopener">Utah.gov</a>
     </footer>
+    <script>
+      (function () {
+        "use strict";
+
+        const groups = {
+          auto: {
+            title: "Auto",
+            links: [
+              ["UDOT", "https://connect.udot.utah.gov/", true],
+              ["Utah DMV", "https://dmv.utah.gov/", true],
+              ["Driver License Division", "https://dld.utah.gov/", true]
+            ]
+          },
+          business: {
+            title: "Business",
+            links: [
+              ["Utah Department of Commerce", "https://commerce.utah.gov/", true],
+              ["Division of Consumer Protection", "https://commerce.utah.gov/dcp/", true]
+            ]
+          },
+          government: {
+            title: "State Government",
+            links: [
+              ["Utah.gov", "https://www.utah.gov/index.html", true],
+              ["Utah Government", "https://www.utah.gov/government/index.html", true],
+              ["Utah Legislature", "https://le.utah.gov/", true]
+            ]
+          },
+          local: {
+            title: "Local Government",
+            links: [
+              ["City Websites", "https://www.ulct.utah.gov/utahs-cities-and-towns/", true],
+              ["County Websites", "https://www.utah.gov/government/cityCounty.html", true]
+            ]
+          },
+          parks: {
+            title: "Parks",
+            links: [
+              ["Utah State Parks", "https://stateparks.utah.gov/", true],
+              ["Utah National Parks", "official-national-parks.html", false],
+              ["Utah National Monuments", "official-national-monuments.html", false]
+            ]
+          },
+          elections: {
+            title: "Elections",
+            links: [
+              ["Vote Utah", "https://vote.utah.gov/", true]
+            ]
+          },
+          archives: {
+            title: "State Archives",
+            links: [
+              ["Utah State Archives", "https://archives.utah.gov/", true]
+            ]
+          },
+          tribal: {
+            title: "Tribal Nations",
+            links: [
+              ["Utah Tribal Nations", "https://indian.utah.gov/tribalnations/", true]
+            ]
+          }
+        };
+
+        const searchToggle = document.querySelector(".official-search-toggle");
+        const searchPanel = document.querySelector("#official-search-panel");
+        const searchInput = document.querySelector("#official-utah-search");
+        const dialog = document.querySelector("#resource-dialog");
+        const title = document.querySelector("#resource-dialog-title");
+        const links = document.querySelector("#resource-dialog-links");
+        const closeButton = document.querySelector("[data-close-resource-dialog]");
+
+        searchToggle.addEventListener("click", () => {
+          const opening = searchPanel.hidden;
+          searchPanel.hidden = !opening;
+          searchToggle.setAttribute("aria-expanded", String(opening));
+          searchToggle.setAttribute("aria-label", opening ? "Close Utah.gov search" : "Open Utah.gov search");
+          if (opening) searchInput.focus();
+        });
+
+        searchPanel.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape") return;
+          searchPanel.hidden = true;
+          searchToggle.setAttribute("aria-expanded", "false");
+          searchToggle.setAttribute("aria-label", "Open Utah.gov search");
+          searchToggle.focus();
+        });
+
+        document.querySelectorAll("[data-resource-group]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const group = groups[button.dataset.resourceGroup];
+            title.textContent = group.title;
+            links.replaceChildren();
+
+            group.links.forEach(([label, href, external]) => {
+              const link = document.createElement("a");
+              link.href = href;
+              link.textContent = external ? `${label} ↗` : label;
+              if (external) {
+                link.target = "_blank";
+                link.rel = "noopener";
+              }
+              links.append(link);
+            });
+
+            if (typeof dialog.showModal === "function") {
+              dialog.showModal();
+            } else {
+              dialog.setAttribute("open", "");
+            }
+          });
+        });
+
+        closeButton.addEventListener("click", () => {
+          if (typeof dialog.close === "function") dialog.close();
+          else dialog.removeAttribute("open");
+        });
+
+        dialog.addEventListener("click", (event) => {
+          if (event.target === dialog && typeof dialog.close === "function") dialog.close();
+        });
+      })();
+    </script>
   </body>
 </html>

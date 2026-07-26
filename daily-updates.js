@@ -2,109 +2,110 @@
   const feeds = {
     news: {
       title: "Utah News",
-      listId: "1064307421659619328",
-      url: "https://x.com/i/lists/1064307421659619328",
-      fallback: "Open the Utah News list on X"
+      sources: [
+        {
+          title: "Governor's News",
+          description: "State announcements and news releases.",
+          url: "https://governor.utah.gov/press/"
+        },
+        {
+          title: "Utah Legislature",
+          description: "Bills, calendars, meetings, and live streams.",
+          url: "https://le.utah.gov/"
+        },
+        {
+          title: "Utah Public Notices",
+          description: "Government meetings, agendas, and notices.",
+          url: "https://www.utah.gov/pmn/search.html"
+        },
+        {
+          title: "Utah Courts News",
+          description: "Court news releases and media advisories.",
+          url: "https://www.utcourts.gov/en/media/media.html"
+        }
+      ]
     },
     traffic: {
-      title: "Traffic & Weather Updates",
-      listId: "1065680931980115973",
-      url: "https://x.com/i/lists/1065680931980115973",
-      fallback: "Open the Traffic & Weather list on X"
+      title: "Utah Traffic",
+      sources: [
+        {
+          title: "UDOT Live Map",
+          description: "Incidents, congestion, construction, and cameras.",
+          url: "https://www.udottraffic.utah.gov/map"
+        },
+        {
+          title: "UDOT Traffic Alerts",
+          description: "Closures and major travel alerts.",
+          url: "https://www.udottraffic.utah.gov/List/Alerts"
+        },
+        {
+          title: "Road Conditions",
+          description: "Current highway and weather conditions.",
+          url: "https://www.udottraffic.utah.gov/roadconditions"
+        },
+        {
+          title: "UTA Service Alerts",
+          description: "Bus, TRAX, and FrontRunner disruptions.",
+          url: "https://rideuta.com/Rider-Info/Service-Alerts"
+        }
+      ]
+    },
+    weather: {
+      title: "Utah Weather",
+      sources: [
+        {
+          title: "NWS Salt Lake City",
+          description: "Forecasts for most of Utah.",
+          url: "https://www.weather.gov/slc/"
+        },
+        {
+          title: "NWS Grand Junction",
+          description: "Forecasts for eastern Utah.",
+          url: "https://www.weather.gov/gjt/"
+        },
+        {
+          title: "Utah Weather Radar",
+          description: "Northern and southern Utah radar.",
+          url: "https://www.weather.gov/slc/radar"
+        },
+        {
+          title: "Utah Air Quality",
+          description: "Current conditions by county.",
+          url: "https://air.utah.gov/"
+        }
+      ]
     }
   };
 
   const buttons = Array.from(document.querySelectorAll("[data-daily-feed]"));
   const shell = document.querySelector(".daily-feed-shell");
   const title = document.getElementById("daily-feed-title");
-  const sourceLink = document.getElementById("daily-feed-source");
-  const xHost = document.getElementById("x-feed-host");
+  const sourceList = document.getElementById("official-source-list");
   const weatherFeed = document.getElementById("weather-feed");
   const weatherStatus = document.getElementById("weather-feed-status");
   const weatherList = document.getElementById("weather-alert-list");
-  let renderToken = 0;
   let weatherLoaded = false;
 
-  if (!buttons.length || !shell || !title || !xHost || !weatherFeed) return;
+  if (!buttons.length || !shell || !title || !sourceList || !weatherFeed) return;
 
-  function waitForXWidget() {
-    return new Promise((resolve) => {
-      let attempts = 0;
-      const check = () => {
-        if (window.twttr?.widgets?.createTimeline) {
-          resolve(window.twttr);
-          return;
-        }
-        attempts += 1;
-        if (attempts >= 50) {
-          resolve(null);
-          return;
-        }
-        window.setTimeout(check, 100);
-      };
-      check();
+  function renderSources(config) {
+    const cards = config.sources.map((source) => {
+      const link = document.createElement("a");
+      const heading = document.createElement("strong");
+      const description = document.createElement("span");
+      const label = document.createElement("small");
+
+      link.className = "official-source-card";
+      link.href = source.url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      heading.textContent = source.title;
+      description.textContent = source.description;
+      label.textContent = "Official source";
+      link.append(heading, description, label);
+      return link;
     });
-  }
-
-  function makeFallback(config, message) {
-    const status = document.createElement("p");
-    status.className = "x-feed-status";
-    status.textContent = message;
-
-    const link = document.createElement("a");
-    link.className = "x-feed-fallback";
-    link.href = config.url;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.textContent = config.fallback;
-
-    xHost.replaceChildren(status, link);
-    return { status, link };
-  }
-
-  async function showXFeed(key) {
-    const config = feeds[key];
-    const token = ++renderToken;
-    weatherFeed.hidden = true;
-    xHost.hidden = false;
-    title.textContent = config.title;
-    sourceLink.hidden = false;
-    sourceLink.href = key === "traffic"
-      ? "https://www.udottraffic.utah.gov/map"
-      : "https://utahnewsdispatch.com/";
-    sourceLink.textContent = key === "traffic" ? "UDOT Traffic" : "Utah News Dispatch";
-    shell.setAttribute("aria-busy", "true");
-
-    const fallback = makeFallback(config, `Loading ${config.title}…`);
-    const twitter = await waitForXWidget();
-    if (token !== renderToken) return;
-
-    if (!twitter) {
-      fallback.status.textContent = "The live X feed could not load here.";
-      shell.setAttribute("aria-busy", "false");
-      return;
-    }
-
-    try {
-      const timeline = await twitter.widgets.createTimeline(
-        { sourceType: "list", id: config.listId },
-        xHost,
-        { height: 680, theme: "light", dnt: true }
-      );
-      if (token !== renderToken) {
-        timeline?.remove();
-        return;
-      }
-      if (timeline) {
-        fallback.status.remove();
-        fallback.link.remove();
-      } else {
-        fallback.status.textContent = "The live X feed could not load here.";
-      }
-    } catch {
-      fallback.status.textContent = "The live X feed could not load here.";
-    }
-    shell.setAttribute("aria-busy", "false");
+    sourceList.replaceChildren(...cards);
   }
 
   function addWeatherAlert(properties) {
@@ -120,7 +121,7 @@
   async function loadWeather() {
     if (weatherLoaded) return;
     weatherLoaded = true;
-    weatherStatus.textContent = "Loading active Utah weather alerts…";
+    weatherStatus.textContent = "Loading active Utah weather alerts\u2026";
     weatherList.replaceChildren();
 
     try {
@@ -137,31 +138,22 @@
       weatherStatus.textContent = `${alerts.length} active Utah alert${alerts.length === 1 ? "" : "s"}:`;
       alerts.forEach((alert) => addWeatherAlert(alert.properties || {}));
     } catch {
-      weatherStatus.textContent = "Weather alerts could not be loaded. Use the official forecast link below.";
+      weatherStatus.textContent = "Weather alerts could not be loaded. Use an official forecast source above.";
     }
-  }
-
-  function showWeather() {
-    renderToken += 1;
-    xHost.hidden = true;
-    xHost.replaceChildren();
-    weatherFeed.hidden = false;
-    title.textContent = "Utah Weather";
-    sourceLink.hidden = false;
-    sourceLink.href = "https://www.weather.gov/slc/";
-    sourceLink.textContent = "Official Weather";
-    shell.setAttribute("aria-busy", "false");
-    loadWeather();
   }
 
   function selectFeed(key, updateHash = true) {
     const selected = key === "traffic" || key === "weather" ? key : "news";
+    const config = feeds[selected];
     buttons.forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.dailyFeed === selected));
     });
     if (updateHash) history.replaceState(null, "", `#${selected}`);
-    if (selected === "weather") showWeather();
-    else showXFeed(selected);
+    title.textContent = config.title;
+    weatherFeed.hidden = selected !== "weather";
+    renderSources(config);
+    if (selected === "weather") loadWeather();
+    shell.setAttribute("aria-busy", "false");
   }
 
   buttons.forEach((button) => {

@@ -3,88 +3,118 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#5f7f70">
+    <meta name="theme-color" content="#334f60">
+    <meta name="description" content="Explore a concise timeline of Utah history, from its earliest peoples to the modern era.">
     <link rel="icon" href="../assets/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="../assets/utahbug-icon-512.png">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
-    <title>Utah History | UtahBug</title>
-    <link rel="stylesheet" href="../utahbug-playground-20260714c.css">
+    <title>Explore Utah History | UtahBug</title>
+    <link rel="stylesheet" href="../utahbug-playground-20260714c.css?v=20260725r">
+    <link rel="stylesheet" href="../history.css?v=20260725b">
   </head>
-  <body class="history-page">
+  <body class="history-hub-page">
     <header class="site-header">
       <div class="header-inner">
-        <a class="brand" href="../index.html">
-          <span>
-            <strong>UtahBug</strong>
-          </span>
+        <a class="brand" href="../index.html" aria-label="Return to the UtahBug home page">
+          <span><strong>UtahBug</strong></span>
         </a>
       </div>
     </header>
-    <main class="page-main">
-      <h1 class="quiz-page-label">UTAH HISTORY</h1>
-      <div class="reveal-grid ">
-        <button class="reveal-card" type="button" data-answer="January 4, 1896" data-note="">
-          <span class="prompt">When did Utah become a state?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Utah Territory" data-note="">
-          <span class="prompt">What was the name of the territory before statehood?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Deseret" data-note="">
-          <span class="prompt">What provisional state name is tied to early Utah history?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-          <figure class="history-illustration history-rotator">
-            <img src="" alt="">
-          </figure>
-        <button class="reveal-card" type="button" data-answer="Promontory Summit, Utah" data-note="">
-          <span class="prompt">Where was the first transcontinental railroad completed?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="1869" data-note="">
-          <span class="prompt">What year was the Golden Spike ceremony?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Territorial Statehouse in Fillmore" data-note="">
-          <span class="prompt">Which building was Utah's territorial capitol?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Great Salt Lake" data-note="">
-          <span class="prompt">Which lake helped shape early settlement and travel in northern Utah?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Mormon pioneers / Latter-day Saint pioneers" data-note="">
-          <span class="prompt">What group founded Salt Lake City in 1847?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="The beehive" data-note="">
-          <span class="prompt">What Utah symbol connects to the idea of industry?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Fillmore" data-note="">
-          <span class="prompt">Which Utah city was once the territorial capital?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Ancestral Puebloan and Fremont cultures" data-note="">
-          <span class="prompt">What ancient cultures left cliff dwellings, artifacts, and rock art in Utah?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-        <button class="reveal-card" type="button" data-answer="Golden Spike National Historical Park" data-note="">
-          <span class="prompt">Which Utah site preserves the Last Spike story?</span>
-          <span class="answer" aria-live="polite"></span>
-        </button>
-      </div>
+
+    <main class="history-main">
+      <header class="history-heading">
+        <div>
+          <h1>UTAH HISTORY</h1>
+          <p>People, places, and turning points across time.</p>
+        </div>
+        <nav class="history-mode-links" aria-label="Utah history activities">
+          <a aria-current="page" href="history.html">Explore</a>
+          <a href="history-order.html">Order</a>
+          <a href="history-sprint.html">Sprint</a>
+        </nav>
+      </header>
+
+      <section class="history-intro" aria-labelledby="timeline-title">
+        <div>
+          <p class="history-kicker">A starting point</p>
+          <h2 id="timeline-title">Utah through time</h2>
+        </div>
+        <p>
+          This short timeline is not a complete history. It introduces people
+          and events that help explain how Utah changed.
+        </p>
+      </section>
+
+      <aside class="history-archive-resource" aria-label="Utah history research resource">
+        <a href="https://archives.utah.gov/research/" target="_blank" rel="noopener">
+          Research original records at the Utah State Archives <span aria-hidden="true">↗</span>
+        </a>
+      </aside>
+
+      <section class="history-timeline" id="history-timeline" aria-label="Utah history timeline"></section>
     </main>
-    <footer class="site-footer history-footer">
-      <span>UtahBug · Utah History</span>
-      <nav aria-label="History resources">
+
+    <footer class="history-site-footer">
+      <span>&copy; 2026 UtahBug</span>
+      <span>
         <a href="https://history.utah.gov/" target="_blank" rel="noopener">Utah Historical Society</a>
-        <a href="https://www.nps.gov/gosp/learn/historyculture/index.htm" target="_blank" rel="noopener">Golden Spike history</a>
-        <a href="history-editor.html">Edit cards</a>
-      </nav>
+        &nbsp;&middot;&nbsp;
+        <a href="https://archives.utah.gov/" target="_blank" rel="noopener">Utah State Archives</a>
+      </span>
     </footer>
-    <script src="../script.js"></script>
+
+    <script src="../history-data.js?v=20260725a"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        const timeline = document.querySelector("#history-timeline");
+        const fragment = document.createDocumentFragment();
+
+        window.UTAH_HISTORY_EVENTS.forEach((event) => {
+          const item = document.createElement("article");
+          item.className = "timeline-event";
+
+          const date = document.createElement("time");
+          date.className = "timeline-date";
+          date.textContent = event.date;
+
+          const marker = document.createElement("span");
+          marker.className = "timeline-marker";
+          marker.setAttribute("aria-hidden", "true");
+
+          const card = document.createElement("div");
+          card.className = "timeline-card";
+
+          const copy = document.createElement("div");
+          const title = document.createElement("h3");
+          const summary = document.createElement("p");
+          const source = document.createElement("a");
+
+          title.textContent = event.title;
+          summary.textContent = event.summary;
+          source.href = event.sourceUrl;
+          source.target = "_blank";
+          source.rel = "noopener";
+          source.textContent = `${event.sourceLabel} ↗`;
+          copy.append(title, summary, source);
+          card.append(copy);
+
+          if (event.image) {
+            const image = document.createElement("img");
+            image.src = `../assets/history/${event.image}`;
+            image.alt = event.imageAlt;
+            image.loading = "lazy";
+            card.append(image);
+            card.classList.add("has-image");
+          }
+
+          item.append(date, marker, card);
+          fragment.append(item);
+        });
+
+        timeline.append(fragment);
+      })();
+    </script>
   </body>
 </html>

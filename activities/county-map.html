@@ -68,6 +68,63 @@
       font: inherit;
     }
 
+    .site-header {
+      position: relative;
+      min-height: 150px;
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(20, 28, 34, .86), rgba(20, 28, 34, .48) 52%, rgba(20, 28, 34, .2)),
+        url("../assets/utah-header.png");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .site-header-inner {
+      width: min(1180px, calc(100% - 28px));
+      min-height: 150px;
+      margin: 0 auto;
+      padding: 16px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .site-home-link {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      padding: 16px max(14px, calc((100% - 1180px) / 2));
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .site-home-link:focus-visible {
+      outline: 3px solid rgba(255, 255, 255, .9);
+      outline-offset: -5px;
+    }
+
+    .site-home-link strong {
+      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      line-height: .9;
+      font-weight: 900;
+    }
+
+    .site-home-link strong::after {
+      content: "unofficial";
+      position: absolute;
+      left: 14px;
+      bottom: 8px;
+      color: rgba(255, 255, 255, .86);
+      font-size: .22em;
+      line-height: 1;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: .04em;
+    }
+
     .app {
       width: min(1180px, calc(100vw - 32px));
       margin: 0 auto;
@@ -76,29 +133,79 @@
 
     .topbar {
       display: flex;
-      align-items: center;
+      align-items: end;
       justify-content: space-between;
-      gap: 16px;
+      gap: 18px;
       margin-bottom: 18px;
-      padding: 16px 20px;
-      border-radius: 9px;
-      background: linear-gradient(115deg, #164f4c, #28766c);
-      box-shadow: 0 12px 30px rgba(22, 79, 76, 0.2);
+      margin-inline: auto;
+      box-sizing: border-box;
+      padding: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .topbar-title {
+      min-width: 0;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(1.7rem, 2.6vw, 2.7rem);
-      line-height: 1.02;
-      letter-spacing: 0;
-      font-weight: 760;
-      color: #fffdf5;
+      font-size: clamp(1.32rem, 4.2vw, 2rem);
+      line-height: 1.12;
+      letter-spacing: .04em;
+      font-weight: 800;
+      color: var(--ink);
     }
 
     .subtitle {
-      margin: 7px 0 0;
-      color: var(--muted);
+      margin: 6px 0 0;
+      color: #265c54;
       font-size: 0.98rem;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    .county-mode-links {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(255, 253, 248, .78);
+    }
+
+    .county-mode-links a,
+    .county-mode-links button {
+      appearance: none;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 7px;
+      padding: 7px 12px;
+      color: #285d52;
+      background: transparent;
+      font: inherit;
+      font-size: .88rem;
+      font-weight: 800;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .county-mode-links .map-toggle-control {
+      background: #dcece6;
+      box-shadow: inset 0 -2px 0 #7fa99b;
+    }
+
+    .county-mode-links a:hover,
+    .county-mode-links a:focus-visible,
+    .county-mode-links button:hover,
+    .county-mode-links button:focus-visible {
+      background: #e8f1ed;
+      outline: none;
     }
 
     .controls {
@@ -145,7 +252,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 292px;
+      grid-template-columns: minmax(0, 1fr);
       gap: 18px;
       align-items: start;
     }
@@ -161,7 +268,7 @@
     .map-shell {
       display: grid;
       align-items: stretch;
-      justify-items: center;
+      justify-items: start;
       min-height: 0;
       gap: 8px;
       padding: clamp(10px, 1.8vw, 18px);
@@ -329,6 +436,11 @@
       font-weight: 700;
     }
 
+    .mode-pill.is-empty {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
     .all-list {
       margin-top: 18px;
       padding-top: 16px;
@@ -396,22 +508,36 @@
     }
 
     @media (max-width: 620px) {
+      .site-header,
+      .site-header-inner {
+        min-height: 128px;
+      }
+
+      .site-home-link {
+        align-items: center;
+      }
+
       .app {
         width: min(100% - 20px, 1180px);
         padding-top: 14px;
       }
 
       .topbar {
-        align-items: stretch;
-        flex-direction: column;
+        display: block;
+        padding: 0;
       }
 
-      .controls {
-        justify-content: stretch;
+      .county-mode-links {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+        margin-top: 12px;
       }
 
-      .btn {
-        flex: 1 1 130px;
+      .county-mode-links a,
+      .county-mode-links button {
+        min-width: 0;
+        padding-inline: 7px;
       }
 
       .map-shell,
@@ -420,58 +546,11 @@
       }
     }
 
-    /* Final Utah County Quiz layout */
-    .subtitle { display: none; }
-
-    .desktop-controls {
-      display: none;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      margin-top: 7px;
-    }
-
-    .text-control {
-      min-height: 38px;
-      padding: 6px 15px;
-      border: 2px solid rgba(255,255,255,.72);
-      border-radius: 6px;
-      color: #173f3b;
-      background: #f3dfb9;
-      font-size: .92rem;
-      font-weight: 760;
-      cursor: pointer;
-      box-shadow: 0 5px 12px rgba(0,0,0,.16);
-      transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
-    }
-
-    .text-control.show-all-control {
-      color: #16443f;
-      background: #d8c78d;
-      border-color: #eadcae;
-    }
-
-    .text-control:hover,
-    .text-control:focus-visible {
-      transform: translateY(-1px);
-      background: #fff1cd;
-      box-shadow: 0 8px 16px rgba(0,0,0,.22);
-      outline: 3px solid rgba(255,255,255,.48);
-      outline-offset: 2px;
-    }
-
-    .text-control.show-all-control:hover,
-    .text-control.show-all-control:focus-visible {
-      background: #e5d7a6;
-    }
-
-    .mobile-controls { display: flex; }
-
     .map-shell {
-      gap: 2px;
-      grid-template-rows: auto auto auto;
+      gap: 0;
+      grid-template-rows: auto auto;
       align-content: start;
-      padding-top: 8px;
+      padding-top: 4px;
       padding-bottom: 8px;
     }
 
@@ -479,19 +558,16 @@
       justify-content: flex-start;
       padding-left: 0;
       padding-right: 0;
-      min-height: 25px;
+      min-height: 18px;
+      line-height: 1.05;
     }
 
-    .map-instructions {
-      display: flex;
-      justify-content: flex-start;
-      width: 100%;
+    .map-source {
+      width: min(100%, 760px);
       box-sizing: border-box;
-      padding-left: 3.95%;
-      color: #265c54;
-      font-size: .9rem;
-      font-weight: 700;
-      font-style: italic;
+      margin: 4px 0 0;
+      padding: 0 4px;
+      text-align: left;
     }
 
     .map-frame {
@@ -515,20 +591,21 @@
     .map-notch-readout {
       pointer-events: none;
       fill: #265c54;
-      font-size: 15px;
+      font-size: 16px;
       text-anchor: start;
     }
 
     .map-notch-label {
       fill: var(--muted);
-      font-size: 11px;
-      font-weight: 780;
+      font-size: 16px;
+      font-weight: 760;
+      letter-spacing: .04em;
     }
 
     .map-notch-value {
       fill: var(--accent-strong);
-      font-size: 17px;
-      font-weight: 800;
+      font-size: 26px;
+      font-weight: 820;
     }
 
     .map-notch-label,
@@ -625,6 +702,45 @@
 
     .county-chronology .creation-dates-title {
       margin-top: 36px;
+    }
+
+    .county-section-toggle {
+      appearance: none;
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 0;
+      padding: 3px 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .county-section-toggle::after {
+      content: "+";
+      color: var(--accent);
+      font-size: 1.25em;
+      font-weight: 650;
+      line-height: 1;
+    }
+
+    .county-section-toggle[aria-expanded="true"]::after {
+      content: "−";
+    }
+
+    .county-section-toggle:focus-visible {
+      border-radius: 4px;
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    .utah-counties-details {
+      padding-top: 4px;
     }
 
     .county-chronology .statehood-title {
@@ -909,21 +1025,12 @@
     }
 
     @media (hover: hover) and (pointer: fine) {
-      .topbar {
-        justify-content: flex-start;
-        margin-bottom: 14px;
-      }
-      .topbar > div:first-child { width: max-content; }
-      .desktop-controls { display: flex; }
-      .mobile-controls { display: none; }
-      .layout { grid-template-columns: minmax(0, 1fr) 292px; }
+      .topbar { margin-bottom: 9px; }
+      .layout { grid-template-columns: minmax(0, 1fr); }
       .county-label { font-weight: 820; }
     }
 
     @media (hover: none), (pointer: coarse) {
-      .topbar { flex-direction: column; align-items: stretch; }
-      .mobile-controls { justify-content: stretch; }
-      .mobile-controls .btn { flex: 1 1 130px; }
       .county {
         filter:
           brightness(1.1)
@@ -942,8 +1049,8 @@
         font-weight: 790;
       }
       .map-hint { font-size: 17px; }
-      .map-notch-label { font-size: 15px; }
-      .map-notch-value { font-size: 24px; }
+      .map-notch-label { font-size: 16px; }
+      .map-notch-value { font-size: 26px; }
     }
 
     @media (max-width: 620px) and (hover: none),
@@ -987,58 +1094,31 @@
   </style>
 </head>
 <body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="site-home-link" href="../index.html" aria-label="UtahBug home">
+        <strong>UtahBug</strong>
+      </a>
+    </div>
+  </header>
   <div class="app">
     <header class="topbar">
-      <div>
-        <h1>Utah Counties</h1>
-        <div class="desktop-controls" aria-label="Map controls">
-          <button class="text-control reset-control" type="button">Clear map</button>
-          <button class="text-control show-all-control" type="button">Show all</button>
-        </div>
+      <div class="topbar-title">
+        <h1>UTAH COUNTIES</h1>
+        <p class="subtitle">Tap once for county, tap again to add the county seat</p>
       </div>
-      <div class="controls mobile-controls" aria-label="Map controls">
-        <button class="btn secondary reset-control" type="button">Clear map</button>
-        <button class="btn show-all-control" type="button">Show all</button>
-      </div>
+      <nav class="county-mode-links" aria-label="Utah county activities">
+        <a href="county-explore.html">Explore</a>
+        <a href="county-puzzle.html">Puzzle</a>
+        <button class="map-toggle-control" id="mapToggleControl" type="button" aria-pressed="false">Show all</button>
+      </nav>
     </header>
 
     <main class="layout">
       <section class="map-shell" aria-label="Utah county map">
-        <div class="map-display map-display-top" aria-live="polite">
-          <div class="map-instructions">
-            <span>Tap once for county, tap again to add the county seat</span>
-          </div>
-        </div>
         <svg class="map-frame" id="utahMap" viewBox="0 20 760 880" role="img" aria-label="Blank clickable map of Utah counties"></svg>
-        <div class="mode-display map-mode-display">
-          <div class="displaying-status" aria-live="polite">
-            <span class="mode-label">Displaying:</span>
-            <span class="mode-pill" id="modeValue">Nothing selected</span>
-          </div>
-        </div>
+        <p class="source map-source">Map geometry from <a href="https://github.com/topojson/us-atlas" target="_blank" rel="noreferrer">us-atlas</a>, derived from U.S. Census cartographic boundary files.</p>
       </section>
-
-      <aside class="info-panel" aria-live="polite">
-        <dl class="selection">
-          <div>
-            <dt>County</dt>
-            <dd id="countyValue"></dd>
-          </div>
-          <div>
-            <dt>County Seat</dt>
-            <dd id="seatValue"></dd>
-          </div>
-        </dl>
-        <div class="county-facts">
-          <p>Utah has 29 counties.</p>
-          <p>Delaware has the fewest counties: 3</p>
-          <p>Texas has the most counties: 254</p>
-        </div>
-        <div class="all-list" id="allList" hidden>
-          <ol id="allListItems"></ol>
-        </div>
-        <p class="source">Map geometry from <a href="https://github.com/topojson/us-atlas" target="_blank" rel="noreferrer">us-atlas</a>, derived from U.S. Census cartographic boundary files.</p>
-      </aside>
     </main>
 
     <section class="county-chronology" aria-labelledby="countyChronologyTitle">
@@ -1093,8 +1173,12 @@
         <li>Weber</li>
       </ul>
 
-      <h2 class="creation-dates-title">Utah Counties</h2>
-      <div class="county-sort-controls" aria-label="County sorting options">
+      <h2 class="creation-dates-title">
+        <button class="county-section-toggle" id="utahCountiesToggle" type="button"
+          aria-expanded="false" aria-controls="utahCountiesDetails">Utah Counties</button>
+      </h2>
+      <div class="utah-counties-details" id="utahCountiesDetails" hidden>
+        <div class="county-sort-controls" aria-label="County sorting options">
         <label for="countySortBy">
           Sort by
           <select id="countySortBy">
@@ -1111,8 +1195,8 @@
             <option value="desc">Newest first</option>
           </select>
         </label>
-      </div>
-      <ol class="county-history-list">
+        </div>
+        <ol class="county-history-list">
         <li>
           <time datetime="1850-01-31">January 31, 1850</time> — Iron County
           <span class="county-origin">An original State of Deseret county.</span>
@@ -1229,7 +1313,7 @@
           <time datetime="1918-01-07">January 7, 1918</time> — Daggett County
           <span class="county-origin">Approved in 1917 from parts of Uintah and Summit counties and effective in 1918.</span>
         </li>
-      </ol>
+        </ol>
 
       <p class="chronology-note">
         Creation and relationship dates follow the
@@ -1249,10 +1333,13 @@
         </a>
         Outside resource from Utah.gov
       </p>
+      </div>
     </section>
 
     <footer class="site-footer">
       <p><a href="../index.html">← UtahBug home</a></p>
+      <p><a href="county-explore.html">Explore Utah County History &rarr;</a></p>
+      <p><a href="county-puzzle.html">Try the County Puzzle &rarr;</a></p>
       <p class="copyright">&copy; 2026 Utah County Map Quiz. All rights reserved.</p>
     </footer>
   </div>
@@ -1262,11 +1349,22 @@
     const data = JSON.parse(document.getElementById("mapData").textContent);
     const statehoodCountiesToggle = document.getElementById("statehoodCountiesToggle");
     const statehoodCountyList = document.getElementById("statehoodCountyList");
+    const utahCountiesToggle = document.getElementById("utahCountiesToggle");
+    const utahCountiesDetails = document.getElementById("utahCountiesDetails");
 
     statehoodCountiesToggle.addEventListener("click", () => {
       const willOpen = statehoodCountiesToggle.getAttribute("aria-expanded") !== "true";
       statehoodCountiesToggle.setAttribute("aria-expanded", String(willOpen));
       statehoodCountyList.hidden = !willOpen;
+    });
+
+    utahCountiesToggle.addEventListener("click", () => {
+      const willOpen = utahCountiesToggle.getAttribute("aria-expanded") !== "true";
+      utahCountiesToggle.setAttribute("aria-expanded", String(willOpen));
+      utahCountiesDetails.hidden = !willOpen;
+      if (willOpen) {
+        window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+      }
     });
 
     const countyFacts = {
@@ -1356,16 +1454,12 @@
       if (leftAlignedCountyNames.has(county.name)) county.label.x = 76;
     });
     const svg = document.getElementById("utahMap");
-    const resetButtons = document.querySelectorAll(".reset-control");
-    const showAllButtons = document.querySelectorAll(".show-all-control");
-    const countyValue = document.getElementById("countyValue");
-    const seatValue = document.getElementById("seatValue");
+    const app = document.querySelector(".app");
+    const topbar = document.querySelector(".topbar");
+    const mapToggleButton = document.getElementById("mapToggleControl");
     let mapCountyValue = null;
     let mapSeatValue = null;
-    const mapDisplays = document.querySelectorAll(".map-display, .map-mode-display");
-    const modeValue = document.getElementById("modeValue");
-    const allList = document.getElementById("allList");
-    const allListItems = document.getElementById("allListItems");
+    const mapDisplays = document.querySelectorAll(".map-display");
     const svgNS = "http://www.w3.org/2000/svg";
     const countyState = new Map(data.counties.map((county) => [county.id, 0]));
     const countyNodes = new Map();
@@ -1448,29 +1542,27 @@
         countyNodes.set(county.id, { path, text });
       });
 
-      const mobileNotch = !isDesktopDevice();
-      const phoneNotch = mobileNotch && window.matchMedia("(max-width: 620px)").matches;
       const countyReadoutLabel = createSvgElement("text");
       countyReadoutLabel.setAttribute("class", "map-notch-label");
       countyReadoutLabel.setAttribute("x", "472");
-      countyReadoutLabel.setAttribute("y", phoneNotch ? "90" : mobileNotch ? "92" : "125");
+      countyReadoutLabel.setAttribute("y", "64");
       countyReadoutLabel.textContent = "COUNTY";
 
       mapCountyValue = createSvgElement("text");
       mapCountyValue.setAttribute("class", "map-notch-value");
-      mapCountyValue.setAttribute("x", mobileNotch ? "472" : "535");
-      mapCountyValue.setAttribute("y", phoneNotch ? "124" : mobileNotch ? "122" : "125");
+      mapCountyValue.setAttribute("x", "472");
+      mapCountyValue.setAttribute("y", "101");
 
       const seatReadoutLabel = createSvgElement("text");
       seatReadoutLabel.setAttribute("class", "map-notch-label");
       seatReadoutLabel.setAttribute("x", "472");
-      seatReadoutLabel.setAttribute("y", phoneNotch ? "160" : mobileNotch ? "148" : "158");
+      seatReadoutLabel.setAttribute("y", "141");
       seatReadoutLabel.textContent = "COUNTY SEAT";
 
       mapSeatValue = createSvgElement("text");
       mapSeatValue.setAttribute("class", "map-notch-value");
-      mapSeatValue.setAttribute("x", mobileNotch ? "472" : "575");
-      mapSeatValue.setAttribute("y", phoneNotch ? "196" : mobileNotch ? "181" : "158");
+      mapSeatValue.setAttribute("x", "472");
+      mapSeatValue.setAttribute("y", "181");
 
       fragment.append(countyReadoutLabel, mapCountyValue, seatReadoutLabel, mapSeatValue);
 
@@ -1579,12 +1671,9 @@
       setLabel(nodes.text, county, state);
     }
 
-    function setSelectionText(countyText, seatText, modeText) {
-      countyValue.textContent = countyText;
-      seatValue.textContent = seatText;
+    function setSelectionText(countyText, seatText) {
       if (mapCountyValue) mapCountyValue.textContent = countyText;
       if (mapSeatValue) mapSeatValue.textContent = seatText;
-      modeValue.textContent = modeText;
     }
 
     function renderPanel() {
@@ -1592,18 +1681,16 @@
       const activeState = activeCounty ? countyState.get(activeCounty.id) : 0;
 
       if (allVisible) {
-        setSelectionText("All counties", "All seats", "All revealed");
+        setSelectionText("All counties", "All seats");
       } else if (activeCounty && activeState > 0) {
         setSelectionText(
           activeCounty.name,
           activeState === 2 ? activeCounty.seat : "",
-          activeState === 1 ? "County" : "County + seat",
         );
       } else {
-        setSelectionText("", "", "Nothing selected");
+        setSelectionText("", "");
       }
 
-      allList.hidden = !allVisible;
     }
 
     function enhanceCountyHistory() {
@@ -1621,6 +1708,7 @@
       function layoutCountyCards() {
         cancelAnimationFrame(layoutFrame);
         layoutFrame = requestAnimationFrame(() => {
+          if (historyList.closest("[hidden]")) return;
           const items = [...historyList.children];
           if (window.matchMedia("(max-width: 700px)").matches) {
             items.forEach((item) => {
@@ -1764,45 +1852,36 @@
       layoutCountyCards();
     }
 
-    function renderAllList() {
-      const fragment = document.createDocumentFragment();
-      data.counties.forEach((county) => {
-        const item = document.createElement("li");
-        const name = document.createElement("span");
-        const seat = document.createElement("span");
-        name.textContent = county.name;
-        seat.textContent = county.seat;
-        item.append(name, seat);
-        fragment.append(item);
-      });
-      allListItems.replaceChildren(fragment);
-    }
-
     function render() {
       data.counties.forEach(renderCounty);
       renderPanel();
+      mapToggleButton.textContent = allVisible ? "Clear map" : "Show all";
+      mapToggleButton.setAttribute("aria-pressed", String(allVisible));
     }
 
-    resetButtons.forEach((button) => button.addEventListener("click", () => {
+    mapToggleButton.addEventListener("click", () => {
+      if (allVisible) {
         allVisible = false;
         activeCountyId = null;
         resetStates();
-        render();
-      }));
-
-    showAllButtons.forEach((button) => button.addEventListener("click", () => {
+      } else {
         allVisible = true;
         activeCountyId = null;
-        render();
-      }));
+      }
+      render();
+    });
 
     enhanceCountyHistory();
-    renderAllList();
     renderMap();
 
     function syncMapDisplayWidths() {
-      const mapWidth = svg.getBoundingClientRect().width;
+      const mapRect = svg.getBoundingClientRect();
+      const appRect = app.getBoundingClientRect();
+      const mapWidth = mapRect.width;
       mapDisplays.forEach((display) => display.style.width = mapWidth + "px");
+      topbar.style.width = mapWidth + "px";
+      topbar.style.marginLeft = Math.max(0, mapRect.left - appRect.left) + "px";
+      topbar.style.marginRight = "auto";
     }
     syncMapDisplayWidths();
     if ("ResizeObserver" in window) {

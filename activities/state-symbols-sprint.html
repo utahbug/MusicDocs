@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#23322c">
+  <meta name="description" content="Test your recognition of Utah's official state symbols in ten quick questions.">
+  <title>Utah Symbols Sprint | UtahBug</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/state-symbols/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../assets/state-symbols/utah-symbols-icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/state-symbols/apple-touch-icon.png">
+  <link rel="stylesheet" href="../symbols.css?v=20260725d">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="parent-home" href="../index.html" aria-label="Return to the UtahBug home page">
+        <strong>UtahBug</strong>
+      </a>
+    </div>
+  </header>
+
+  <main class="symbol-main">
+    <header class="symbol-heading">
+      <div>
+        <h1>UTAH SYMBOLS</h1>
+        <p>Choose the correct symbol in ten quick questions.</p>
+      </div>
+      <nav class="symbol-mode-links" aria-label="Utah symbol activities">
+        <a href="state-symbols.html">Explore</a>
+        <a href="state-symbols-match.html">Match</a>
+        <a aria-current="page" href="state-symbols-sprint.html">Sprint</a>
+      </nav>
+    </header>
+
+    <section class="game-shell">
+      <div class="game-status">
+        <p id="sprint-status">Question 1 of 10 &middot; Score 0</p>
+        <div class="game-categories" role="group" aria-label="Choose symbol category">
+          <button type="button" data-category="all" aria-pressed="true">All</button>
+          <button type="button" data-category="nature" aria-pressed="false">Nature</button>
+          <button type="button" data-category="culture" aria-pressed="false">Culture</button>
+          <button type="button" data-category="heritage" aria-pressed="false">Heritage</button>
+        </div>
+        <button class="game-button" id="restart-sprint" type="button">Restart</button>
+      </div>
+
+      <div class="sprint-panel" id="sprint-panel">
+        <p class="sprint-label" id="sprint-label"></p>
+        <div class="sprint-image">
+          <p class="sprint-text-clue" id="sprint-text-clue"></p>
+          <img id="sprint-image" alt="" hidden>
+        </div>
+        <p class="sprint-question">Choose the official answer.</p>
+        <div class="sprint-choices" id="sprint-choices"></div>
+      </div>
+
+      <div class="sprint-actions">
+        <p class="sprint-feedback" id="sprint-feedback" aria-live="polite"></p>
+        <button class="game-button sprint-next" id="sprint-next" type="button" hidden>Next</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="symbol-footer">
+    <span>&copy; 2026 UtahBug</span>
+    <span><a href="state-symbols.html">Explore all Utah symbols</a></span>
+  </footer>
+
+  <script src="../symbols-data.js?v=20260725d"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      const status = document.querySelector("#sprint-status");
+      const panel = document.querySelector("#sprint-panel");
+      let label = document.querySelector("#sprint-label");
+      let image = document.querySelector("#sprint-image");
+      let textClue = document.querySelector("#sprint-text-clue");
+      let choices = document.querySelector("#sprint-choices");
+      const feedback = document.querySelector("#sprint-feedback");
+      const nextButton = document.querySelector("#sprint-next");
+      const restartButton = document.querySelector("#restart-sprint");
+      const categoryButtons = document.querySelectorAll(
+        ".game-categories [data-category]",
+      );
+      let questions = [];
+      let questionIndex = 0;
+      let score = 0;
+      let answered = false;
+      let missedCurrentQuestion = false;
+      let activeCategory = "all";
+      let remainingSymbols = [];
+      const sprintDistractors = new Map([
+        ["symbol-01", ["Mule deer", "Desert bighorn sheep"]],
+        ["symbol-02", ["Ring-billed gull", "American white pelican"]],
+        ["symbol-03", ["Rocky Mountain columbine", "Desert mariposa lily"]],
+        ["symbol-04", ["Blue spruce", "Fremont cottonwood"]],
+        ["symbol-05", ["Monarch butterfly", "Ladybug"]],
+        ["symbol-06", ["Rainbow trout", "Brook trout"]],
+        ["symbol-07", ["Red beryl", "Garnet"]],
+        ["symbol-08", ["Silver", "Beryllium"]],
+        ["symbol-09", ["Stegosaurus", "Diplodocus"]],
+        ["symbol-10", ["Peach", "Apple"]],
+        ["symbol-11", ["Russet potato", "Carrot"]],
+        ["symbol-12", ["Turnip", "Parsnip"]],
+        ["symbol-13", ["Blue grama", "Great Basin wildrye"]],
+        ["symbol-14", ["Morel", "Oyster mushroom"]],
+        ["symbol-15", ["Utah Man", "Utah, We Love Thee"]],
+        ["symbol-16", ["Utah Man", "Utah, This Is the Place"]],
+        ["symbol-17", ["Enterprise", "Forward"]],
+        ["symbol-18", ["Wagon wheel", "Mountain"]],
+        ["symbol-19", ["Sun Tunnels", "Metaphor: The Tree of Utah"]],
+        ["symbol-20", ["Pleiades", "Andromeda Galaxy"]],
+        ["symbol-21", ["Hiking and climbing", "Mountain biking"]],
+        ["symbol-22", ["Red beryl", "Sandstone"]],
+        ["symbol-23", ["Utah coat of arms", "Beehive Seal"]],
+        ["symbol-24", ["Sandstone", "Limestone"]],
+        ["symbol-25", ["Desert horned lizard", "Western rattlesnake"]],
+        ["symbol-26", ["Rio Grande Depot", "Golden Spike"]],
+        ["symbol-27", ["Hill Aerospace Museum", "Camp Floyd Museum"]],
+        ["symbol-28", ["Pioneer murals", "Great Salt Lake photography"]],
+        ["symbol-29", ["Utah territorial flag", "1903 Utah flag"]],
+        ["symbol-30", ["Historic Utah state flag", "Utah territorial flag"]],
+        ["symbol-31", ["Browning Hi-Power", "M2 Browning machine gun"]],
+        ["symbol-32", ["Blue Star Service Flag", "POW/MIA flag"]],
+        ["symbol-33", ["Allosaurus", "Deinonychus"]],
+        ["symbol-34", ["Utahan", "Utahite"]],
+        ["symbol-35", ["Fairy shrimp", "Krill"]],
+        ["symbol-36", ["Camp kettle", "Cast-iron skillet"]],
+        ["symbol-37", ["Beehive Tartan", "Wasatch Tartan"]],
+        ["symbol-38", ["Polaris", "Sirius"]],
+        ["symbol-39", ["Bald eagle", "Peregrine falcon"]],
+        ["symbol-40", ["Line dance", "Contra dance"]],
+      ]);
+
+      function shuffle(items) {
+        const result = [...items];
+        for (let index = result.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+        }
+        return result;
+      }
+
+      function imagePath(symbol) {
+        return `../assets/state-symbols/card-images/${symbol.image}`;
+      }
+
+      function categoryPool() {
+        if (activeCategory === "all") {
+          return [...window.UTAH_SYMBOLS];
+        }
+        return window.UTAH_SYMBOLS.filter(
+          (symbol) => symbol.group === activeCategory,
+        );
+      }
+
+      function resetDeck() {
+        remainingSymbols = shuffle(categoryPool());
+      }
+
+      function drawSymbols(count) {
+        const pool = categoryPool();
+        const targetCount = Math.min(count, pool.length);
+        const selected = [];
+        const selectedIds = new Set();
+
+        while (selected.length < targetCount) {
+          if (remainingSymbols.length === 0) {
+            resetDeck();
+          }
+          const symbol = remainingSymbols.shift();
+          if (selectedIds.has(symbol.id)) {
+            remainingSymbols.push(symbol);
+            continue;
+          }
+          selected.push(symbol);
+          selectedIds.add(symbol.id);
+        }
+        return selected;
+      }
+
+      function answerQuestion(button, selectedName, symbol) {
+        if (answered || button.disabled) return;
+        const correctName = symbol.name;
+        const choiceButtons = choices.querySelectorAll("button");
+
+        if (selectedName !== correctName) {
+          missedCurrentQuestion = true;
+          button.classList.add("is-wrong");
+          button.disabled = true;
+          button.setAttribute("aria-label", `${selectedName}, incorrect`);
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+          feedback.textContent = "Not quite — try again.";
+          return;
+        }
+
+        answered = true;
+        choiceButtons.forEach((choiceButton) => {
+          choiceButton.disabled = true;
+          if (choiceButton.dataset.name === correctName) {
+            choiceButton.classList.add("is-correct");
+          }
+        });
+
+        if (!missedCurrentQuestion) {
+          score += 1;
+          feedback.textContent = `Correct — ${symbol.label}: ${correctName}.`;
+        } else {
+          feedback.textContent =
+            `Correct on the retry — ${symbol.label}: ${correctName}.`;
+        }
+        feedback.classList.remove("is-wrong");
+        feedback.classList.add("is-correct");
+
+        if (symbol.visual === false) {
+          textClue.textContent = correctName;
+          textClue.classList.toggle("musical-symbol", Boolean(symbol.musical));
+        } else {
+          textClue.hidden = true;
+          image.hidden = false;
+        }
+
+        status.textContent =
+          `Question ${questionIndex + 1} of ${questions.length} · Score ${score}`;
+        nextButton.textContent =
+          questionIndex === questions.length - 1 ? "See score" : "Next";
+        nextButton.hidden = false;
+      }
+
+      function renderQuestion() {
+        const symbol = questions[questionIndex];
+        const answers = shuffle([
+          symbol.name,
+          ...sprintDistractors.get(symbol.id),
+        ]);
+        const fragment = document.createDocumentFragment();
+
+        answered = false;
+        missedCurrentQuestion = false;
+        status.textContent =
+          `Question ${questionIndex + 1} of ${questions.length} · Score ${score}`;
+        label.textContent = symbol.label;
+        textClue.hidden = false;
+        textClue.classList.remove("musical-symbol");
+        textClue.textContent = `Which is Utah’s ${symbol.label.toLowerCase()}?`;
+        image.hidden = true;
+        if (symbol.visual === false) {
+          image.removeAttribute("src");
+          image.alt = "";
+        } else {
+          image.src = imagePath(symbol);
+          image.alt = `${symbol.name}, ${symbol.label}`;
+        }
+        feedback.classList.remove("is-correct", "is-wrong");
+        feedback.textContent = "";
+        nextButton.hidden = true;
+
+        answers.forEach((answerName) => {
+          const button = document.createElement("button");
+          button.className = "sprint-choice";
+          button.type = "button";
+          button.dataset.name = answerName;
+          button.textContent = answerName;
+          button.addEventListener("click", () =>
+            answerQuestion(button, answerName, symbol)
+          );
+          fragment.append(button);
+        });
+
+        choices.replaceChildren(fragment);
+      }
+
+      function showResult() {
+        const result = document.createElement("div");
+        const heading = document.createElement("h2");
+        const copy = document.createElement("p");
+        const button = document.createElement("button");
+
+        result.className = "sprint-result";
+        heading.textContent = `${score} of ${questions.length} correct`;
+        copy.textContent =
+          score === questions.length
+            ? "Perfect sprint!"
+            : "Play again for a different set of symbols.";
+        button.className = "game-button sprint-next";
+        button.type = "button";
+        button.textContent = "Play again";
+        button.addEventListener("click", startSprint);
+        result.append(heading, copy, button);
+        panel.replaceChildren(result);
+        feedback.classList.remove("is-correct", "is-wrong");
+        feedback.textContent = "";
+        nextButton.hidden = true;
+        status.textContent = `Finished · Score ${score} of ${questions.length}`;
+      }
+
+      function nextQuestion() {
+        if (questionIndex === questions.length - 1) {
+          showResult();
+          return;
+        }
+        questionIndex += 1;
+        renderQuestion();
+      }
+
+      function startSprint() {
+        questions = drawSymbols(10);
+        questionIndex = 0;
+        score = 0;
+        panel.innerHTML = `
+          <p class="sprint-label" id="sprint-label"></p>
+          <div class="sprint-image">
+            <p class="sprint-text-clue" id="sprint-text-clue"></p>
+            <img id="sprint-image" alt="" hidden>
+          </div>
+          <p class="sprint-question">Choose the official answer.</p>
+          <div class="sprint-choices" id="sprint-choices"></div>
+        `;
+        label = panel.querySelector("#sprint-label");
+        image = panel.querySelector("#sprint-image");
+        textClue = panel.querySelector("#sprint-text-clue");
+        choices = panel.querySelector("#sprint-choices");
+        renderQuestion();
+      }
+
+      categoryButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          activeCategory = button.dataset.category;
+          categoryButtons.forEach((categoryButton) => {
+            categoryButton.setAttribute(
+              "aria-pressed",
+              String(categoryButton === button),
+            );
+          });
+          resetDeck();
+          startSprint();
+        });
+      });
+
+      nextButton.addEventListener("click", nextQuestion);
+      restartButton.addEventListener("click", startSprint);
+      resetDeck();
+      startSprint();
+    })();
+  </script>
+</body>
+</html>
