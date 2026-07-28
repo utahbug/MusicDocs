@@ -188,6 +188,8 @@ const state = {
     item: null,
     doc: null,
     objectUrl: null,
+    sequenceListId: "",
+    sequenceTransitioning: false,
     pageNumber: 1,
     pageCount: 0,
     rendering: false,
@@ -3551,7 +3553,11 @@ async function handleBodyClick(event) {
 
   const openButton = event.target.closest("[data-open]");
   if (openButton) {
-    openItem(openButton.dataset.open);
+    const listItems = openButton.closest("[data-list-items]");
+    const listRow = openButton.closest("[data-list-row]");
+    openItem(openButton.dataset.open, {
+      listId: listItems?.dataset.listItems || listRow?.dataset.listRow || ""
+    });
     return;
   }
 
@@ -3939,7 +3945,7 @@ function handleBodyInput(event) {
   }
 }
 
-function openItem(id) {
+function openItem(id, options = {}) {
   const item = state.itemsById.get(id);
   if (!item) return;
   rememberOpened(item);
@@ -3955,7 +3961,7 @@ function openItem(id) {
   }
 
   if (item.type === "pdf") {
-    openPdf(item);
+    openPdf(item, { listId: options.listId || "" });
   } else if (item.type === "link") {
     openLinkItem(item);
   } else {
@@ -4147,7 +4153,18 @@ function localImageSlotHtml(item) {
   `;
 }
 
-async function openPdf(item) {
+async function openPdf(item, options = {}) {
+  const {
+    listId = "",
+    initialPage = "first",
+    preserveSequence = false
+  } = options;
+  if (!preserveSequence) {
+    state.currentPdf.sequenceListId = getPdfSequence(listId).some((entry) => entry.id === item.id)
+      ? listId
+      : "";
+  }
+  state.currentPdf.sequenceTransitioning = preserveSequence;
   releasePdfObjectUrl();
   state.currentPdf.item = item;
   state.currentPdf.doc = null;
@@ -4156,12 +4173,16 @@ async function openPdf(item) {
   state.currentPdf.pageCount = 0;
   resetPdfZoom();
   el.pdfTitle.textContent = itemDisplayTitle(item);
-  el.pdfPageStatus.textContent = "Loading";
-  el.pdfCanvas.classList.add("hidden");
-  showPdfMessage("Loading PDF...");
+  el.pdfPageStatus.textContent = preserveSequence ? "Loading next song…" : "Loading";
+  if (preserveSequence) {
+    el.pdfLoading.classList.add("hidden");
+  } else {
+    el.pdfCanvas.classList.add("hidden");
+    showPdfMessage("Loading PDF...");
+  }
   document.body.classList.add("pdf-open");
   el.pdfViewer.classList.remove("hidden");
-  showPdfTipsOnOpen();
+  if (!preserveSequence) showPdfTipsOnOpen();
 
   if (!window.pdfjsLib) {
     showPdfMessage("PDF.js could not be loaded. Check your internet connection or download PDF.js for local use.");
@@ -4174,6 +4195,7 @@ async function openPdf(item) {
     const loadingTask = window.pdfjsLib.getDocument(pdfSource);
     state.currentPdf.doc = await loadingTask.promise;
     state.currentPdf.pageCount = state.currentPdf.doc.numPages;
+    state.currentPdf.pageNumber = initialPage === "last" ? state.currentPdf.pageCount : 1;
     state.currentPdf.pageNumber = clamp(state.currentPdf.pageNumber, 1, state.currentPdf.pageCount);
     resetPdfZoom();
     await renderPdfPage(state.currentPdf.pageNumber);
@@ -4185,6 +4207,8 @@ async function openPdf(item) {
       : getBundledPdfErrorMessage();
     showPdfMessage(message);
     el.pdfPageStatus.textContent = "PDF unavailable";
+  } finally {
+    state.currentPdf.sequenceTransitioning = false;
   }
 }
 
@@ -4296,7 +4320,9 @@ function showPdfMessage(message) {
 }
 
 function updatePdfStatus() {
-  el.pdfPageStatus.textContent = `Page ${state.currentPdf.pageNumber} of ${state.currentPdf.pageCount}`;
+  const sequence = getCurrentPdfSequencePosition();
+  const sequenceStatus = sequence ? ` · Song ${sequence.index + 1} of ${sequence.items.length}` : "";
+  el.pdfPageStatus.textContent = `Page ${state.currentPdf.pageNumber} of ${state.currentPdf.pageCount}${sequenceStatus}`;
 }
 
 function returnFromPdfViewer() {
@@ -4378,13 +4404,55 @@ function hidePdfTips() {
 }
 
 function previousPdfPage() {
-  if (!state.currentPdf.doc || state.currentPdf.pageNumber <= 1) return;
+  if (!state.currentPdf.doc || state.currentPdf.sequenceTransitioning) return;
+  if (state.currentPdf.pageNumber <= 1) {
+    moveToAdjacentPdfInList(-1);
+    return;
+  }
   goToPdfPage(state.currentPdf.pageNumber - 1);
 }
 
 function nextPdfPage() {
-  if (!state.currentPdf.doc || state.currentPdf.pageNumber >= state.currentPdf.pageCount) return;
+  if (!state.currentPdf.doc || state.currentPdf.sequenceTransitioning) return;
+  if (state.currentPdf.pageNumber >= state.currentPdf.pageCount) {
+    moveToAdjacentPdfInList(1);
+    return;
+  }
   goToPdfPage(state.currentPdf.pageNumber + 1);
+}
+
+function getPdfSequence(listId) {
+  if (!listId) return [];
+  const list = state.lists.find((candidate) => candidate.id === listId);
+  if (!list) return [];
+  return getResolvedListEntries(list)
+    .map((entry) => entry.item)
+    .filter((item) => item.type === "pdf");
+}
+
+function getCurrentPdfSequencePosition() {
+  const items = getPdfSequence(state.currentPdf.sequenceListId);
+  const index = items.findIndex((item) => item.id === state.currentPdf.item?.id);
+  return index >= 0 ? { items, index } : null;
+}
+
+function moveToAdjacentPdfInList(direction) {
+  const sequence = getCurrentPdfSequencePosition();
+  if (!sequence) return false;
+  const targetIndex = sequence.index + direction;
+  if (targetIndex < 0 || targetIndex >= sequence.items.length) {
+    const edgeLabel = direction < 0 ? "Start of list" : "End of list";
+    el.pdfPageStatus.textContent = `Page ${state.currentPdf.pageNumber} of ${state.currentPdf.pageCount} · ${edgeLabel}`;
+    return false;
+  }
+
+  const targetItem = sequence.items[targetIndex];
+  openPdf(targetItem, {
+    listId: state.currentPdf.sequenceListId,
+    initialPage: direction < 0 ? "last" : "first",
+    preserveSequence: true
+  });
+  return true;
 }
 
 function firstPdfPage() {
@@ -4411,6 +4479,8 @@ function closePdfViewer() {
   releasePdfObjectUrl();
   state.currentPdf.doc = null;
   state.currentPdf.item = null;
+  state.currentPdf.sequenceListId = "";
+  state.currentPdf.sequenceTransitioning = false;
 }
 
 function handlePdfTapZoneClick(event, direction) {
