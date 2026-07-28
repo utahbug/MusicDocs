@@ -43,11 +43,11 @@ body.identity-condensed .identity-name { font-size: 0.98rem; }
 
 .display-preference-wrap { flex: 0 0 auto; position: relative; }
 
-.header-info-button { align-items: center; background: transparent; border: 0px; border-radius: 999px; color: rgba(255, 255, 255, 0.9); display: inline-flex; height: 30px; justify-content: center; padding: 3px; width: 30px; }
+.header-info-button, .header-tools-button { align-items: center; background: transparent; border: 0px; border-radius: 999px; color: rgba(255, 255, 255, 0.9); display: inline-flex; height: 30px; justify-content: center; padding: 3px; width: 30px; }
 .header-info-button .info-icon-mark { color: currentcolor; font-size: 0px; height: 19px; width: 19px; }
 .header-info-button .info-icon-mark::before { content: "i"; font-family: Georgia, serif; font-size: 0.88rem; font-style: italic; font-weight: 800; line-height: 1; transform: translateY(1.5px); }
 
-.header-info-button:hover, .header-info-button:focus-visible, .app-header .background-toggle-button:hover, .app-header .background-toggle-button:focus-visible { background: rgba(255, 255, 255, 0.16); color: #FFFFFF; }
+.header-info-button:hover, .header-info-button:focus-visible, .header-tools-button:hover, .header-tools-button:focus-visible, .header-tools-button.active, .app-header .background-toggle-button:hover, .app-header .background-toggle-button:focus-visible { background: rgba(255, 255, 255, 0.16); color: #FFFFFF; }
 
 .background-toggle-button { align-items: center; background: transparent; border: 0px; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 30px; justify-content: center; padding: 4px; width: 30px; }
 
@@ -95,15 +95,14 @@ body.pdf-open .nav-overflow-wrap .overflow-menu { bottom: calc(58px + env(safe-a
 .nav-help-button { --tab-accent: #245A78; min-width: 40px; padding-inline: 7px; }
 .info-icon-mark { align-items: center; border: 2px solid currentcolor; border-radius: 999px; color: var(--accent-strong); display: inline-flex; font-family: Georgia, serif; font-size: 0.88rem; font-style: italic; font-weight: 800; height: 21px; justify-content: center; line-height: 1; width: 21px; }
 .nav-help-button:hover .info-icon-mark, .nav-help-button:focus-visible .info-icon-mark { color: var(--accent-strong); }
-.nav-tools-button { --tab-accent: #2F7A6B; min-width: 40px; padding-inline: 7px; }
 .tuning-fork-icon { filter: drop-shadow(0.8px 1px 0.9px rgba(28, 47, 61, 0.38)); height: 24px; overflow: visible; stroke-linecap: round; stroke-linejoin: round; transform: rotate(82deg); transform-origin: 50% 50%; width: 24px; }
 .tuning-fork-shadow { fill: #344957; opacity: 0.46; transform: translate(0.65px, 0.75px); }
 .tuning-fork-main { fill: url("#tuningForkGradient"); stroke: #526777; stroke-width: 0.35; }
 .tuning-fork-highlight { fill: none; opacity: 0.72; stroke: rgba(255, 255, 255, 0.96); stroke-width: 0.65; transform: translate(-0.25px, -0.15px); }
-.nav-tools-button.active .tuning-fork-icon { filter: none; }
-.nav-tools-button.active .tuning-fork-shadow { fill: #183E52; opacity: 0.22; }
-.nav-tools-button.active .tuning-fork-main { fill: #FFFFFF; stroke: rgba(255, 255, 255, 0.8); }
-.nav-tools-button.active .tuning-fork-highlight { opacity: 0.48; }
+.header-tools-button.active .tuning-fork-icon { filter: none; }
+.header-tools-button.active .tuning-fork-shadow { fill: #183E52; opacity: 0.22; }
+.header-tools-button.active .tuning-fork-main { fill: #FFFFFF; stroke: rgba(255, 255, 255, 0.8); }
+.header-tools-button.active .tuning-fork-highlight { opacity: 0.48; }
 
 .star-icon-mark { display: inline-block; font-size: 1.1rem; line-height: 1; }
 
