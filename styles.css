@@ -1014,13 +1014,13 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .rich-toolbar { max-width: 100%; overflow: hidden; }
   .rich-toolbar button { flex: 0 0 40px; min-height: 40px; min-width: 40px; padding: 0px; width: 40px; }
   .rich-font-picker select { height: 40px; min-height: 40px; }
-  .detail-actions.card-detail-actions { grid-template-columns: auto minmax(0px, 1fr) auto auto auto; }
+  .detail-actions.card-detail-actions { gap: 3px; grid-template-columns: auto minmax(0px, 1fr) auto auto auto auto; }
   .card-detail-actions .card-exit-button { grid-column: 1; grid-row: 1; }
   .card-detail-actions .card-toolbar-spacer, .card-detail-actions .compact-detail-title { grid-column: 2; grid-row: 1; }
-  .card-detail-actions > .favorite-toggle { grid-column: 3; grid-row: 1; }
-  .card-detail-actions > .danger-icon { grid-column: 4; grid-row: 1; }
-  .card-detail-actions > [data-edit-item] { grid-column: 5; grid-row: 1; }
-  .card-detail-actions .card-reading-controls { grid-column: 3 / 6; grid-row: 2; justify-self: end; }
+  .card-detail-actions .card-reading-controls { grid-column: 3; grid-row: 1; justify-self: end; }
+  .card-detail-actions > .favorite-toggle { grid-column: 4; grid-row: 1; }
+  .card-detail-actions > .danger-icon { grid-column: 5; grid-row: 1; }
+  .card-detail-actions > [data-edit-item] { grid-column: 6; grid-row: 1; }
   .form-grid { grid-template-columns: 1fr; }
   .list-edit-add-grid { grid-template-columns: minmax(150px, 68%) 108px; }
   .list-edit-section { padding-left: 8px; padding-right: 8px; }
