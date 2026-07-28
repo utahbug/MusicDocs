@@ -24,6 +24,7 @@ const STORAGE_KEYS = {
   starterDataVersion: storageKey("starterDataVersion"),
   starterFavorites: storageKey("starterFavorites"),
   starterFavoritesLayoutVersion: storageKey("starterFavoritesLayoutVersion"),
+  starterListAlphabeticalVersion: storageKey("starterListAlphabeticalVersion"),
   starterLists: storageKey("starterLists"),
   setlists: storageKey("setlists"),
   quickChecks: storageKey("quickChecks")
@@ -83,6 +84,7 @@ const PITCH_PRESETS = {
 const STARTER_DATA_VERSION = "musicdocs-categories-v2";
 const ITEM_METADATA_REPAIR_VERSION = "musicdocs-metadata-v1";
 const STARTER_FAVORITES_LAYOUT_VERSION = "musicdocs-empty-v1";
+const STARTER_LIST_ALPHABETICAL_VERSION = "starter-lists-alphabetical-v1";
 const STARTER_LIST_ORDER = [];
 const RETIRED_LYRIC_PDF_REPLACEMENTS = {};
 const RETIRED_STARTER_LISTS = [];
@@ -1034,9 +1036,9 @@ function loadUnifiedLists() {
   const savedLists = readJson(STORAGE_KEYS.lists, null);
   if (Array.isArray(savedLists) && savedLists.length) {
     const normalizedSavedLists = pruneRetiredStarterLists(normalizeLists(savedLists), true);
-    const lists = repairStarterEntries(migrateRetiredLyricListEntries(
+    const lists = applyStarterListAlphabeticalOrder(repairStarterEntries(migrateRetiredLyricListEntries(
       syncStarterLists(pruneOldEmptyListShells(normalizedSavedLists, true))
-    ));
+    )));
     writeJson(STORAGE_KEYS.lists, lists);
     return lists;
   }
@@ -1073,11 +1075,11 @@ function loadUnifiedLists() {
     }))
   ]);
 
-  const lists = migrateRetiredLyricListEntries(
+  const lists = applyStarterListAlphabeticalOrder(migrateRetiredLyricListEntries(
     syncStarterLists(alphabetizeStarterListEntries(
       pruneRetiredStarterLists(normalizeLists(migrated))
     ))
-  );
+  ));
   writeJson(STORAGE_KEYS.lists, lists);
   return lists;
 }
@@ -1202,6 +1204,20 @@ function alphabetizeStarterListEntries(lists = []) {
       return aTitle.localeCompare(bTitle, undefined, { numeric: true, sensitivity: "base" });
     })
   }));
+}
+
+function applyStarterListAlphabeticalOrder(lists = []) {
+  if (localStorage.getItem(STORAGE_KEYS.starterListAlphabeticalVersion) === STARTER_LIST_ALPHABETICAL_VERSION) {
+    return lists;
+  }
+
+  const starterIds = new Set(starterUnifiedLists().map((list) => list.id));
+  const sorted = lists.map((list) => {
+    if (list.userCreated || !starterIds.has(list.id)) return list;
+    return alphabetizeStarterListEntries([list])[0];
+  });
+  localStorage.setItem(STORAGE_KEYS.starterListAlphabeticalVersion, STARTER_LIST_ALPHABETICAL_VERSION);
+  return sorted;
 }
 
 function normalizeLists(lists) {
