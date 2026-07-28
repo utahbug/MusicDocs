@@ -4245,7 +4245,9 @@ async function renderPdfPage(pageNumber) {
   }
 
   state.currentPdf.rendering = true;
-  showPdfMessage("Rendering page...");
+  const canvas = el.pdfCanvas;
+  const hasVisiblePage = !canvas.classList.contains("hidden");
+  if (!hasVisiblePage) showPdfMessage("Rendering page...");
 
   try {
     const page = await state.currentPdf.doc.getPage(pageNumber);
@@ -4256,17 +4258,22 @@ async function renderPdfPage(pageNumber) {
     const fitScale = Math.min(maxWidth / unscaled.width, maxHeight / unscaled.height);
     const viewport = page.getViewport({ scale: fitScale });
     const outputScale = window.devicePixelRatio || 1;
-    const canvas = el.pdfCanvas;
-    const context = canvas.getContext("2d");
+    const renderCanvas = document.createElement("canvas");
+    const renderContext = renderCanvas.getContext("2d");
+    renderCanvas.width = Math.floor(viewport.width * outputScale);
+    renderCanvas.height = Math.floor(viewport.height * outputScale);
+    renderContext.setTransform(outputScale, 0, 0, outputScale, 0, 0);
 
-    canvas.width = Math.floor(viewport.width * outputScale);
-    canvas.height = Math.floor(viewport.height * outputScale);
+    await page.render({ canvasContext: renderContext, viewport }).promise;
+
+    canvas.width = renderCanvas.width;
+    canvas.height = renderCanvas.height;
     canvas.style.width = `${Math.floor(viewport.width)}px`;
     canvas.style.height = `${Math.floor(viewport.height)}px`;
-    context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
+    const displayContext = canvas.getContext("2d");
+    displayContext.setTransform(1, 0, 0, 1, 0, 0);
+    displayContext.drawImage(renderCanvas, 0, 0);
     applyPdfTransform();
-
-    await page.render({ canvasContext: context, viewport }).promise;
     state.currentPdf.pageNumber = pageNumber;
     savePdfPage();
     rememberOpened(state.currentPdf.item, pageNumber);
