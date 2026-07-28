@@ -80,7 +80,7 @@ const PITCH_PRESETS = {
   violin: { label: "Violin", notes: TUNER_INSTRUMENTS.violin.targets, defaultNote: "A4" },
   flute: { label: "Flute", midiStart: 60, midiEnd: 96, defaultNote: "A4" }
 };
-const STARTER_DATA_VERSION = "musicdocs-clean-v1";
+const STARTER_DATA_VERSION = "musicdocs-categories-v2";
 const ITEM_METADATA_REPAIR_VERSION = "musicdocs-metadata-v1";
 const STARTER_FAVORITES_LAYOUT_VERSION = "musicdocs-empty-v1";
 const STARTER_LIST_ORDER = [];
@@ -1121,8 +1121,6 @@ function syncStarterLists(lists) {
 
   starterLists.forEach((starter) => {
     const starterEntries = (starter.entries || []).filter((entry) => state.itemsById.has(entry.itemId));
-    if (!starterEntries.length) return;
-
     const existing = listById.get(starter.id);
     if (applied.has(starter.id) && existing) return;
 
