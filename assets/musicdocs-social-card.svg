@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">MusicDocs</title>
+  <desc id="description">MusicDocs social preview card for music, documents, lists, and rehearsal tools.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#245A9A"/>
+      <stop offset="0.38" stop-color="#3667A8"/>
+      <stop offset="0.72" stop-color="#2D7F82"/>
+      <stop offset="1" stop-color="#2F8B61"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4A84C4"/>
+      <stop offset="0.58" stop-color="#2F68AA"/>
+      <stop offset="1" stop-color="#214A78"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#15374F" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" rx="34" fill="url(#background)"/>
+  <path d="M0 488C220 424 369 457 552 518C775 592 967 590 1200 504V630H0Z" fill="#FFFFFF" opacity="0.07"/>
+  <path d="M0 535C231 483 397 505 568 558C777 623 982 616 1200 548V630H0Z" fill="#FFFFFF" opacity="0.06"/>
+
+  <g transform="translate(90 124)" filter="url(#shadow)">
+    <rect width="260" height="260" rx="54" fill="url(#mark)"/>
+    <circle cx="84" cy="177" r="31" fill="#F7FAFB"/>
+    <circle cx="174" cy="155" r="31" fill="#F7FAFB"/>
+    <path d="M108 177V64l101-20v111h-30V80l-42 8v89z" fill="#F7FAFB"/>
+    <path d="M69 65h69v21H69zm0 39h51v21H69z" fill="#DCEBFA"/>
+  </g>
+
+  <g transform="translate(412 165)">
+    <text x="0" y="108" fill="#FFFFFF" font-family="Verdana, Arial, sans-serif" font-size="92" font-weight="800" letter-spacing="-3">MusicDocs</text>
+    <rect x="2" y="139" width="610" height="3" rx="2" fill="#FFFFFF" opacity="0.38"/>
+    <text x="2" y="193" fill="#EEF7FA" font-family="Verdana, Arial, sans-serif" font-size="30" font-weight="600">Music, documents, lists, and rehearsal tools</text>
+    <g transform="translate(2 239)">
+      <rect width="172" height="54" rx="27" fill="#FFFFFF" opacity="0.14"/>
+      <text x="86" y="36" text-anchor="middle" fill="#FFFFFF" font-family="Verdana, Arial, sans-serif" font-size="23" font-weight="700">Sheet music</text>
+      <rect x="190" width="152" height="54" rx="27" fill="#FFFFFF" opacity="0.14"/>
+      <text x="266" y="36" text-anchor="middle" fill="#FFFFFF" font-family="Verdana, Arial, sans-serif" font-size="23" font-weight="700">Lyric cards</text>
+      <rect x="360" width="190" height="54" rx="27" fill="#FFFFFF" opacity="0.14"/>
+      <text x="455" y="36" text-anchor="middle" fill="#FFFFFF" font-family="Verdana, Arial, sans-serif" font-size="23" font-weight="700">Page turning</text>
+    </g>
+  </g>
+</svg>

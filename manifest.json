@@ -1,12 +1,12 @@
-﻿{
+{
     "name":  "MusicDocs",
     "short_name":  "MusicDocs",
-    "description":  "A private, local music helper for PDFs, lists, song cards, notes, links, setlists, and favorites.",
+    "description":  "A local-first helper for music, documents, lists, cards, links, and musician tools.",
     "start_url":  "./index.html",
     "scope":  "./",
     "display":  "standalone",
     "background_color":  "#F7FAFB",
-    "theme_color":  "#2F7A55",
+    "theme_color":  "#2B5F9E",
     "icons":  [
                   {
                       "src":  "assets/icon-192.png",

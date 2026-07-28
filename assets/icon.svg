@@ -1,7 +1,14 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Primary Music Helper icon">
-  <rect width="512" height="512" rx="96" fill="#2F7A55"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MusicDocs icon">
+  <defs>
+    <linearGradient id="musicDocsGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4A84C4"/>
+      <stop offset="0.55" stop-color="#2F68AA"/>
+      <stop offset="1" stop-color="#214A78"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#musicDocsGradient)"/>
   <circle cx="166" cy="346" r="58" fill="#F7FAFB"/>
   <circle cx="334" cy="306" r="58" fill="#F7FAFB"/>
   <path d="M212 346V128l168-34v212h-54V160l-60 12v174z" fill="#F7FAFB"/>
-  <path d="M140 132h112v38H140zm0 74h84v38h-84z" fill="#D8EADE"/>
+  <path d="M140 132h112v38H140zm0 74h84v38h-84z" fill="#DCEBFA"/>
 </svg>
