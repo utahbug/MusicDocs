@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-4">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-5">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-5" defer></script>
+    <script src="script.js?v=musicdocs-6" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -323,7 +323,10 @@
         <button id="pdfPrevButton" class="icon-button pdf-page-button pdf-prev-page-button" type="button" aria-label="Previous page" title="Previous page">&lt;</button>
         <div class="pdf-title-wrap">
           <h2 id="pdfTitle">PDF</h2>
-          <p id="pdfPageStatus">Page 1 of 1</p>
+          <div class="pdf-status-line">
+            <p id="pdfPageStatus">Page 1 of 1</p>
+            <button id="pdfStopListButton" class="pdf-stop-list-button hidden" type="button">Stop list</button>
+          </div>
         </div>
         <button id="pdfNextButton" class="icon-button pdf-page-button pdf-next-page-button" type="button" aria-label="Next page" title="Next page">&gt;</button>
       </header>
@@ -604,7 +607,7 @@
               <div class="help-topic-content">
                 <ul>
                   <li>Organize files, cards, and links into custom groups.</li>
-                  <li>Open a PDF from a list to play through it continuously. After the final page, Next opens the next PDF in that list.</li>
+                  <li>Choose <strong>Play through list</strong> to continue automatically from the final page of one PDF to the first page of the next.</li>
                 </ul>
               </div>
             </details>
