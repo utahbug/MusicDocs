@@ -378,8 +378,6 @@ function collectElements() {
   el.pdfTempoInput = document.getElementById("pdfTempoInput");
   el.pdfTempoUpButton = document.getElementById("pdfTempoUpButton");
   el.pdfTempoDownButton = document.getElementById("pdfTempoDownButton");
-  el.pdfPrevButton = document.getElementById("pdfPrevButton");
-  el.pdfNextButton = document.getElementById("pdfNextButton");
   el.pdfTitle = document.getElementById("pdfTitle");
   el.pdfPageStatus = document.getElementById("pdfPageStatus");
   el.pdfStage = document.getElementById("pdfStage");
@@ -640,9 +638,6 @@ function wireEvents() {
       el.pdfTempoInput.blur();
     }
   });
-  el.pdfPrevButton.addEventListener("click", previousPdfPage);
-  el.pdfNextButton.addEventListener("click", nextPdfPage);
-
   el.pdfTapLeft.addEventListener("click", (event) => handlePdfTapZoneClick(event, "previous"));
   el.pdfTapRight.addEventListener("click", (event) => handlePdfTapZoneClick(event, "next"));
 
@@ -3971,6 +3966,8 @@ function handleBodyInput(event) {
 function openItem(id, options = {}) {
   const item = state.itemsById.get(id);
   if (!item) return;
+  const sourceSection = state.activeSection;
+  const sourceScrollY = window.scrollY;
   rememberOpened(item);
 
   if (item.type === "image") {
@@ -3984,6 +3981,8 @@ function openItem(id, options = {}) {
   }
 
   if (item.type === "pdf") {
+    state.previousSection = sourceSection;
+    state.previousScrollY = sourceScrollY;
     openPdf(item, { listId: options.listId || "" });
   } else if (item.type === "link") {
     openLinkItem(item);
@@ -4351,11 +4350,13 @@ function updatePdfStatus() {
 }
 
 function returnFromPdfViewer() {
-  const targetSection = state.activeSection && state.activeSection !== "detail"
-    ? state.activeSection
-    : state.previousSection || "lists";
+  const targetSection = state.previousSection || (
+    state.activeSection && state.activeSection !== "detail" ? state.activeSection : "lists"
+  );
+  const returnScrollY = state.previousScrollY || 0;
   closePdfViewer();
   showSection(targetSection);
+  window.setTimeout(() => window.scrollTo(0, returnScrollY), 80);
 }
 
 function togglePdfTips() {
