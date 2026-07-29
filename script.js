@@ -5306,7 +5306,6 @@ const PIANO_SOUND_LABELS = {
   laser: "Laser",
   bell: "Bell",
   chirp: "Chirp",
-  boing: "Boing",
   spaceship: "Spaceship",
   "retro-game": "Retro game tone"
 };
@@ -6030,10 +6029,6 @@ function createPianoVoice(context, frequency, sound) {
     sweep(1.6, 3.4, "sine", 0.2, 0.11);
     const echo = addTone(2.2, "sine", 0.09, 0.13, 0.27, 0.0001, 0, 0.34);
     echo.oscillator.frequency.exponentialRampToValueAtTime(frequency * 3.7, now + 0.24);
-  } else if (sound === "boing") {
-    const part = addTone(0.55, "triangle", 0.28, 0.004, 0.85, 0.0001, 0, 1);
-    part.oscillator.detune.setValueAtTime(-180, now);
-    part.oscillator.detune.linearRampToValueAtTime(1, now + 0.52);
   } else if (sound === "spaceship") {
     const part = addTone(0.45, "sawtooth", 0.105, 0.015, 1.2, 0.0001, 0, 1.4);
     part.oscillator.frequency.exponentialRampToValueAtTime(frequency * 2.7, now + 0.6);
