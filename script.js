@@ -251,7 +251,7 @@ const state = {
   piano: {
     sound: "grand-piano",
     volume: 0.58,
-    shape: "arch",
+    shape: "wave",
     audioContext: null,
     masterGain: null,
     compressor: null,
@@ -399,6 +399,9 @@ function collectElements() {
   el.pitchPlayButton = document.getElementById("pitchPlayButton");
   el.pitchStopButton = document.getElementById("pitchStopButton");
   el.pianoSound = document.getElementById("pianoSound");
+  el.pianoSoundButtons = Array.from(document.querySelectorAll("[data-piano-sound]"));
+  el.pianoMoreSoundsButton = document.getElementById("pianoMoreSoundsButton");
+  el.pianoMoreSounds = document.getElementById("pianoMoreSounds");
   el.pianoVolume = document.getElementById("pianoVolume");
   el.pianoShape = document.getElementById("pianoShape");
   el.pianoNoteArc = document.querySelector(".piano-note-arc");
@@ -627,6 +630,8 @@ function wireEvents() {
   el.pitchStopButton.addEventListener("click", stopPitch);
   el.pitchQuickButtons.addEventListener("click", handlePitchQuickButtonClick);
   el.pianoSound.addEventListener("change", handlePianoSoundChange);
+  el.pianoSoundButtons.forEach((button) => button.addEventListener("click", () => selectVisualPianoSound(button.dataset.pianoSound)));
+  el.pianoMoreSoundsButton.addEventListener("click", () => setPianoMoreSounds(el.pianoMoreSounds.hidden));
   el.pianoVolume.addEventListener("input", handlePianoVolumeChange);
   el.pianoShape.addEventListener("change", handlePianoShapeChange);
   el.pianoEffectPads.forEach((button) => button.addEventListener("click", () => playPianoEffect(button.dataset.pianoEffect, button)));
@@ -5321,6 +5326,7 @@ const PIANO_CHORDS = {
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
 const PIANO_SHAPES = new Set(["arch", "wave", "circle", "constellation"]);
+const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "acoustic-guitar", "marimba", "church-bell", "water-drop", "spaceship"]);
 
 function setupKeyboardUi() {
   if (!el.realKeyboard || !el.keyboardSound || !el.pianoSound) return;
@@ -5374,6 +5380,12 @@ function savePianoSettings() {
 function renderPiano() {
   if (!el.pianoSound) return;
   el.pianoSound.value = state.piano.sound;
+  el.pianoSoundButtons.forEach((button) => {
+    const selected = button.dataset.pianoSound === state.piano.sound;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  el.pianoMoreSoundsButton.classList.toggle("has-selection", !PIANO_FEATURED_SOUNDS.has(state.piano.sound));
   el.pianoVolume.value = String(Math.round(state.piano.volume * 100));
   el.pianoShape.value = state.piano.shape;
   el.pianoSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
@@ -5389,9 +5401,29 @@ function renderPiano() {
 }
 
 function handlePianoShapeChange() {
-  state.piano.shape = PIANO_SHAPES.has(el.pianoShape.value) ? el.pianoShape.value : "arch";
+  state.piano.shape = PIANO_SHAPES.has(el.pianoShape.value) ? el.pianoShape.value : "wave";
   savePianoSettings();
   applyPianoShape();
+}
+
+function setPianoMoreSounds(expanded) {
+  if (!el.pianoMoreSounds || !el.pianoMoreSoundsButton) return;
+  el.pianoMoreSounds.hidden = !expanded;
+  el.pianoMoreSoundsButton.setAttribute("aria-expanded", String(expanded));
+  el.pianoMoreSoundsButton.firstChild.textContent = expanded ? "Fewer sounds" : "More sounds";
+}
+
+async function selectVisualPianoSound(value) {
+  if (!PIANO_SOUND_LABELS[value]) return;
+  stopAllPianoVoices();
+  state.piano.sound = value;
+  savePianoSettings();
+  renderPiano();
+  const context = await getPianoAudioContext();
+  if (!context) return;
+  const voice = createPianoVoice(context, 523.25, state.piano.sound);
+  const duration = ["clarinet", "flute", "violin"].includes(state.piano.sound) ? 900 : 620;
+  window.setTimeout(() => releasePianoVoice(voice, true), duration);
 }
 
 function pianoNoteMidi(label) {
@@ -5403,7 +5435,7 @@ function pianoNoteMidi(label) {
 
 function applyPianoShape() {
   if (!el.pianoNoteArc) return;
-  const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "arch";
+  const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "wave";
   el.pianoNoteArc.dataset.shape = shape;
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button) => {
@@ -5465,36 +5497,80 @@ async function playPianoEffect(effect, button) {
     return;
   }
   if (effect === "firework") {
-    [0, 0.055, 0.11, 0.17].forEach((delay, index) => {
-      const start = context.currentTime + delay;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = index % 2 ? "triangle" : "sine";
-      oscillator.frequency.setValueAtTime(560 + index * 210, start);
-      oscillator.frequency.exponentialRampToValueAtTime(1180 + index * 260, start + 0.16);
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.2, start + 0.018);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.3);
-      oscillator.connect(gain);
-      gain.connect(state.piano.masterGain);
-      oscillator.start(start);
-      oscillator.stop(start + 0.32);
+    const launch = context.currentTime;
+    const whistle = context.createOscillator();
+    const whistleGain = context.createGain();
+    whistle.type = "sine";
+    whistle.frequency.setValueAtTime(420, launch);
+    whistle.frequency.exponentialRampToValueAtTime(1550, launch + 0.42);
+    whistleGain.gain.setValueAtTime(0.0001, launch);
+    whistleGain.gain.exponentialRampToValueAtTime(0.2, launch + 0.05);
+    whistleGain.gain.exponentialRampToValueAtTime(0.0001, launch + 0.45);
+    whistle.connect(whistleGain);
+    whistleGain.connect(state.piano.masterGain);
+    whistle.start(launch);
+    whistle.stop(launch + 0.46);
+    playPianoNoiseBurst(context, launch + 0.43, 0.52, 0.78);
+    [0.49, 0.56, 0.65, 0.76].forEach((delay, index) => {
+      playPianoNoiseBurst(context, launch + delay, 0.07 + index * 0.015, 0.34 - index * 0.045);
     });
+    const boom = context.createOscillator();
+    const boomGain = context.createGain();
+    boom.type = "sine";
+    boom.frequency.setValueAtTime(125, launch + 0.43);
+    boom.frequency.exponentialRampToValueAtTime(48, launch + 0.78);
+    boomGain.gain.setValueAtTime(0.72, launch + 0.43);
+    boomGain.gain.exponentialRampToValueAtTime(0.0001, launch + 0.82);
+    boom.connect(boomGain);
+    boomGain.connect(state.piano.masterGain);
+    boom.start(launch + 0.43);
+    boom.stop(launch + 0.83);
     return;
   }
 
   const start = context.currentTime;
-  const oscillator = context.createOscillator();
+  const kick = context.createOscillator();
+  const kickGain = context.createGain();
+  kick.type = "sine";
+  kick.frequency.setValueAtTime(190, start);
+  kick.frequency.exponentialRampToValueAtTime(58, start + 0.34);
+  kickGain.gain.setValueAtTime(0.95, start);
+  kickGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.38);
+  kick.connect(kickGain);
+  kickGain.connect(state.piano.masterGain);
+  kick.start(start);
+  kick.stop(start + 0.39);
+  const attack = context.createOscillator();
+  const attackGain = context.createGain();
+  attack.type = "triangle";
+  attack.frequency.setValueAtTime(520, start);
+  attack.frequency.exponentialRampToValueAtTime(135, start + 0.1);
+  attackGain.gain.setValueAtTime(0.5, start);
+  attackGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.12);
+  attack.connect(attackGain);
+  attackGain.connect(state.piano.masterGain);
+  attack.start(start);
+  attack.stop(start + 0.13);
+  playPianoNoiseBurst(context, start, 0.1, 0.42);
+}
+
+function playPianoNoiseBurst(context, start, duration, volume) {
+  const length = Math.max(1, Math.floor(context.sampleRate * duration));
+  const buffer = context.createBuffer(1, length, context.sampleRate);
+  const samples = buffer.getChannelData(0);
+  for (let index = 0; index < length; index += 1) {
+    const fade = 1 - index / length;
+    samples[index] = (Math.random() * 2 - 1) * fade * fade;
+  }
+  const source = context.createBufferSource();
   const gain = context.createGain();
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(145, start);
-  oscillator.frequency.exponentialRampToValueAtTime(52, start + 0.24);
-  gain.gain.setValueAtTime(0.45, start);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.3);
-  oscillator.connect(gain);
+  source.buffer = buffer;
+  gain.gain.setValueAtTime(volume, start);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  source.connect(gain);
   gain.connect(state.piano.masterGain);
-  oscillator.start(start);
-  oscillator.stop(start + 0.31);
+  source.start(start);
+  source.stop(start + duration);
 }
 
 function renderPianoChordGuide() {

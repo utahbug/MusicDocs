@@ -1164,6 +1164,35 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-sustain-hint[hidden] { display: none; }
 .piano-sound-controls label > .piano-sustain-hint { color: var(--text); font-weight: 750; }
 .piano-sustain-hint span { color: var(--accent); font-size: 1.05rem; line-height: 1; }
+.piano-sound-controls.fun-sound-controls { align-items: stretch; display: flex; flex-direction: column; gap: 9px; max-width: 680px; }
+.fun-sound-picker { display: grid; gap: 8px; width: 100%; }
+.fun-sound-heading { align-items: center; display: flex; justify-content: space-between; }
+.fun-sound-heading > span { color: var(--muted); font-size: 0.82rem; font-weight: 800; }
+.fun-more-sounds { color: var(--accent-strong); font-size: 0.76rem; font-weight: 800; min-height: 32px; padding: 4px 9px; }
+.fun-more-sounds::after { content: " ▾"; }
+.fun-more-sounds[aria-expanded="true"]::after { content: " ▴"; }
+.fun-more-sounds.has-selection { background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface)); box-shadow: inset 3px 0 0 var(--accent); }
+.sound-icon-sprite { height: 0; overflow: hidden; position: absolute; width: 0; }
+.fun-sound-grid { display: grid; gap: 7px; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.fun-sound-grid[hidden] { display: none; }
+.fun-sound-grid-more { border-top: 1px solid color-mix(in srgb, var(--line) 80%, transparent); padding-top: 8px; }
+.fun-sound-grid button { align-items: center; background: color-mix(in srgb, var(--surface) 92%, var(--accent-soft)); border: 1px solid var(--line); border-radius: 12px; color: var(--text); display: flex; flex-direction: column; font-size: 0.67rem; font-weight: 800; gap: 4px; justify-content: center; min-height: 82px; padding: 6px 3px; transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease; }
+.fun-sound-grid button:hover, .fun-sound-grid button:focus-visible { border-color: var(--accent); box-shadow: 0 3px 10px rgba(29, 71, 103, 0.17); transform: translateY(-1px); }
+.fun-sound-grid button.selected { background: linear-gradient(145deg, color-mix(in srgb, #237C7A 15%, var(--surface)), color-mix(in srgb, #3667A8 18%, var(--surface))); border-color: #2F7892; box-shadow: 0 0 0 3px color-mix(in srgb, #2F9E91 25%, transparent), 0 4px 12px rgba(29, 71, 103, 0.2); }
+.sound-picture { align-items: center; border: 1px solid color-mix(in srgb, currentColor 42%, transparent); border-radius: 12px; display: flex; height: 45px; justify-content: center; width: 48px; }
+.sound-picture svg { fill: none; height: 35px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; width: 35px; }
+.tone-blue { background: linear-gradient(145deg, #DCEEFF, #8FBCE8); color: #174F82; }
+.tone-gold { background: linear-gradient(145deg, #FFF0C2, #E6B84C); color: #68470D; }
+.tone-coral { background: linear-gradient(145deg, #FFE1D5, #F09A76); color: #7A321F; }
+.tone-violet { background: linear-gradient(145deg, #E8E2FF, #A89BE8); color: #4B3E8C; }
+.tone-aqua { background: linear-gradient(145deg, #DDF8F5, #75D0C2); color: #155E58; }
+.tone-green { background: linear-gradient(145deg, #E3F4D8, #93CA73); color: #315E26; }
+.tone-walnut { background: linear-gradient(145deg, #F1DEC9, #B98155); color: #5B321A; }
+.tone-silver { background: linear-gradient(145deg, #F8FAFC, #B9C7D1); color: #3B5262; }
+.tone-pink { background: linear-gradient(145deg, #FCE1F1, #D68ABB); color: #6E2D57; }
+.fun-sound-controls .piano-volume-control { align-items: center; display: grid; gap: 10px; grid-template-columns: auto minmax(140px, 1fr); margin-left: auto; max-width: 360px; width: 100%; }
+.fun-sound-controls .piano-volume-control > span { white-space: nowrap; }
+.fun-sound-controls .piano-sustain-hint { margin-top: 1px; }
 .piano-shape-control { align-items: center; display: grid; gap: 5px; grid-template-columns: auto minmax(150px, 220px); margin: 9px auto 0; max-width: 680px; width: 100%; }
 .piano-shape-control > span { color: var(--muted); font-size: 0.82rem; font-weight: 700; }
 .piano-shape-control select { min-width: 0; width: 100%; }
@@ -1227,8 +1256,8 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-note.is-playing { box-shadow: 0 0 0 5px color-mix(in srgb, #2F9E91 42%, transparent), 0 7px 17px rgba(25, 66, 101, 0.32); filter: brightness(1.08); transform: translateX(-50%) translateY(-3px) scale(1.06); }
 .piano-wide-note { display: none; }
 .piano-effect-pads { display: none; }
-.piano-effect-pad { align-items: center; border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line)); border-radius: 12px; box-shadow: 0 3px 9px rgba(26, 66, 99, 0.16); color: var(--text); flex-direction: column; font-weight: 800; gap: 1px; height: 52px; justify-content: center; padding: 3px 7px; position: relative; width: 55px; }
-.piano-effect-pad span { font-size: 1.15rem; line-height: 1; pointer-events: none; }
+.piano-effect-pad { align-items: center; border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line)); border-radius: 12px; box-shadow: 0 3px 9px rgba(26, 66, 99, 0.16); color: var(--text); flex-direction: column; font-weight: 800; gap: 1px; height: 52px; justify-content: center; padding: 3px 5px; position: relative; width: 62px; }
+.piano-effect-pad svg { fill: none; height: 24px; pointer-events: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; width: 24px; }
 .piano-effect-pad small { font-size: 0.6rem; pointer-events: none; }
 .effect-drum { background: linear-gradient(145deg, #FFE7C1, #E5A54B); color: #563A12; }
 .effect-firework { background: linear-gradient(145deg, #DCD7FF, #7869CB); color: #FFFFFF; }
@@ -1251,6 +1280,8 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 }
 @media (max-width: 470px) {
   .piano-sound-controls { gap: 9px; grid-template-columns: minmax(145px, 1.15fr) minmax(105px, 0.85fr); }
+  .fun-sound-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fun-sound-grid button { min-height: 78px; }
   .piano-sustain-hint { font-size: 0.78rem; }
   .piano-game-controls button { flex: 1 1 calc(50% - 8px); }
   .piano-chord-controls { grid-template-columns: minmax(80px, 0.8fr) minmax(130px, 1.2fr); }
