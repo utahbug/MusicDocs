@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-7">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-8">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-14" defer></script>
+    <script src="script.js?v=musicdocs-16" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -324,7 +324,6 @@
           <h2 id="pdfTitle">PDF</h2>
           <div class="pdf-status-line">
             <p id="pdfPageStatus">Page 1 of 1</p>
-            <button id="pdfStopListButton" class="pdf-stop-list-button hidden" type="button">Stop list</button>
           </div>
         </div>
       </header>
@@ -333,6 +332,8 @@
         <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
         <button id="pdfTapLeft" class="pdf-tap-zone pdf-tap-left" type="button" aria-label="Previous page; top-left jumps to first page"></button>
         <button id="pdfTapRight" class="pdf-tap-zone pdf-tap-right" type="button" aria-label="Next page; top-right jumps to last page"></button>
+        <button id="pdfRestartListButton" class="pdf-restart-list-button hidden" type="button">Start over</button>
+        <button id="pdfFollowButton" class="pdf-follow-button hidden" type="button" aria-pressed="false">Follow: Off</button>
         <div id="pdfZoneTips" class="pdf-zone-tips" aria-hidden="true">
           <div class="pdf-zone-tip pdf-zone-tip-first"><strong>Jump to page 1</strong><span class="pdf-zone-indicator pdf-zone-jump-indicator" aria-hidden="true">|&larr;</span></div>
           <div class="pdf-zone-tip pdf-zone-tip-last"><strong>Jump to last page</strong><span class="pdf-zone-indicator pdf-zone-jump-indicator" aria-hidden="true">&rarr;|</span></div>
@@ -605,7 +606,7 @@
               <div class="help-topic-content">
                 <ul>
                   <li>Organize files, cards, and links into custom groups.</li>
-                  <li>Tap <strong>Follow: Off</strong> to turn Follow on, then choose any PDF as the starting song. After its final page, Next opens the next PDF in the list.</li>
+                  <li>Tap <strong>Follow: Off</strong> to turn Follow on, then choose any PDF as the starting song. On a PDF’s final page, use the lower-right Follow button to confirm or change what happens next. The final song also offers <strong>Start over</strong>.</li>
                 </ul>
               </div>
             </details>
