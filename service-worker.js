@@ -1,4 +1,4 @@
-const CACHE_NAME = "musicdocs-shell-v26";
+const CACHE_NAME = "musicdocs-shell-v27";
 const APP_SHELL = [
   "./",
   "./index.html",
