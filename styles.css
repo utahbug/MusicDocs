@@ -1148,6 +1148,13 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-note-arc { height: 300px; margin: 8px auto 0px; max-width: 680px; overflow: hidden; position: relative; }
 .piano-note { align-items: center; border-radius: 50%; display: inline-flex; font-family: "Atkinson Hyperlegible", system-ui, sans-serif; font-weight: 850; justify-content: center; left: var(--px); position: absolute; transform: translateX(-50%); transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease; }
 .piano-natural { background: linear-gradient(145deg, #FFFFFF, #DDEBF7); border: 2px solid #3975A8; bottom: var(--py); box-shadow: 0 5px 12px rgba(25, 66, 101, 0.2); color: #173F72; font-size: 1.05rem; height: clamp(42px, 11vw, 54px); width: clamp(42px, 11vw, 54px); z-index: 1; }
+.piano-natural[aria-label^="C"] { background: linear-gradient(145deg, #FFE7E0, #FFAA98); border-color: #C86253; color: #6F2D25; }
+.piano-natural[aria-label^="D"] { background: linear-gradient(145deg, #FFF2C9, #F3C75D); border-color: #AE7D22; color: #654814; }
+.piano-natural[aria-label^="E"] { background: linear-gradient(145deg, #E8F7D2, #9BD071); border-color: #588F3C; color: #315C22; }
+.piano-natural[aria-label^="F"] { background: linear-gradient(145deg, #D7F4EC, #69C7B1); border-color: #318773; color: #195D50; }
+.piano-natural[aria-label^="G"] { background: linear-gradient(145deg, #DCEFFF, #78BCEF); border-color: #397EAF; color: #1D5279; }
+.piano-natural[aria-label^="A"] { background: linear-gradient(145deg, #E7E2FF, #9B8EEA); border-color: #6658B0; color: #403479; }
+.piano-natural[aria-label^="B"] { background: linear-gradient(145deg, #F9E0F3, #D98BC8); border-color: #9E4C8B; color: #6D2C60; }
 .piano-accidental { background: linear-gradient(145deg, #435367, #172636); border: 2px solid #76A9C9; bottom: var(--py); box-shadow: 0 5px 12px rgba(10, 29, 46, 0.3); color: #FFFFFF; font-size: 0.73rem; height: 44px; width: 44px; z-index: 2; }
 .piano-note:hover, .piano-note:focus-visible { box-shadow: 0 0 0 4px color-mix(in srgb, #2F9E91 28%, transparent), 0 6px 15px rgba(25, 66, 101, 0.25); transform: translateX(-50%) translateY(-3px) scale(1.04); }
 .piano-note:active { filter: brightness(0.9); transform: translateX(-50%) translateY(1px) scale(0.96); }
