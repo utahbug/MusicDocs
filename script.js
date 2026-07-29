@@ -389,6 +389,7 @@ function collectElements() {
   el.pianoSound = document.getElementById("pianoSound");
   el.pianoVolume = document.getElementById("pianoVolume");
   el.pianoSoundStatus = document.getElementById("pianoSoundStatus");
+  el.pianoSustainHint = document.getElementById("pianoSustainHint");
 
   el.detailContent = document.getElementById("detailContent");
 
@@ -5272,6 +5273,7 @@ function renderPiano() {
   el.pianoSound.value = state.piano.sound;
   el.pianoVolume.value = String(Math.round(state.piano.volume * 100));
   el.pianoSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
+  el.pianoSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
   if (state.piano.masterGain && state.piano.audioContext) {
     state.piano.masterGain.gain.setTargetAtTime(state.piano.volume, state.piano.audioContext.currentTime, 0.015);
   }

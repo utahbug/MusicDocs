@@ -1151,6 +1151,9 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-sound-controls label > span { color: var(--muted); font-size: 0.82rem; font-weight: 700; }
 .piano-sound-controls select { min-width: 0; width: 100%; }
 .piano-volume-control input { accent-color: var(--accent); margin: 0; min-height: 44px; width: 100%; }
+.piano-sustain-hint { align-items: center; background: linear-gradient(100deg, color-mix(in srgb, #237C7A 16%, var(--surface)), color-mix(in srgb, #3667A8 14%, var(--surface))); border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: 999px; color: var(--text); display: flex; font-size: 0.82rem; font-weight: 750; gap: 7px; justify-content: center; margin: 10px auto 0; padding: 6px 13px; width: fit-content; }
+.piano-sustain-hint[hidden] { display: none; }
+.piano-sustain-hint span { color: var(--accent); font-size: 1.05rem; line-height: 1; }
 .piano-note-arc { height: 300px; margin: 8px auto 0px; max-width: 680px; overflow: hidden; position: relative; }
 .piano-note { align-items: center; border-radius: 50%; display: inline-flex; font-family: "Atkinson Hyperlegible", system-ui, sans-serif; font-weight: 850; justify-content: center; left: var(--px); position: absolute; touch-action: none; transform: translateX(-50%); transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease; user-select: none; -webkit-user-select: none; }
 .piano-natural { background: linear-gradient(145deg, #FFFFFF, #DDEBF7); border: 2px solid #3975A8; bottom: var(--py); box-shadow: 0 5px 12px rgba(25, 66, 101, 0.2); color: #173F72; font-size: 1.05rem; height: clamp(42px, 11vw, 54px); width: clamp(42px, 11vw, 54px); z-index: 1; }
@@ -1177,6 +1180,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 }
 @media (max-width: 470px) {
   .piano-sound-controls { gap: 9px; grid-template-columns: minmax(145px, 1.15fr) minmax(105px, 0.85fr); }
+  .piano-sustain-hint { font-size: 0.78rem; margin-top: 8px; }
 }
 .pitch-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
 .pitch-header { align-items: center; border-bottom: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; }
