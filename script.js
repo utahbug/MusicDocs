@@ -18,6 +18,7 @@ const STORAGE_KEYS = {
   recents: storageKey("recents"),
   settings: storageKey("settings"),
   metronome: storageKey("metronome"),
+  piano: storageKey("piano"),
   tuner: storageKey("tuner"),
   pitch: storageKey("pitch"),
   welcomeSeen: storageKey("welcomeSeen"),
@@ -246,6 +247,15 @@ const state = {
     audioContext: null,
     oscillator: null,
     gain: null
+  },
+  piano: {
+    sound: "grand-piano",
+    volume: 0.58,
+    audioContext: null,
+    masterGain: null,
+    compressor: null,
+    voices: new Map(),
+    releasedPointers: new Set()
   }
 };
 
@@ -263,10 +273,12 @@ async function init() {
   loadMetronomeSettings();
   loadTunerSettings();
   loadPitchSettings();
+  loadPianoSettings();
   setupInitialSelections();
   renderMetronome();
   renderTuner();
   renderPitch();
+  renderPiano();
   renderAll();
   openInitialSection();
   setupServiceWorker();
@@ -373,6 +385,9 @@ function collectElements() {
   el.pitchQuickButtons = document.getElementById("pitchQuickButtons");
   el.pitchPlayButton = document.getElementById("pitchPlayButton");
   el.pitchStopButton = document.getElementById("pitchStopButton");
+  el.pianoSound = document.getElementById("pianoSound");
+  el.pianoVolume = document.getElementById("pianoVolume");
+  el.pianoSoundStatus = document.getElementById("pianoSoundStatus");
 
   el.detailContent = document.getElementById("detailContent");
 
@@ -576,17 +591,28 @@ function wireEvents() {
   el.pitchPlayButton.addEventListener("click", playPitch);
   el.pitchStopButton.addEventListener("click", stopPitch);
   el.pitchQuickButtons.addEventListener("click", handlePitchQuickButtonClick);
+  el.pianoSound.addEventListener("change", handlePianoSoundChange);
+  el.pianoVolume.addEventListener("input", handlePianoVolumeChange);
+  document.querySelectorAll(".piano-note").forEach((button) => {
+    button.addEventListener("pointerdown", handlePianoPointerDown);
+    button.addEventListener("pointerup", handlePianoPointerUp);
+    button.addEventListener("pointercancel", handlePianoPointerUp);
+    button.addEventListener("lostpointercapture", handlePianoPointerUp);
+    button.addEventListener("contextmenu", (event) => event.preventDefault());
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       stopMetronome();
       stopTuner();
       stopPitch();
+      stopAllPianoVoices();
     }
   });
   window.addEventListener("beforeunload", () => {
     stopMetronome();
     stopTuner();
     stopPitch();
+    stopAllPianoVoices();
   });
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
   window.addEventListener("pointermove", moveModalDrag);
@@ -5205,6 +5231,301 @@ function detectPitch(buffer, sampleRate) {
   if (bestOffset < 0) return null;
   return sampleRate / bestOffset;
 }
+const PIANO_SOUND_LABELS = {
+  "grand-piano": "Grand piano",
+  "electric-piano": "Electric piano",
+  "acoustic-guitar": "Acoustic guitar",
+  marimba: "Marimba",
+  clarinet: "Clarinet",
+  flute: "Flute",
+  violin: "Violin",
+  "church-bell": "Church bell",
+  "toy-piano": "Toy piano",
+  "soft-drum": "Soft drum",
+  "water-drop": "Water drop",
+  bubbles: "Bubbles",
+  barking: "Barking",
+  burp: "Burp",
+  laser: "Laser",
+  bell: "Bell",
+  frog: "Frog",
+  chirp: "Chirp",
+  boing: "Boing",
+  spaceship: "Spaceship",
+  "retro-game": "Retro game tone"
+};
+
+function loadPianoSettings() {
+  const saved = readJson(STORAGE_KEYS.piano, {});
+  if (PIANO_SOUND_LABELS[saved.sound]) state.piano.sound = saved.sound;
+  const savedVolume = Number(saved.volume);
+  if (Number.isFinite(savedVolume)) state.piano.volume = clamp(savedVolume, 0, 1);
+}
+
+function savePianoSettings() {
+  writeJson(STORAGE_KEYS.piano, {
+    sound: state.piano.sound,
+    volume: state.piano.volume
+  });
+}
+
+function renderPiano() {
+  if (!el.pianoSound) return;
+  el.pianoSound.value = state.piano.sound;
+  el.pianoVolume.value = String(Math.round(state.piano.volume * 100));
+  el.pianoSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
+  if (state.piano.masterGain && state.piano.audioContext) {
+    state.piano.masterGain.gain.setTargetAtTime(state.piano.volume, state.piano.audioContext.currentTime, 0.015);
+  }
+}
+
+function handlePianoSoundChange() {
+  stopAllPianoVoices();
+  state.piano.sound = PIANO_SOUND_LABELS[el.pianoSound.value] ? el.pianoSound.value : "grand-piano";
+  savePianoSettings();
+  renderPiano();
+}
+
+function handlePianoVolumeChange() {
+  state.piano.volume = clamp(Number(el.pianoVolume.value) / 100, 0, 1);
+  savePianoSettings();
+  renderPiano();
+}
+
+async function getPianoAudioContext() {
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextCtor) {
+    window.alert("This browser cannot play Note Arc sounds.");
+    return null;
+  }
+  if (!state.piano.audioContext) {
+    const context = new AudioContextCtor();
+    const compressor = context.createDynamicsCompressor();
+    compressor.threshold.value = -18;
+    compressor.knee.value = 16;
+    compressor.ratio.value = 5;
+    compressor.attack.value = 0.004;
+    compressor.release.value = 0.2;
+    const masterGain = context.createGain();
+    masterGain.gain.value = state.piano.volume;
+    masterGain.connect(compressor);
+    compressor.connect(context.destination);
+    state.piano.audioContext = context;
+    state.piano.masterGain = masterGain;
+    state.piano.compressor = compressor;
+  }
+  if (state.piano.audioContext.state === "suspended") await state.piano.audioContext.resume();
+  return state.piano.audioContext;
+}
+
+function pianoNoteFrequency(label) {
+  const match = String(label).match(/^([A-G])(?: sharp)?\s*(\d)$/i);
+  if (!match) return 440;
+  const noteIndex = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[match[1].toUpperCase()];
+  const sharp = /sharp/i.test(label) ? 1 : 0;
+  const midi = (Number(match[2]) + 1) * 12 + noteIndex + sharp;
+  return 440 * (2 ** ((midi - 69) / 12));
+}
+
+async function handlePianoPointerDown(event) {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  event.preventDefault();
+  const button = event.currentTarget;
+  state.piano.releasedPointers.delete(event.pointerId);
+  if (state.piano.voices.has(event.pointerId)) return;
+  try { button.setPointerCapture(event.pointerId); } catch (_error) {}
+  const context = await getPianoAudioContext();
+  if (!context) return;
+  const frequency = pianoNoteFrequency(button.getAttribute("aria-label"));
+  const voice = createPianoVoice(context, frequency, state.piano.sound);
+  voice.button = button;
+  if (state.piano.releasedPointers.delete(event.pointerId)) {
+    releasePianoVoice(voice);
+    return;
+  }
+  state.piano.voices.set(event.pointerId, voice);
+  button.classList.add("is-playing");
+}
+
+function handlePianoPointerUp(event) {
+  const voice = state.piano.voices.get(event.pointerId);
+  if (!voice) {
+    state.piano.releasedPointers.add(event.pointerId);
+    return;
+  }
+  releasePianoVoice(voice);
+  state.piano.voices.delete(event.pointerId);
+}
+
+function stopAllPianoVoices() {
+  state.piano.voices.forEach((voice) => releasePianoVoice(voice, true));
+  state.piano.voices.clear();
+  state.piano.releasedPointers.clear();
+  document.querySelectorAll(".piano-note.is-playing").forEach((button) => button.classList.remove("is-playing"));
+}
+
+function releasePianoVoice(voice, force = false) {
+  if (!voice || voice.released) return;
+  voice.released = true;
+  if (voice.button) voice.button.classList.remove("is-playing");
+  if (voice.oneShot && !force) return;
+  const context = state.piano.audioContext;
+  if (!context) return;
+  const now = context.currentTime;
+  voice.gains.forEach((gain) => {
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setTargetAtTime(0.0001, now, voice.release || 0.08);
+  });
+  voice.sources.forEach((source) => {
+    try { source.stop(now + Math.max(0.12, (voice.release || 0.08) * 5)); } catch (_error) {}
+  });
+}
+
+function createPianoVoice(context, frequency, sound) {
+  const now = context.currentTime;
+  const voice = {
+    sources: [],
+    gains: [],
+    release: 0.08,
+    released: false,
+    oneShot: !["clarinet", "flute", "violin"].includes(sound)
+  };
+  const destination = state.piano.masterGain;
+  const addTone = (ratio, type, level, attack, decay, sustain = 0.0001, detune = 0, end = 4) => {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = type;
+    oscillator.frequency.value = frequency * ratio;
+    oscillator.detune.value = detune;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, level), now + Math.max(0.004, attack));
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, sustain), now + Math.max(attack + 0.02, decay));
+    oscillator.connect(gain);
+    gain.connect(destination);
+    oscillator.start(now);
+    oscillator.stop(now + end);
+    voice.sources.push(oscillator);
+    voice.gains.push(gain);
+    return { oscillator, gain };
+  };
+  const addNoise = (level, duration, filterFrequency = 1800) => {
+    const frameCount = Math.ceil(context.sampleRate * duration);
+    const buffer = context.createBuffer(1, frameCount, context.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let index = 0; index < frameCount; index += 1) data[index] = (Math.random() * 2 - 1) * (1 - index / frameCount);
+    const source = context.createBufferSource();
+    const filter = context.createBiquadFilter();
+    const gain = context.createGain();
+    source.buffer = buffer;
+    filter.type = "lowpass";
+    filter.frequency.value = filterFrequency;
+    gain.gain.setValueAtTime(level, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(destination);
+    source.start(now);
+    source.stop(now + duration);
+    voice.sources.push(source);
+    voice.gains.push(gain);
+  };
+  const sweep = (startRatio, endRatio, type, level, duration) => {
+    const part = addTone(startRatio, type, level, 0.006, duration, 0.0001, 0, duration + 0.08);
+    part.oscillator.frequency.exponentialRampToValueAtTime(Math.max(30, frequency * endRatio), now + duration);
+  };
+
+  if (sound === "grand-piano") {
+    addTone(1, "triangle", 0.34, 0.006, 2.8, 0.0001, -3, 3.2);
+    addTone(1, "sine", 0.24, 0.004, 2.3, 0.0001, 3, 2.8);
+    addTone(2, "sine", 0.09, 0.003, 1.35, 0.0001, -4, 1.7);
+    addTone(3, "sine", 0.035, 0.002, 0.7, 0.0001, 5, 1);
+    addNoise(0.025, 0.045, 3800);
+    voice.release = 0.14;
+  } else if (sound === "electric-piano") {
+    addTone(1, "sine", 0.38, 0.008, 2.4, 0.0001, 0, 2.8);
+    addTone(2, "sine", 0.13, 0.006, 1.5, 0.0001, 4, 1.9);
+    addTone(3, "sine", 0.055, 0.006, 0.9, 0.0001, -5, 1.2);
+  } else if (sound === "acoustic-guitar") {
+    addTone(1, "triangle", 0.3, 0.004, 1.7, 0.0001, 0, 2);
+    addTone(2, "sine", 0.11, 0.003, 0.8, 0.0001, 2, 1.1);
+    addTone(3, "sine", 0.045, 0.002, 0.45, 0.0001, -3, 0.7);
+    addNoise(0.04, 0.035, 4200);
+  } else if (sound === "marimba") {
+    addTone(1, "sine", 0.42, 0.003, 1.15, 0.0001, 0, 1.4);
+    addTone(4, "sine", 0.075, 0.002, 0.42, 0.0001, 0, 0.6);
+    addTone(10, "sine", 0.02, 0.002, 0.16, 0.0001, 0, 0.3);
+  } else if (sound === "clarinet") {
+    addTone(1, "square", 0.16, 0.045, 6, 0.105, 0, 8);
+    addTone(3, "sine", 0.04, 0.055, 5, 0.024, 0, 8);
+    voice.release = 0.1;
+  } else if (sound === "flute") {
+    addTone(1, "sine", 0.23, 0.07, 6, 0.16, 0, 8);
+    addTone(2, "sine", 0.025, 0.09, 5, 0.015, 2, 8);
+    addNoise(0.012, 0.22, 5200);
+    voice.release = 0.11;
+  } else if (sound === "violin") {
+    addTone(1, "sawtooth", 0.105, 0.08, 6, 0.075, -5, 8);
+    addTone(1, "sawtooth", 0.085, 0.09, 6, 0.06, 5, 8);
+    addTone(2, "sine", 0.025, 0.12, 5, 0.018, 0, 8);
+    voice.release = 0.13;
+  } else if (sound === "church-bell") {
+    [[1, .2], [2, .11], [2.4, .1], [3, .055], [4.2, .035]].forEach(([ratio, level]) => addTone(ratio, "sine", level, 0.003, 4.5 / Math.sqrt(ratio), 0.0001, 0, 5));
+  } else if (sound === "toy-piano") {
+    addTone(1, "triangle", 0.25, 0.002, 0.8, 0.0001, 0, 1);
+    addTone(2.02, "sine", 0.12, 0.002, 0.45, 0.0001, 0, 0.7);
+    addTone(4.08, "sine", 0.045, 0.002, 0.25, 0.0001, 0, 0.4);
+  } else if (sound === "soft-drum") {
+    sweep(0.72, 0.22, "sine", 0.44, 0.38);
+    addNoise(0.035, 0.18, 900);
+  } else if (sound === "water-drop") {
+    sweep(1.35, 2.1, "sine", 0.28, 0.14);
+    addTone(2.1, "sine", 0.11, 0.03, 0.48, 0.0001, 0, 0.6);
+  } else if (sound === "bubbles") {
+    [0, 0.075, 0.15].forEach((delay, index) => {
+      const part = addTone(1.15 + index * 0.18, "sine", 0.13, delay + 0.006, delay + 0.22, 0.0001, 0, 0.55);
+      part.oscillator.frequency.exponentialRampToValueAtTime(frequency * (1.75 + index * 0.22), now + delay + 0.19);
+    });
+  } else if (sound === "barking") {
+    sweep(0.72, 0.42, "sawtooth", 0.17, 0.12);
+    addNoise(0.08, 0.14, 1250);
+    const second = addTone(0.65, "square", 0.11, 0.16, 0.3, 0.0001, 0, 0.36);
+    second.oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.38, now + 0.28);
+  } else if (sound === "burp") {
+    const part = addTone(0.42, "sawtooth", 0.13, 0.008, 0.55, 0.0001, -20, 0.7);
+    part.oscillator.frequency.exponentialRampToValueAtTime(Math.max(45, frequency * 0.2), now + 0.46);
+    part.oscillator.detune.setValueAtTime(90, now + 0.12);
+    part.oscillator.detune.linearRampToValueAtTime(-120, now + 0.48);
+    addNoise(0.025, 0.36, 520);
+  } else if (sound === "laser") {
+    sweep(3.8, 0.35, "sawtooth", 0.15, 0.42);
+  } else if (sound === "bell") {
+    addTone(1, "sine", 0.25, 0.002, 2.2, 0.0001, 0, 2.6);
+    addTone(2.76, "sine", 0.1, 0.002, 1.5, 0.0001, 0, 1.9);
+    addTone(5.4, "sine", 0.035, 0.002, 0.9, 0.0001, 0, 1.2);
+  } else if (sound === "frog") {
+    sweep(0.48, 0.34, "square", 0.12, 0.16);
+    const croak = addTone(0.38, "sawtooth", 0.1, 0.16, 0.42, 0.0001, -12, 0.55);
+    croak.oscillator.frequency.setValueAtTime(frequency * 0.46, now + 0.24);
+  } else if (sound === "chirp") {
+    sweep(1.6, 3.4, "sine", 0.2, 0.11);
+    const echo = addTone(2.2, "sine", 0.09, 0.13, 0.27, 0.0001, 0, 0.34);
+    echo.oscillator.frequency.exponentialRampToValueAtTime(frequency * 3.7, now + 0.24);
+  } else if (sound === "boing") {
+    const part = addTone(0.55, "triangle", 0.28, 0.004, 0.85, 0.0001, 0, 1);
+    part.oscillator.detune.setValueAtTime(-180, now);
+    part.oscillator.detune.linearRampToValueAtTime(1, now + 0.52);
+  } else if (sound === "spaceship") {
+    const part = addTone(0.45, "sawtooth", 0.105, 0.015, 1.2, 0.0001, 0, 1.4);
+    part.oscillator.frequency.exponentialRampToValueAtTime(frequency * 2.7, now + 0.6);
+    part.oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.6, now + 1.15);
+  } else if (sound === "retro-game") {
+    addTone(1, "square", 0.12, 0.003, 0.23, 0.0001, 0, 0.3);
+    addTone(2, "square", 0.075, 0.07, 0.32, 0.0001, 0, 0.4);
+  }
+  return voice;
+}
+
+
 function loadMetronomeSettings() {
   const saved = readJson(STORAGE_KEYS.metronome, {});
   const savedBpm = Number(saved.bpm);

@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-14">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-15">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-21" defer></script>
+    <script src="script.js?v=musicdocs-22" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -333,7 +333,43 @@
               <h2 id="pianoTitle">Note Arc</h2>
               <span>Turn sideways for more notes</span>
             </div>
-            <div class="piano-note-arc" aria-label="Silent piano note prototype">
+            <div class="piano-sound-controls">
+              <label>
+                <span>Sound</span>
+                <select id="pianoSound">
+                  <optgroup label="Instruments">
+                    <option value="grand-piano">Grand piano</option>
+                    <option value="electric-piano">Electric piano</option>
+                    <option value="acoustic-guitar">Acoustic guitar</option>
+                    <option value="marimba">Marimba</option>
+                    <option value="clarinet">Clarinet</option>
+                    <option value="flute">Flute</option>
+                    <option value="violin">Violin</option>
+                    <option value="church-bell">Church bell</option>
+                    <option value="toy-piano">Toy piano</option>
+                    <option value="soft-drum">Soft drum</option>
+                  </optgroup>
+                  <optgroup label="Fun">
+                    <option value="water-drop">Water drop</option>
+                    <option value="bubbles">Bubbles</option>
+                    <option value="barking">Barking</option>
+                    <option value="burp">Burp</option>
+                    <option value="laser">Laser</option>
+                    <option value="bell">Bell</option>
+                    <option value="frog">Frog</option>
+                    <option value="chirp">Chirp</option>
+                    <option value="boing">Boing</option>
+                    <option value="spaceship">Spaceship</option>
+                    <option value="retro-game">Retro game tone</option>
+                  </optgroup>
+                </select>
+              </label>
+              <label class="piano-volume-control">
+                <span>Volume</span>
+                <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Note Arc volume">
+              </label>
+            </div>
+            <div class="piano-note-arc" aria-label="Playable notes">
               <button class="piano-note piano-natural" style="--px:8%;--py:22px;--wx:4%;--wy:20px" type="button" aria-label="C4">C</button>
               <button class="piano-note piano-natural" style="--px:20%;--py:58px;--wx:11%;--wy:50px" type="button" aria-label="D4">D</button>
               <button class="piano-note piano-natural" style="--px:32%;--py:88px;--wx:18%;--wy:78px" type="button" aria-label="E4">E</button>
@@ -360,6 +396,7 @@
               <button class="piano-note piano-accidental piano-wide-note" style="--wx:84.5%;--wy:110px" type="button" aria-label="G sharp 5">G&#9839;</button>
               <button class="piano-note piano-accidental piano-wide-note" style="--wx:91.5%;--wy:85px" type="button" aria-label="A sharp 5">A&#9839;</button>
             </div>
+            <p id="pianoSoundStatus" class="piano-prototype-note" aria-live="polite">Grand piano</p>
             <p class="piano-prototype-note">Visual prototype â€” sound comes next.</p>
           </div>
         </section>
