@@ -906,6 +906,10 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .pdf-tap-left { left: 0px; }
 
 .pdf-tap-right { right: 0px; }
+.pdf-page-notice { background: rgba(20, 54, 91, 0.9); border: 1px solid rgba(255, 255, 255, 0.72); border-radius: 10px; box-shadow: 0 4px 14px rgba(15, 39, 66, 0.28); color: #FFFFFF; font-size: clamp(0.9rem, 2.6vw, 1.08rem); font-weight: 850; opacity: 0; padding: 8px 12px; pointer-events: none; position: absolute; transform: translateY(5px); transition: opacity 150ms ease, transform 150ms ease; visibility: hidden; white-space: nowrap; z-index: 4; }
+.pdf-page-notice.is-visible { opacity: 1; transform: translateY(0px); visibility: visible; }
+.pdf-turning-notice { bottom: max(16px, env(safe-area-inset-bottom)); right: max(16px, env(safe-area-inset-right)); }
+.pdf-page-confirmation { left: max(16px, env(safe-area-inset-left)); top: 14px; }
 .pdf-follow-button { background: linear-gradient(105deg, #237C7A, #2B67B1); border: 1px solid color-mix(in srgb, var(--accent-strong) 70%, var(--line)); border-radius: 999px; bottom: 14px; box-shadow: 0 4px 14px rgba(28, 64, 102, 0.24); color: #FFFFFF; font-size: 0.78rem; font-weight: 850; min-height: 38px; padding: 7px 13px; position: absolute; right: max(14px, env(safe-area-inset-right)); white-space: nowrap; z-index: 4; }
 .pdf-follow-button.is-active { background: linear-gradient(105deg, #238B62, #276AB3); border-color: #176B4A; box-shadow: 0 0 0 3px color-mix(in srgb, #2FB878 22%, transparent), 0 4px 14px rgba(28, 64, 102, 0.24); }
 .pdf-follow-button:hover, .pdf-follow-button:focus-visible { box-shadow: 0 0 0 3px var(--accent-hover), 0 4px 14px rgba(28, 64, 102, 0.24); }
