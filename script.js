@@ -829,6 +829,8 @@ function closeListMoreMenu() {
 }
 
 function handleDocumentKeydown(event) {
+  if (handlePdfPageTurnKey(event)) return;
+
   const dragHandle = event.target.closest?.("[data-favorite-drag], [data-list-drag], [data-list-item-drag]");
   if (dragHandle && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
     event.preventDefault();
@@ -850,6 +852,25 @@ function handleDocumentKeydown(event) {
   closeListEditModal();
   closeHelpModal();
   closeAboutModal();
+}
+
+function handlePdfPageTurnKey(event) {
+  if (el.pdfViewer?.classList.contains("hidden") || !state.currentPdf.doc) return false;
+  if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) return false;
+  if (event.target.closest?.("button, input, select, textarea, [contenteditable='true']")) return false;
+
+  const nextKeys = new Set(["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"]);
+  const previousKeys = new Set(["ArrowLeft", "ArrowUp", "PageUp"]);
+  let action = null;
+  if (nextKeys.has(event.key)) action = nextPdfPage;
+  if (previousKeys.has(event.key)) action = previousPdfPage;
+  if (event.key === "Home") action = firstPdfPage;
+  if (event.key === "End") action = lastPdfPage;
+  if (!action) return false;
+
+  event.preventDefault();
+  action();
+  return true;
 }
 
 function favoriteIconHtml(id) {
