@@ -1142,12 +1142,18 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .pitch-view { max-width: 450px; }
 
 .piano-view { max-width: 760px; }
-.piano-panel { background: linear-gradient(150deg, color-mix(in srgb, #237C7A 8%, var(--surface)), color-mix(in srgb, #3667A8 9%, var(--surface))); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; }
+.piano-panel { background: linear-gradient(150deg, color-mix(in srgb, #237C7A 8%, var(--surface)), color-mix(in srgb, #3667A8 9%, var(--surface))); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; padding: 18px; }
 .piano-header { align-items: baseline; border-bottom: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; padding-bottom: 10px; }
 .piano-header h2 { margin: 0px; }
 .piano-header span, .piano-prototype-note { color: var(--muted); font-size: 0.78rem; }
 .piano-prototype-note:not(#pianoSoundStatus) { display: none; }
 .piano-sound-controls { align-items: end; display: grid; gap: 12px; grid-template-columns: minmax(150px, 1fr) minmax(130px, 1fr); margin: 14px auto 0; max-width: 680px; }
+.piano-header { order: 1; }
+.piano-sound-controls { order: 2; width: 100%; }
+.piano-note-arc { order: 3; width: 100%; }
+.piano-explore-tabs { order: 4; }
+.piano-games, .piano-chord-guide { order: 5; width: 100%; }
+.piano-prototype-note { order: 6; }
 .piano-sound-controls label { display: grid; gap: 5px; }
 .piano-sound-controls label > span { color: var(--muted); font-size: 0.82rem; font-weight: 700; }
 .piano-sound-controls select { min-width: 0; width: 100%; }
@@ -1156,16 +1162,18 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-sustain-hint[hidden] { display: none; }
 .piano-sound-controls label > .piano-sustain-hint { color: var(--text); font-weight: 750; }
 .piano-sustain-hint span { color: var(--accent); font-size: 1.05rem; line-height: 1; }
-.piano-games { background: color-mix(in srgb, var(--surface) 84%, var(--accent-soft)); border: 1px solid var(--line); border-radius: 12px; margin: 10px auto 0; max-width: 680px; padding: 0 12px; }
-.piano-games summary { color: var(--accent); cursor: pointer; font-weight: 800; list-style-position: inside; padding: 10px 2px; }
-.piano-games[open] summary { border-bottom: 1px solid var(--line); }
+.piano-explore-tabs { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; margin: 2px auto 0; max-width: 680px; width: 100%; }
+.piano-explore-tabs button { background: var(--surface); border: 1px solid var(--line); border-radius: 10px 10px 0 0; color: var(--accent-strong); font-weight: 800; min-height: 44px; padding: 8px 12px; }
+.piano-explore-tabs button.active { background: linear-gradient(105deg, #237C7A, #3667A8); border-color: #2D6E91; color: #FFFFFF; }
+.piano-games { background: color-mix(in srgb, var(--surface) 84%, var(--accent-soft)); border: 1px solid var(--line); border-radius: 0 0 12px 12px; margin: 0 auto; max-width: 680px; padding: 0 12px; }
+.piano-games summary, .piano-chord-guide summary { display: none; }
+.piano-games:not([open]), .piano-chord-guide:not([open]) { display: none; }
 .piano-game-controls { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; }
 .piano-game-controls button { min-height: 42px; padding: 8px 13px; }
+.piano-game-controls button[hidden] { display: none; }
 .piano-game-controls button.active { background: linear-gradient(110deg, #237C7A, #3667A8); border-color: #2D6E91; color: #FFFFFF; }
 .piano-game-status { color: var(--text); font-size: 0.9rem; font-weight: 700; margin: 10px 2px 12px; min-height: 1.3em; }
-.piano-chord-guide { background: color-mix(in srgb, var(--surface) 86%, #F1B84B 8%); border: 1px solid var(--line); border-radius: 12px; margin: 10px auto 0; max-width: 680px; padding: 0 12px; }
-.piano-chord-guide summary { color: var(--accent); cursor: pointer; font-weight: 800; list-style-position: inside; padding: 10px 2px; }
-.piano-chord-guide[open] summary { border-bottom: 1px solid var(--line); }
+.piano-chord-guide { background: color-mix(in srgb, var(--surface) 86%, #F1B84B 8%); border: 1px solid var(--line); border-radius: 0 0 12px 12px; margin: 0 auto; max-width: 680px; padding: 0 12px; }
 .piano-chord-controls { align-items: end; display: grid; gap: 9px; grid-template-columns: minmax(90px, 0.7fr) minmax(150px, 1.3fr) auto; padding-top: 10px; }
 .piano-chord-controls label { display: grid; gap: 5px; }
 .piano-chord-controls label span { color: var(--muted); font-size: 0.8rem; font-weight: 700; }

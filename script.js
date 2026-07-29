@@ -289,6 +289,7 @@ async function init() {
   renderPitch();
   renderPiano();
   renderPianoChordGuide();
+  updatePianoExploreTabs();
   renderAll();
   openInitialSection();
   setupServiceWorker();
@@ -405,6 +406,8 @@ function collectElements() {
   el.pianoGameReplayButton = document.getElementById("pianoGameReplayButton");
   el.pianoGameStopButton = document.getElementById("pianoGameStopButton");
   el.pianoGameStatus = document.getElementById("pianoGameStatus");
+  el.pianoGamesTab = document.getElementById("pianoGamesTab");
+  el.pianoChordTab = document.getElementById("pianoChordTab");
   el.pianoChordGuide = document.getElementById("pianoChordGuide");
   el.pianoChordRoot = document.getElementById("pianoChordRoot");
   el.pianoChordType = document.getElementById("pianoChordType");
@@ -620,16 +623,20 @@ function wireEvents() {
   el.pianoGuessGameButton.addEventListener("click", startPianoGuessGame);
   el.pianoGameReplayButton.addEventListener("click", replayPianoGame);
   el.pianoGameStopButton.addEventListener("click", stopPianoGame);
+  el.pianoGamesTab.addEventListener("click", () => togglePianoExplorePanel("games"));
+  el.pianoChordTab.addEventListener("click", () => togglePianoExplorePanel("chords"));
   el.pianoGames.addEventListener("toggle", () => {
     if (el.pianoGames.open) {
       el.pianoChordGuide.open = false;
     } else if (state.piano.game.mode) {
       stopPianoGame();
     }
+    updatePianoExploreTabs();
   });
   el.pianoChordGuide.addEventListener("toggle", () => {
     if (el.pianoChordGuide.open) el.pianoGames.open = false;
     renderPianoChordGuide();
+    updatePianoExploreTabs();
   });
   el.pianoChordRoot.addEventListener("change", renderPianoChordGuide);
   el.pianoChordType.addEventListener("change", renderPianoChordGuide);
@@ -5339,6 +5346,27 @@ function pianoNotePitchClass(label) {
   if (!match) return 0;
   const base = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[match[1].toUpperCase()];
   return (base + (/sharp/i.test(label) ? 1 : 0)) % 12;
+}
+
+function togglePianoExplorePanel(panel) {
+  if (panel === "games") {
+    const shouldOpen = !el.pianoGames.open;
+    el.pianoChordGuide.open = false;
+    el.pianoGames.open = shouldOpen;
+  } else {
+    const shouldOpen = !el.pianoChordGuide.open;
+    el.pianoGames.open = false;
+    el.pianoChordGuide.open = shouldOpen;
+  }
+  updatePianoExploreTabs();
+}
+
+function updatePianoExploreTabs() {
+  if (!el.pianoGamesTab || !el.pianoChordTab) return;
+  el.pianoGamesTab.classList.toggle("active", el.pianoGames.open);
+  el.pianoChordTab.classList.toggle("active", el.pianoChordGuide.open);
+  el.pianoGamesTab.setAttribute("aria-selected", String(el.pianoGames.open));
+  el.pianoChordTab.setAttribute("aria-selected", String(el.pianoChordGuide.open));
 }
 
 function renderPianoChordGuide() {

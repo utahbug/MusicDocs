@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-18">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-19">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-27" defer></script>
+    <script src="script.js?v=musicdocs-28" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -365,7 +365,11 @@
                 <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Music Playground volume">
               </label>
             </div>
-            <details id="pianoGames" class="piano-games">
+            <div class="piano-explore-tabs" role="tablist" aria-label="Music Playground activities">
+              <button id="pianoGamesTab" type="button" role="tab" aria-selected="false" aria-controls="pianoGames">Games</button>
+              <button id="pianoChordTab" type="button" role="tab" aria-selected="false" aria-controls="pianoChordGuide">Chord Guide</button>
+            </div>
+            <details id="pianoGames" class="piano-games" role="tabpanel" aria-labelledby="pianoGamesTab">
               <summary>Games</summary>
               <div class="piano-game-controls">
                 <button id="pianoCopyGameButton" class="secondary-button" type="button">Copy Me</button>
@@ -375,7 +379,7 @@
               </div>
               <p id="pianoGameStatus" class="piano-game-status" aria-live="polite">Choose a game.</p>
             </details>
-            <details id="pianoChordGuide" class="piano-chord-guide">
+            <details id="pianoChordGuide" class="piano-chord-guide" role="tabpanel" aria-labelledby="pianoChordTab">
               <summary>Chord Guide</summary>
               <div class="piano-chord-controls">
                 <label><span>Root</span>
