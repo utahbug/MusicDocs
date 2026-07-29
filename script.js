@@ -36,7 +36,7 @@ const PDF_STORE_NAME = "pdfFiles";
 const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
 const CARD_FONT_FACES = ["Verdana", "system-ui", "Arial", "Trebuchet MS", "Georgia", "Atkinson Hyperlegible"];
 const CARD_READING_SCALES = [0.82, 0.9, 1, 1.12, 1.25, 1.4];
-const METRONOME_SOUNDS = new Set(["wood", "classic", "pulse", "bell"]);
+const METRONOME_SOUNDS = new Set(["wood", "classic", "pulse", "bell", "marimba", "bubble", "water"]);
 const PDF_TIPS_REMINDER_MS = 3000;
 const FAVORITE_DIVIDER_PREFIX = "favorite-divider:";
 const TUNER_INSTRUMENTS = {
@@ -5346,6 +5346,51 @@ function playMetronomeClick(time, isAccent) {
       frequency: frequency * 2.01,
       gain: isAccent ? 0.055 : 0.038,
       duration: 0.18
+    });
+    return;
+  }
+  if (state.metronome.sound === "marimba") {
+    const frequency = isAccent ? 523.25 : 392;
+    scheduleMetronomeTone(time, {
+      type: "sine",
+      frequency,
+      gain: isAccent ? 0.3 : 0.21,
+      duration: 0.17,
+      endFrequency: frequency * 0.92
+    });
+    scheduleMetronomeTone(time, {
+      type: "sine",
+      frequency: frequency * 3.98,
+      gain: isAccent ? 0.045 : 0.03,
+      duration: 0.055,
+      endFrequency: frequency * 3.6
+    });
+    return;
+  }
+  if (state.metronome.sound === "bubble") {
+    scheduleMetronomeTone(time, {
+      type: "sine",
+      frequency: isAccent ? 270 : 220,
+      gain: isAccent ? 0.27 : 0.19,
+      duration: 0.13,
+      endFrequency: isAccent ? 650 : 520
+    });
+    return;
+  }
+  if (state.metronome.sound === "water") {
+    scheduleMetronomeTone(time, {
+      type: "sine",
+      frequency: isAccent ? 1120 : 900,
+      gain: isAccent ? 0.24 : 0.17,
+      duration: 0.16,
+      endFrequency: isAccent ? 610 : 480
+    });
+    scheduleMetronomeTone(time, {
+      type: "sine",
+      frequency: isAccent ? 1680 : 1350,
+      gain: isAccent ? 0.035 : 0.024,
+      duration: 0.085,
+      endFrequency: isAccent ? 920 : 720
     });
     return;
   }
