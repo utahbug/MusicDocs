@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-24">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-25">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-30" defer></script>
+    <script src="script.js?v=musicdocs-31" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -366,6 +366,15 @@
                 <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun stuff volume">
               </label>
             </div>
+            <label class="piano-shape-control">
+              <span>Shape</span>
+              <select id="pianoShape" aria-label="Fun Stuff note shape">
+                <option value="arch">Arch</option>
+                <option value="wave">Wave</option>
+                <option value="circle">Circle</option>
+                <option value="constellation">Constellation</option>
+              </select>
+            </label>
             <details id="pianoGames" class="piano-games piano-games-standalone" open>
               <summary>Games</summary>
               <div class="piano-game-controls">
@@ -392,19 +401,28 @@
               <button class="piano-note piano-natural piano-wide-note" style="--wx:88%;--wy:50px" type="button" aria-label="A5">A</button>
               <button class="piano-note piano-natural piano-wide-note" style="--wx:95%;--wy:20px" type="button" aria-label="B5">B</button>
 
-              <button class="piano-note piano-accidental" style="--px:14%;--py:105px;--wx:7.5%;--wy:85px" type="button" aria-label="C sharp 4">C&#9839;</button>
-              <button class="piano-note piano-accidental" style="--px:26%;--py:138px;--wx:14.5%;--wy:110px" type="button" aria-label="D sharp 4">D&#9839;</button>
-              <button class="piano-note piano-accidental" style="--px:50%;--py:170px;--wx:28.5%;--wy:150px" type="button" aria-label="F sharp 4">F&#9839;</button>
-              <button class="piano-note piano-accidental" style="--px:62%;--py:160px;--wx:35.5%;--wy:165px" type="button" aria-label="G sharp 4">G&#9839;</button>
-              <button class="piano-note piano-accidental" style="--px:74%;--py:138px;--wx:42.5%;--wy:175px" type="button" aria-label="A sharp 4">A&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:56.5%;--wy:175px" type="button" aria-label="C sharp 5">C&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:63.5%;--wy:165px" type="button" aria-label="D sharp 5">D&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:77.5%;--wy:150px" type="button" aria-label="F sharp 5">F&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:84.5%;--wy:110px" type="button" aria-label="G sharp 5">G&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:91.5%;--wy:85px" type="button" aria-label="A sharp 5">A&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:14%;--py:105px;--wx:7.5%;--wy:112px" type="button" aria-label="C sharp 4">C&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:26%;--py:138px;--wx:14.5%;--wy:140px" type="button" aria-label="D sharp 4">D&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:50%;--py:170px;--wx:28.5%;--wy:184px" type="button" aria-label="F sharp 4">F&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:62%;--py:160px;--wx:35.5%;--wy:200px" type="button" aria-label="G sharp 4">G&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:74%;--py:138px;--wx:42.5%;--wy:210px" type="button" aria-label="A sharp 4">A&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:56.5%;--wy:210px" type="button" aria-label="C sharp 5">C&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:63.5%;--wy:200px" type="button" aria-label="D sharp 5">D&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:77.5%;--wy:164px" type="button" aria-label="F sharp 5">F&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:84.5%;--wy:140px" type="button" aria-label="G sharp 5">G&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:91.5%;--wy:112px" type="button" aria-label="A sharp 5">A&#9839;</button>
+              <div class="piano-effect-pads" aria-label="Playful sound effects">
+                <button class="piano-effect-pad effect-drum" type="button" data-piano-effect="drum"><span aria-hidden="true">●</span><small>Drum</small></button>
+                <button class="piano-effect-pad effect-firework" type="button" data-piano-effect="firework"><span aria-hidden="true">✦</span><small>Firework</small></button>
+                <button class="piano-effect-pad effect-drop" type="button" data-piano-effect="drop"><span aria-hidden="true">◉</span><small>Drop</small></button>
+              </div>
             </div>
             <p id="pianoSoundStatus" class="piano-prototype-note" aria-live="polite">Grand piano</p>
           </div>
+          <button class="fun-keyboard-link" type="button" data-menu-section="keyboard">
+            <span class="mini-keyboard-icon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            Open Keyboard
+          </button>
         </section>
 
         <section id="keyboardSection" class="view keyboard-view" data-view="keyboard" aria-labelledby="keyboardTitle">

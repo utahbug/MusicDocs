@@ -251,6 +251,7 @@ const state = {
   piano: {
     sound: "grand-piano",
     volume: 0.58,
+    shape: "arch",
     audioContext: null,
     masterGain: null,
     compressor: null,
@@ -399,6 +400,9 @@ function collectElements() {
   el.pitchStopButton = document.getElementById("pitchStopButton");
   el.pianoSound = document.getElementById("pianoSound");
   el.pianoVolume = document.getElementById("pianoVolume");
+  el.pianoShape = document.getElementById("pianoShape");
+  el.pianoNoteArc = document.querySelector(".piano-note-arc");
+  el.pianoEffectPads = Array.from(document.querySelectorAll("[data-piano-effect]"));
   el.pianoSoundStatus = document.getElementById("pianoSoundStatus");
   el.pianoSustainHint = document.getElementById("pianoSustainHint");
   el.keyboardSound = document.getElementById("keyboardSound");
@@ -624,6 +628,8 @@ function wireEvents() {
   el.pitchQuickButtons.addEventListener("click", handlePitchQuickButtonClick);
   el.pianoSound.addEventListener("change", handlePianoSoundChange);
   el.pianoVolume.addEventListener("input", handlePianoVolumeChange);
+  el.pianoShape.addEventListener("change", handlePianoShapeChange);
+  el.pianoEffectPads.forEach((button) => button.addEventListener("click", () => playPianoEffect(button.dataset.pianoEffect, button)));
   el.keyboardSound.addEventListener("change", handlePianoSoundChange);
   el.keyboardVolume.addEventListener("input", handlePianoVolumeChange);
   el.pianoCopyGameButton.addEventListener("click", startPianoCopyGame);
@@ -733,6 +739,7 @@ function wireEvents() {
     if (!el.pdfViewer.classList.contains("hidden") && state.currentPdf.doc) {
       renderPdfPage(state.currentPdf.pageNumber);
     }
+    if (state.activeSection === "piano") applyPianoShape();
     fitOpenMobileModals();
   }, 150);
   window.addEventListener("resize", handleViewportChange);
@@ -5313,6 +5320,7 @@ const PIANO_CHORDS = {
 };
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
+const PIANO_SHAPES = new Set(["arch", "wave", "circle", "constellation"]);
 
 function setupKeyboardUi() {
   if (!el.realKeyboard || !el.keyboardSound || !el.pianoSound) return;
@@ -5350,6 +5358,7 @@ function createKeyboardKey(midi, keyClass) {
 function loadPianoSettings() {
   const saved = readJson(STORAGE_KEYS.piano, {});
   if (PIANO_SOUND_LABELS[saved.sound]) state.piano.sound = saved.sound;
+  if (PIANO_SHAPES.has(saved.shape)) state.piano.shape = saved.shape;
   const savedVolume = Number(saved.volume);
   if (Number.isFinite(savedVolume)) state.piano.volume = clamp(savedVolume, 0, 1);
 }
@@ -5357,7 +5366,8 @@ function loadPianoSettings() {
 function savePianoSettings() {
   writeJson(STORAGE_KEYS.piano, {
     sound: state.piano.sound,
-    volume: state.piano.volume
+    volume: state.piano.volume,
+    shape: state.piano.shape
   });
 }
 
@@ -5365,6 +5375,7 @@ function renderPiano() {
   if (!el.pianoSound) return;
   el.pianoSound.value = state.piano.sound;
   el.pianoVolume.value = String(Math.round(state.piano.volume * 100));
+  el.pianoShape.value = state.piano.shape;
   el.pianoSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
   el.pianoSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
   if (el.keyboardSound) el.keyboardSound.value = state.piano.sound;
@@ -5374,6 +5385,116 @@ function renderPiano() {
   if (state.piano.masterGain && state.piano.audioContext) {
     state.piano.masterGain.gain.setTargetAtTime(state.piano.volume, state.piano.audioContext.currentTime, 0.015);
   }
+  applyPianoShape();
+}
+
+function handlePianoShapeChange() {
+  state.piano.shape = PIANO_SHAPES.has(el.pianoShape.value) ? el.pianoShape.value : "arch";
+  savePianoSettings();
+  applyPianoShape();
+}
+
+function pianoNoteMidi(label) {
+  const match = String(label).match(/^([A-G])(?: sharp)?\s*(\d)$/i);
+  if (!match) return 60;
+  const noteIndex = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[match[1].toUpperCase()];
+  return (Number(match[2]) + 1) * 12 + noteIndex + (/sharp/i.test(label) ? 1 : 0);
+}
+
+function applyPianoShape() {
+  if (!el.pianoNoteArc) return;
+  const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "arch";
+  el.pianoNoteArc.dataset.shape = shape;
+  const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
+  allButtons.forEach((button) => {
+    button.style.removeProperty("left");
+    button.style.removeProperty("bottom");
+  });
+  if (shape === "arch") return;
+
+  const includeWide = window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches;
+  const buttons = allButtons
+    .filter((button) => includeWide || !button.classList.contains("piano-wide-note"))
+    .sort((a, b) => pianoNoteMidi(a.getAttribute("aria-label")) - pianoNoteMidi(b.getAttribute("aria-label")));
+  const count = buttons.length;
+  buttons.forEach((button, index) => {
+    const point = pianoShapePoint(shape, index, count);
+    button.style.left = `${point.x}%`;
+    button.style.bottom = `${point.y}px`;
+  });
+}
+
+function pianoShapePoint(shape, index, count) {
+  const progress = count > 1 ? index / (count - 1) : 0.5;
+  if (shape === "wave") {
+    return { x: 6 + progress * 88, y: 82 + Math.sin(progress * Math.PI * 2) * 48 };
+  }
+  if (shape === "circle") {
+    if (count > 16) {
+      const ringIndex = index % 12;
+      const inner = index >= 12;
+      const angle = -Math.PI / 2 + (ringIndex / 12) * Math.PI * 2;
+      return {
+        x: 50 + Math.cos(angle) * (inner ? 25 : 42),
+        y: 92 + Math.sin(angle) * (inner ? 45 : 76)
+      };
+    }
+    const angle = -Math.PI / 2 + (index / count) * Math.PI * 2;
+    return { x: 50 + Math.cos(angle) * 40, y: 92 + Math.sin(angle) * 74 };
+  }
+  const columns = count > 16 ? 8 : 5;
+  const row = Math.floor(index / columns);
+  const column = index % columns;
+  const rowCount = Math.min(columns, count - row * columns);
+  const x = rowCount > 1 ? 9 + (column / (rowCount - 1)) * 82 : 50;
+  const offsets = [0, 14, -8, 10, -12, 6, -5, 12];
+  return { x, y: 24 + row * 67 + offsets[column % offsets.length] };
+}
+
+async function playPianoEffect(effect, button) {
+  const context = await getPianoAudioContext();
+  if (!context) return;
+  button.classList.remove("effect-active");
+  void button.offsetWidth;
+  button.classList.add("effect-active");
+  window.setTimeout(() => button.classList.remove("effect-active"), 560);
+
+  if (effect === "drop") {
+    const voice = createPianoVoice(context, 880, "water-drop");
+    window.setTimeout(() => releasePianoVoice(voice, true), 520);
+    return;
+  }
+  if (effect === "firework") {
+    [0, 0.055, 0.11, 0.17].forEach((delay, index) => {
+      const start = context.currentTime + delay;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = index % 2 ? "triangle" : "sine";
+      oscillator.frequency.setValueAtTime(560 + index * 210, start);
+      oscillator.frequency.exponentialRampToValueAtTime(1180 + index * 260, start + 0.16);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.2, start + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.3);
+      oscillator.connect(gain);
+      gain.connect(state.piano.masterGain);
+      oscillator.start(start);
+      oscillator.stop(start + 0.32);
+    });
+    return;
+  }
+
+  const start = context.currentTime;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(145, start);
+  oscillator.frequency.exponentialRampToValueAtTime(52, start + 0.24);
+  gain.gain.setValueAtTime(0.45, start);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.3);
+  oscillator.connect(gain);
+  gain.connect(state.piano.masterGain);
+  oscillator.start(start);
+  oscillator.stop(start + 0.31);
 }
 
 function renderPianoChordGuide() {
