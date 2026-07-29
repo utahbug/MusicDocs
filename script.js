@@ -199,8 +199,6 @@ const state = {
     pageCount: 0,
     rendering: false,
     pendingPage: null,
-    feedbackTargetPage: null,
-    pageNoticeTimer: null,
     touchStartX: 0,
     touchStartY: 0,
     touchMode: "",
@@ -395,8 +393,6 @@ function collectElements() {
   el.pdfLoading = document.getElementById("pdfLoading");
   el.pdfCanvas = document.getElementById("pdfCanvas");
   el.pdfTapLeft = document.getElementById("pdfTapLeft");
-  el.pdfTurningNotice = document.getElementById("pdfTurningNotice");
-  el.pdfPageNotice = document.getElementById("pdfPageNotice");
   el.pdfTapRight = document.getElementById("pdfTapRight");
 
   el.importModal = document.getElementById("importModal");
@@ -4356,10 +4352,6 @@ async function renderPdfPage(pageNumber) {
     updatePdfStatus();
     el.pdfCanvas.classList.remove("hidden");
     el.pdfLoading.classList.add("hidden");
-    if (state.currentPdf.feedbackTargetPage === pageNumber) {
-      showPdfPageConfirmation(pageNumber);
-      state.currentPdf.feedbackTargetPage = null;
-    }
   } catch (error) {
     showPdfMessage("This PDF page could not be displayed.");
   } finally {
@@ -4572,33 +4564,11 @@ function goToPdfPage(pageNumber) {
   if (!state.currentPdf.doc || !state.currentPdf.pageCount) return;
   const targetPage = clamp(pageNumber, 1, state.currentPdf.pageCount);
   if (targetPage === state.currentPdf.pageNumber && !state.currentPdf.rendering) return;
-  showPdfTurningNotice(targetPage);
   resetPdfZoom();
   renderPdfPage(targetPage);
 }
 
-function showPdfTurningNotice(pageNumber) {
-  window.clearTimeout(state.currentPdf.pageNoticeTimer);
-  state.currentPdf.feedbackTargetPage = pageNumber;
-  el.pdfPageNotice.classList.remove("is-visible");
-  el.pdfTurningNotice.textContent = `Turning to page ${pageNumber}\u2026`;
-  el.pdfTurningNotice.classList.add("is-visible");
-}
-
-function showPdfPageConfirmation(pageNumber) {
-  el.pdfTurningNotice.classList.remove("is-visible");
-  el.pdfPageNotice.textContent = `Page ${pageNumber} of ${state.currentPdf.pageCount}`;
-  el.pdfPageNotice.classList.add("is-visible");
-  state.currentPdf.pageNoticeTimer = window.setTimeout(() => {
-    el.pdfPageNotice.classList.remove("is-visible");
-  }, 1800);
-}
-
 function closePdfViewer() {
-  window.clearTimeout(state.currentPdf.pageNoticeTimer);
-  state.currentPdf.feedbackTargetPage = null;
-  el.pdfTurningNotice.classList.remove("is-visible");
-  el.pdfPageNotice.classList.remove("is-visible");
   hidePdfTips();
   el.pdfViewer.classList.add("hidden");
   document.body.classList.remove("pdf-open");
