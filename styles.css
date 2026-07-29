@@ -951,6 +951,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .pdf-tips-preference input { height: 18px; margin: 0px; width: 18px; }
 .pdf-tips-preference span { color: var(--ink); margin: 0px; }
 .pdf-zone-tip-center small { color: var(--accent-strong); font-size: 0.7rem; font-weight: 750; }
+.pdf-zone-dismiss-tip { background: var(--surface); border: 2px solid color-mix(in srgb, #237C7A 52%, var(--line)); border-radius: 12px; bottom: max(18px, env(safe-area-inset-bottom)); box-shadow: 0 7px 22px rgba(31, 72, 101, 0.22); color: var(--accent-strong); font-size: clamp(0.88rem, 2.7vw, 1.02rem); font-weight: 850; left: 50%; padding: 9px 16px; position: absolute; text-align: center; transform: translateX(-50%); width: max-content; max-width: 88%; }
 .help-tap-zone-grid { display: grid; gap: 4px; grid-template: 1fr 3fr / 1fr 1fr; height: min(280px, 48dvh); margin-top: 8px; }
 .help-tap-zone-grid > div { align-content: center; align-items: center; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 8px; display: grid; gap: 2px; justify-items: center; min-height: 0px; overflow: hidden; padding: 5px 6px; text-align: center; }
 .help-tap-zone-grid > div:nth-child(-n+2) { background: color-mix(in srgb, #A8874A 9%, var(--surface)); }
