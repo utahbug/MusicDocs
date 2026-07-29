@@ -255,7 +255,8 @@ const state = {
     masterGain: null,
     compressor: null,
     voices: new Map(),
-    releasedPointers: new Set()
+    pointerNotes: new Map(),
+    pointerTokens: new Map()
   }
 };
 
@@ -595,6 +596,7 @@ function wireEvents() {
   el.pianoVolume.addEventListener("input", handlePianoVolumeChange);
   document.querySelectorAll(".piano-note").forEach((button) => {
     button.addEventListener("pointerdown", handlePianoPointerDown);
+    button.addEventListener("pointermove", handlePianoPointerMove);
     button.addEventListener("pointerup", handlePianoPointerUp);
     button.addEventListener("pointercancel", handlePianoPointerUp);
     button.addEventListener("lostpointercapture", handlePianoPointerUp);
@@ -5331,28 +5333,43 @@ async function handlePianoPointerDown(event) {
   if (event.pointerType === "mouse" && event.button !== 0) return;
   event.preventDefault();
   const button = event.currentTarget;
-  state.piano.releasedPointers.delete(event.pointerId);
   if (state.piano.voices.has(event.pointerId)) return;
   try { button.setPointerCapture(event.pointerId); } catch (_error) {}
+  state.piano.pointerNotes.set(event.pointerId, button);
+  await playPianoNoteForPointer(event.pointerId, button);
+}
+
+async function playPianoNoteForPointer(pointerId, button) {
+  const token = (state.piano.pointerTokens.get(pointerId) || 0) + 1;
+  state.piano.pointerTokens.set(pointerId, token);
   const context = await getPianoAudioContext();
   if (!context) return;
+  if (state.piano.pointerTokens.get(pointerId) !== token) return;
   const frequency = pianoNoteFrequency(button.getAttribute("aria-label"));
   const voice = createPianoVoice(context, frequency, state.piano.sound);
   voice.button = button;
-  if (state.piano.releasedPointers.delete(event.pointerId)) {
-    releasePianoVoice(voice);
-    return;
-  }
-  state.piano.voices.set(event.pointerId, voice);
+  state.piano.voices.set(pointerId, voice);
   button.classList.add("is-playing");
 }
 
+function handlePianoPointerMove(event) {
+  if (!state.piano.pointerNotes.has(event.pointerId)) return;
+  event.preventDefault();
+  const hit = document.elementFromPoint(event.clientX, event.clientY);
+  const nextButton = hit && hit.closest ? hit.closest(".piano-note") : null;
+  if (!nextButton || nextButton === state.piano.pointerNotes.get(event.pointerId)) return;
+  const currentVoice = state.piano.voices.get(event.pointerId);
+  if (currentVoice) releasePianoVoice(currentVoice);
+  state.piano.voices.delete(event.pointerId);
+  state.piano.pointerNotes.set(event.pointerId, nextButton);
+  playPianoNoteForPointer(event.pointerId, nextButton);
+}
+
 function handlePianoPointerUp(event) {
+  state.piano.pointerTokens.set(event.pointerId, (state.piano.pointerTokens.get(event.pointerId) || 0) + 1);
+  state.piano.pointerNotes.delete(event.pointerId);
   const voice = state.piano.voices.get(event.pointerId);
-  if (!voice) {
-    state.piano.releasedPointers.add(event.pointerId);
-    return;
-  }
+  if (!voice) return;
   releasePianoVoice(voice);
   state.piano.voices.delete(event.pointerId);
 }
@@ -5360,7 +5377,8 @@ function handlePianoPointerUp(event) {
 function stopAllPianoVoices() {
   state.piano.voices.forEach((voice) => releasePianoVoice(voice, true));
   state.piano.voices.clear();
-  state.piano.releasedPointers.clear();
+  state.piano.pointerNotes.clear();
+  state.piano.pointerTokens.clear();
   document.querySelectorAll(".piano-note.is-playing").forEach((button) => button.classList.remove("is-playing"));
 }
 
