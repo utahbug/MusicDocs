@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-16">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-18">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-25" defer></script>
+    <script src="script.js?v=musicdocs-27" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -67,15 +67,14 @@
               <button type="button" role="menuitem" data-menu-section="metronome">Metronome</button>
               <button type="button" role="menuitem" data-menu-section="tuner">Tuner</button>
               <button type="button" role="menuitem" data-menu-section="pitch">Pitch</button>
-              <button type="button" role="menuitem" data-menu-section="piano">Piano</button>
+              <button type="button" role="menuitem" data-menu-section="piano">Play</button>
             </div>
           </div>
           <div class="overflow-wrap header-info-wrap">
-            <button id="infoMenuButton" class="header-info-button" type="button" aria-label="Information" title="Information" aria-expanded="false" aria-controls="infoMenu">
+            <button id="infoMenuButton" class="header-info-button" type="button" aria-label="Help and app options" title="Help and app options" aria-expanded="false" aria-controls="infoMenu">
               <span class="info-icon-mark" aria-hidden="true"></span>
             </button>
-            <div id="infoMenu" class="overflow-menu info-menu hidden" role="menu" aria-label="Information">
-              <strong class="menu-heading">Information</strong>
+            <div id="infoMenu" class="overflow-menu info-menu hidden" role="menu" aria-label="Help and app options">
               <button type="button" role="menuitem" data-open-help>Help</button>
               <button type="button" role="menuitem" data-open-about>About</button>
               <span class="menu-separator" aria-hidden="true"></span>
@@ -330,7 +329,7 @@
         <section id="pianoSection" class="view piano-view" data-view="piano" aria-labelledby="pianoTitle">
           <div class="piano-panel">
             <div class="piano-header">
-              <h2 id="pianoTitle">Note Arc</h2>
+              <h2 id="pianoTitle">Music Playground</h2>
               <span>Turn sideways for more notes</span>
             </div>
             <div class="piano-sound-controls">
@@ -359,13 +358,52 @@
                     <option value="retro-game">Retro game tone</option>
                   </optgroup>
                 </select>
+                <span id="pianoSustainHint" class="piano-sustain-hint" hidden><span aria-hidden="true">↔</span> Hold notes for full sound</span>
               </label>
               <label class="piano-volume-control">
                 <span>Volume</span>
-                <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Note Arc volume">
+                <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Music Playground volume">
               </label>
             </div>
-            <p id="pianoSustainHint" class="piano-sustain-hint" hidden><span aria-hidden="true">↔</span> Hold notes for full sound</p>
+            <details id="pianoGames" class="piano-games">
+              <summary>Games</summary>
+              <div class="piano-game-controls">
+                <button id="pianoCopyGameButton" class="secondary-button" type="button">Copy Me</button>
+                <button id="pianoGuessGameButton" class="secondary-button" type="button">Guess the Note</button>
+                <button id="pianoGameReplayButton" class="secondary-button" type="button" hidden>Replay</button>
+                <button id="pianoGameStopButton" class="plain-button" type="button" hidden>End game</button>
+              </div>
+              <p id="pianoGameStatus" class="piano-game-status" aria-live="polite">Choose a game.</p>
+            </details>
+            <details id="pianoChordGuide" class="piano-chord-guide">
+              <summary>Chord Guide</summary>
+              <div class="piano-chord-controls">
+                <label><span>Root</span>
+                  <select id="pianoChordRoot" aria-label="Chord root">
+                    <option value="0">C</option><option value="1">C♯ / D♭</option><option value="2">D</option><option value="3">D♯ / E♭</option>
+                    <option value="4">E</option><option value="5">F</option><option value="6">F♯ / G♭</option><option value="7">G</option>
+                    <option value="8">G♯ / A♭</option><option value="9">A</option><option value="10">A♯ / B♭</option><option value="11">B</option>
+                  </select>
+                </label>
+                <label><span>Type</span>
+                  <select id="pianoChordType" aria-label="Chord type">
+                    <option value="major">Major</option><option value="minor">Minor</option><option value="diminished">Diminished</option>
+                    <option value="dominant7">Dominant 7th</option><option value="major7">Major 7th</option><option value="minor7">Minor 7th</option>
+                    <option value="diminished7">Diminished 7th</option><option value="halfDiminished">Half-diminished</option>
+                    <option value="sus2">Suspended 2nd</option><option value="sus4">Suspended 4th</option>
+                    <option value="augmented">Augmented</option><option value="sixth">6th</option><option value="ninth">9th</option>
+                  </select>
+                </label>
+                <button id="pianoChordPlayButton" class="primary-button" type="button">Play chord</button>
+              </div>
+              <p id="pianoChordUse" class="piano-chord-use"></p>
+              <div id="pianoChordFamily" class="piano-chord-family"></div>
+              <div class="piano-genre-guide">
+                <p><strong>Blues:</strong> Dominant 7ths with I–IV–V.</p>
+                <p><strong>Country:</strong> Major I–IV–V, V7, minor vi, and suspended chords.</p>
+                <p><strong>Jazz:</strong> Major 7ths, minor 7ths, dominant 7ths, diminished passing chords, and ii–V–I.</p>
+              </div>
+            </details>
             <div class="piano-note-arc" aria-label="Playable notes">
               <button class="piano-note piano-natural" style="--px:8%;--py:22px;--wx:4%;--wy:20px" type="button" aria-label="C4">C</button>
               <button class="piano-note piano-natural" style="--px:20%;--py:58px;--wx:11%;--wy:50px" type="button" aria-label="D4">D</button>
@@ -657,8 +695,8 @@
       <div id="helpPanel" class="modal-panel help-panel">
         <div class="import-form">
           <div class="modal-heading">
-            <button id="helpCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
             <h2 id="helpTitle">Help</h2>
+            <button id="helpCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
           </div>
 
           <div class="help-topic-grid">

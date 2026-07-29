@@ -256,7 +256,15 @@ const state = {
     compressor: null,
     voices: new Map(),
     pointerNotes: new Map(),
-    pointerTokens: new Map()
+    pointerTokens: new Map(),
+    game: {
+      mode: "",
+      sequence: [],
+      inputIndex: 0,
+      targetLabel: "",
+      acceptingInput: false,
+      playToken: 0
+    }
   }
 };
 
@@ -280,6 +288,7 @@ async function init() {
   renderTuner();
   renderPitch();
   renderPiano();
+  renderPianoChordGuide();
   renderAll();
   openInitialSection();
   setupServiceWorker();
@@ -390,6 +399,18 @@ function collectElements() {
   el.pianoVolume = document.getElementById("pianoVolume");
   el.pianoSoundStatus = document.getElementById("pianoSoundStatus");
   el.pianoSustainHint = document.getElementById("pianoSustainHint");
+  el.pianoGames = document.getElementById("pianoGames");
+  el.pianoCopyGameButton = document.getElementById("pianoCopyGameButton");
+  el.pianoGuessGameButton = document.getElementById("pianoGuessGameButton");
+  el.pianoGameReplayButton = document.getElementById("pianoGameReplayButton");
+  el.pianoGameStopButton = document.getElementById("pianoGameStopButton");
+  el.pianoGameStatus = document.getElementById("pianoGameStatus");
+  el.pianoChordGuide = document.getElementById("pianoChordGuide");
+  el.pianoChordRoot = document.getElementById("pianoChordRoot");
+  el.pianoChordType = document.getElementById("pianoChordType");
+  el.pianoChordPlayButton = document.getElementById("pianoChordPlayButton");
+  el.pianoChordUse = document.getElementById("pianoChordUse");
+  el.pianoChordFamily = document.getElementById("pianoChordFamily");
 
   el.detailContent = document.getElementById("detailContent");
 
@@ -595,6 +616,24 @@ function wireEvents() {
   el.pitchQuickButtons.addEventListener("click", handlePitchQuickButtonClick);
   el.pianoSound.addEventListener("change", handlePianoSoundChange);
   el.pianoVolume.addEventListener("input", handlePianoVolumeChange);
+  el.pianoCopyGameButton.addEventListener("click", startPianoCopyGame);
+  el.pianoGuessGameButton.addEventListener("click", startPianoGuessGame);
+  el.pianoGameReplayButton.addEventListener("click", replayPianoGame);
+  el.pianoGameStopButton.addEventListener("click", stopPianoGame);
+  el.pianoGames.addEventListener("toggle", () => {
+    if (el.pianoGames.open) {
+      el.pianoChordGuide.open = false;
+    } else if (state.piano.game.mode) {
+      stopPianoGame();
+    }
+  });
+  el.pianoChordGuide.addEventListener("toggle", () => {
+    if (el.pianoChordGuide.open) el.pianoGames.open = false;
+    renderPianoChordGuide();
+  });
+  el.pianoChordRoot.addEventListener("change", renderPianoChordGuide);
+  el.pianoChordType.addEventListener("change", renderPianoChordGuide);
+  el.pianoChordPlayButton.addEventListener("click", playPianoGuideChord);
   document.querySelectorAll(".piano-note").forEach((button) => {
     button.addEventListener("pointerdown", handlePianoPointerDown);
     button.addEventListener("pointermove", handlePianoPointerMove);
@@ -5253,6 +5292,22 @@ const PIANO_SOUND_LABELS = {
   spaceship: "Spaceship",
   "retro-game": "Retro game tone"
 };
+const PIANO_CHORDS = {
+  major: { intervals: [0, 4, 7], use: "Major sounds bright and settled. It is the basic home sound in many songs." },
+  minor: { intervals: [0, 3, 7], use: "Minor sounds reflective or emotional and often provides contrast to major chords." },
+  diminished: { intervals: [0, 3, 6], use: "Diminished creates tension and commonly connects two nearby chords." },
+  dominant7: { intervals: [0, 4, 7, 10], use: "Dominant 7th strongly wants to resolve home. It is central to blues and common as V7 in country." },
+  major7: { intervals: [0, 4, 7, 11], use: "Major 7th adds a warm, polished color often heard in jazz and ballads." },
+  minor7: { intervals: [0, 3, 7, 10], use: "Minor 7th is mellow and is the ii chord in many jazz ii–V–I progressions." },
+  diminished7: { intervals: [0, 3, 6, 9], use: "Diminished 7th creates strong suspense and works well as a passing chord." },
+  halfDiminished: { intervals: [0, 3, 6, 10], use: "Half-diminished is common as the ii chord in minor-key jazz progressions." },
+  sus2: { intervals: [0, 2, 7], use: "Suspended 2nd sounds open and modern before resolving to major or minor." },
+  sus4: { intervals: [0, 5, 7], use: "Suspended 4th creates gentle tension that often resolves down to a major chord." },
+  augmented: { intervals: [0, 4, 8], use: "Augmented sounds unsettled and can lead upward into the next chord." },
+  sixth: { intervals: [0, 4, 7, 9], use: "The 6th adds warmth without the stronger pull of a 7th; useful in country, jazz, and older popular music." },
+  ninth: { intervals: [0, 2, 4, 7, 10], use: "The 9th expands a dominant 7th with extra color, especially in blues, funk, and jazz." }
+};
+const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 
 function loadPianoSettings() {
   const saved = readJson(STORAGE_KEYS.piano, {});
@@ -5278,6 +5333,214 @@ function renderPiano() {
     state.piano.masterGain.gain.setTargetAtTime(state.piano.volume, state.piano.audioContext.currentTime, 0.015);
   }
 }
+
+function pianoNotePitchClass(label) {
+  const match = String(label).match(/^([A-G])(?: sharp)?/i);
+  if (!match) return 0;
+  const base = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[match[1].toUpperCase()];
+  return (base + (/sharp/i.test(label) ? 1 : 0)) % 12;
+}
+
+function renderPianoChordGuide() {
+  if (!el.pianoChordRoot || !el.pianoChordType) return;
+  const root = Number(el.pianoChordRoot.value) || 0;
+  const chord = PIANO_CHORDS[el.pianoChordType.value] || PIANO_CHORDS.major;
+  const pitchClasses = new Set(chord.intervals.map((interval) => (root + interval) % 12));
+  document.querySelectorAll(".piano-note").forEach((button) => {
+    button.classList.toggle("chord-highlight", el.pianoChordGuide.open && pitchClasses.has(pianoNotePitchClass(button.getAttribute("aria-label"))));
+  });
+  el.pianoChordUse.textContent = chord.use;
+  const fourth = (root + 5) % 12;
+  const fifth = (root + 7) % 12;
+  const relativeMinor = (root + 9) % 12;
+  el.pianoChordFamily.innerHTML = `
+    <span><strong>${PIANO_NOTE_NAMES[root]}</strong>I Â· Home</span>
+    <span><strong>${PIANO_NOTE_NAMES[fourth]}</strong>IV Â· Away</span>
+    <span><strong>${PIANO_NOTE_NAMES[fifth]}</strong>V Â· Leads home</span>
+    <span><strong>${PIANO_NOTE_NAMES[relativeMinor]}m</strong>vi Â· Softer</span>
+  `;
+}
+
+async function playPianoGuideChord() {
+  renderPianoChordGuide();
+  const highlighted = Array.from(document.querySelectorAll(".piano-note.chord-highlight"));
+  const unique = [];
+  const usedPitchClasses = new Set();
+  highlighted.forEach((button) => {
+    const pitchClass = pianoNotePitchClass(button.getAttribute("aria-label"));
+    if (usedPitchClasses.has(pitchClass)) return;
+    usedPitchClasses.add(pitchClass);
+    unique.push(button);
+  });
+  const context = await getPianoAudioContext();
+  if (!context) return;
+  const voices = unique.map((button) => {
+    button.classList.add("game-preview");
+    return createPianoVoice(context, pianoNoteFrequency(button.getAttribute("aria-label")), state.piano.sound);
+  });
+  await waitPianoGame(950);
+  unique.forEach((button) => button.classList.remove("game-preview"));
+  voices.forEach((voice) => releasePianoVoice(voice, true));
+}
+
+
+function waitPianoGame(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+function getPlayablePianoButtons() {
+  return Array.from(document.querySelectorAll(".piano-note")).filter((button) => button.offsetParent !== null);
+}
+
+function pianoGameNoteLabel(label) {
+  return String(label).replace(" sharp ", "â™¯");
+}
+
+function randomPianoGameLabel(exclude = "") {
+  const buttons = getPlayablePianoButtons();
+  const choices = buttons.filter((button) => button.getAttribute("aria-label") !== exclude);
+  const pool = choices.length ? choices : buttons;
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)].getAttribute("aria-label") : "C4";
+}
+
+function updatePianoGameUi() {
+  const mode = state.piano.game.mode;
+  el.pianoCopyGameButton.classList.toggle("active", mode === "copy");
+  el.pianoGuessGameButton.classList.toggle("active", mode === "guess");
+  el.pianoGameReplayButton.hidden = !mode;
+  el.pianoGameStopButton.hidden = !mode;
+}
+
+function resetPianoGameState() {
+  state.piano.game.playToken += 1;
+  state.piano.game.acceptingInput = false;
+  state.piano.game.inputIndex = 0;
+  document.querySelectorAll(".piano-note.game-preview").forEach((button) => button.classList.remove("game-preview"));
+}
+
+function startPianoCopyGame() {
+  resetPianoGameState();
+  state.piano.game.mode = "copy";
+  state.piano.game.sequence = [
+    randomPianoGameLabel(),
+    randomPianoGameLabel(),
+    randomPianoGameLabel()
+  ];
+  el.pianoGames.open = true;
+  el.pianoGameStatus.textContent = "Get ready to listenâ€¦";
+  updatePianoGameUi();
+  window.setTimeout(playPianoCopySequence, 450);
+}
+
+async function playPianoCopySequence() {
+  if (state.piano.game.mode !== "copy") return;
+  const token = ++state.piano.game.playToken;
+  state.piano.game.acceptingInput = false;
+  state.piano.game.inputIndex = 0;
+  el.pianoGameStatus.textContent = "Listen and watch.";
+  for (const label of state.piano.game.sequence) {
+    if (token !== state.piano.game.playToken || state.piano.game.mode !== "copy") return;
+    const button = getPlayablePianoButtons().find((candidate) => candidate.getAttribute("aria-label") === label);
+    if (button) await previewPianoGameNote(button, true, 520);
+    await waitPianoGame(130);
+  }
+  if (token !== state.piano.game.playToken || state.piano.game.mode !== "copy") return;
+  state.piano.game.acceptingInput = true;
+  el.pianoGameStatus.textContent = `Your turn â€” copy ${state.piano.game.sequence.length} notes.`;
+}
+
+function startPianoGuessGame() {
+  resetPianoGameState();
+  state.piano.game.mode = "guess";
+  state.piano.game.sequence = [];
+  el.pianoGames.open = true;
+  updatePianoGameUi();
+  playNextPianoGuess();
+}
+
+async function playNextPianoGuess() {
+  if (state.piano.game.mode !== "guess") return;
+  const token = ++state.piano.game.playToken;
+  state.piano.game.acceptingInput = false;
+  state.piano.game.targetLabel = randomPianoGameLabel(state.piano.game.targetLabel);
+  el.pianoGameStatus.textContent = "Listenâ€¦";
+  const button = getPlayablePianoButtons().find((candidate) => candidate.getAttribute("aria-label") === state.piano.game.targetLabel);
+  if (button) await previewPianoGameNote(button, false, 700);
+  if (token !== state.piano.game.playToken || state.piano.game.mode !== "guess") return;
+  state.piano.game.acceptingInput = true;
+  el.pianoGameStatus.textContent = "Which note was that?";
+}
+
+async function previewPianoGameNote(button, reveal, duration) {
+  const context = await getPianoAudioContext();
+  if (!context) return;
+  const voice = createPianoVoice(context, pianoNoteFrequency(button.getAttribute("aria-label")), state.piano.sound);
+  if (reveal) button.classList.add("game-preview");
+  await waitPianoGame(duration);
+  if (reveal) button.classList.remove("game-preview");
+  releasePianoVoice(voice, true);
+}
+
+function handlePianoGameInput(button) {
+  const game = state.piano.game;
+  if (!game.mode || !game.acceptingInput) return;
+  const label = button.getAttribute("aria-label");
+  if (game.mode === "copy") {
+    if (label !== game.sequence[game.inputIndex]) {
+      game.acceptingInput = false;
+      game.inputIndex = 0;
+      el.pianoGameStatus.textContent = "Not quite â€” listen once more.";
+      window.setTimeout(playPianoCopySequence, 800);
+      return;
+    }
+    game.inputIndex += 1;
+    if (game.inputIndex < game.sequence.length) {
+      el.pianoGameStatus.textContent = `${game.inputIndex} correct â€” keep going.`;
+      return;
+    }
+    game.acceptingInput = false;
+    game.inputIndex = 0;
+    el.pianoGameStatus.textContent = "Correct! Adding one more noteâ€¦";
+    game.sequence.push(randomPianoGameLabel(game.sequence[game.sequence.length - 1]));
+    window.setTimeout(playPianoCopySequence, 900);
+    return;
+  }
+  if (game.mode === "guess") {
+    if (label === game.targetLabel) {
+      game.acceptingInput = false;
+      el.pianoGameStatus.textContent = `Correct â€” ${pianoGameNoteLabel(label)}!`;
+      window.setTimeout(playNextPianoGuess, 900);
+    } else {
+      el.pianoGameStatus.textContent = "Try another note.";
+    }
+  }
+}
+
+function replayPianoGame() {
+  if (state.piano.game.mode === "copy") {
+    resetPianoGameState();
+    playPianoCopySequence();
+  } else if (state.piano.game.mode === "guess") {
+    const button = getPlayablePianoButtons().find((candidate) => candidate.getAttribute("aria-label") === state.piano.game.targetLabel);
+    state.piano.game.acceptingInput = false;
+    el.pianoGameStatus.textContent = "Listen againâ€¦";
+    previewPianoGameNote(button, false, 700).then(() => {
+      if (state.piano.game.mode !== "guess") return;
+      state.piano.game.acceptingInput = true;
+      el.pianoGameStatus.textContent = "Which note was that?";
+    });
+  }
+}
+
+function stopPianoGame() {
+  resetPianoGameState();
+  state.piano.game.mode = "";
+  state.piano.game.sequence = [];
+  state.piano.game.targetLabel = "";
+  el.pianoGameStatus.textContent = "Choose a game.";
+  updatePianoGameUi();
+}
+
 
 function handlePianoSoundChange() {
   stopAllPianoVoices();
@@ -5334,6 +5597,7 @@ async function handlePianoPointerDown(event) {
   if (state.piano.voices.has(event.pointerId)) return;
   try { button.setPointerCapture(event.pointerId); } catch (_error) {}
   state.piano.pointerNotes.set(event.pointerId, button);
+  handlePianoGameInput(button);
   await playPianoNoteForPointer(event.pointerId, button);
 }
 
@@ -5360,6 +5624,7 @@ function handlePianoPointerMove(event) {
   if (currentVoice) releasePianoVoice(currentVoice);
   state.piano.voices.delete(event.pointerId);
   state.piano.pointerNotes.set(event.pointerId, nextButton);
+  handlePianoGameInput(nextButton);
   playPianoNoteForPointer(event.pointerId, nextButton);
 }
 
