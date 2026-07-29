@@ -2945,8 +2945,8 @@ function renderInlineListItems(list) {
         <div class="list-play-through-row">
           <button class="list-play-through-button ${playlistArmed ? "is-active" : ""}" type="button" data-play-pdf-list="${escapeHtml(list.id)}" aria-pressed="${playlistArmed}">
             ${playlistArmed
-              ? `Continue list: On`
-              : `Continue list: Off`}
+              ? `Follow: On`
+              : `Follow: Off`}
           </button>
         </div>
       ` : ""}
