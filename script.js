@@ -413,6 +413,7 @@ function collectElements() {
   el.pianoChordType = document.getElementById("pianoChordType");
   el.pianoChordPlayButton = document.getElementById("pianoChordPlayButton");
   el.pianoChordUse = document.getElementById("pianoChordUse");
+  el.pianoChordNotes = document.getElementById("pianoChordNotes");
   el.pianoChordFamily = document.getElementById("pianoChordFamily");
 
   el.detailContent = document.getElementById("detailContent");
@@ -5315,6 +5316,7 @@ const PIANO_CHORDS = {
   ninth: { intervals: [0, 2, 4, 7, 10], use: "The 9th expands a dominant 7th with extra color, especially in blues, funk, and jazz." }
 };
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
 
 function loadPianoSettings() {
   const saved = readJson(STORAGE_KEYS.piano, {});
@@ -5378,6 +5380,9 @@ function renderPianoChordGuide() {
     button.classList.toggle("chord-highlight", el.pianoChordGuide.open && pitchClasses.has(pianoNotePitchClass(button.getAttribute("aria-label"))));
   });
   el.pianoChordUse.textContent = chord.use;
+  const chordTypeLabel = el.pianoChordType.selectedOptions[0]?.textContent || "Chord";
+  const notes = chord.intervals.map((interval) => PIANO_KEY_NAMES[(root + interval) % 12]);
+  el.pianoChordNotes.innerHTML = `<strong>${PIANO_NOTE_NAMES[root]} ${chordTypeLabel}</strong><span>Play: ${notes.join(" · ")}</span>`;
   const fourth = (root + 5) % 12;
   const fifth = (root + 7) % 12;
   const relativeMinor = (root + 9) % 12;

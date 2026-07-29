@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-19">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-21">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-28" defer></script>
+    <script src="script.js?v=musicdocs-29" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -400,13 +400,14 @@
                 </label>
                 <button id="pianoChordPlayButton" class="primary-button" type="button">Play chord</button>
               </div>
+              <div id="pianoChordNotes" class="piano-chord-notes" aria-live="polite"></div>
               <p id="pianoChordUse" class="piano-chord-use"></p>
-              <div id="pianoChordFamily" class="piano-chord-family"></div>
               <div class="piano-genre-guide">
                 <p><strong>Blues:</strong> Dominant 7ths with I–IV–V.</p>
                 <p><strong>Country:</strong> Major I–IV–V, V7, minor vi, and suspended chords.</p>
                 <p><strong>Jazz:</strong> Major 7ths, minor 7ths, dominant 7ths, diminished passing chords, and ii–V–I.</p>
               </div>
+              <div id="pianoChordFamily" class="piano-chord-family"></div>
             </details>
             <div class="piano-note-arc" aria-label="Playable notes">
               <button class="piano-note piano-natural" style="--px:8%;--py:22px;--wx:4%;--wy:20px" type="button" aria-label="C4">C</button>
@@ -436,7 +437,6 @@
               <button class="piano-note piano-accidental piano-wide-note" style="--wx:91.5%;--wy:85px" type="button" aria-label="A sharp 5">A&#9839;</button>
             </div>
             <p id="pianoSoundStatus" class="piano-prototype-note" aria-live="polite">Grand piano</p>
-            <p class="piano-prototype-note">Visual prototype â€” sound comes next.</p>
           </div>
         </section>
 
