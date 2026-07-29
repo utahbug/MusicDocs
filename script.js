@@ -36,6 +36,7 @@ const PDF_STORE_NAME = "pdfFiles";
 const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
 const CARD_FONT_FACES = ["Verdana", "system-ui", "Arial", "Trebuchet MS", "Georgia", "Atkinson Hyperlegible"];
 const CARD_READING_SCALES = [0.82, 0.9, 1, 1.12, 1.25, 1.4];
+const METRONOME_SOUNDS = new Set(["wood", "classic", "pulse", "bell"]);
 const PDF_TIPS_REMINDER_MS = 3000;
 const FAVORITE_DIVIDER_PREFIX = "favorite-divider:";
 const TUNER_INSTRUMENTS = {
@@ -218,6 +219,7 @@ const state = {
   metronome: {
     bpm: 90,
     beatsPerMeasure: 4,
+    sound: "wood",
     running: false,
     currentBeat: 0,
     audioContext: null,
@@ -351,6 +353,7 @@ function collectElements() {
   el.metronomeStartButton = document.getElementById("metronomeStartButton");
   el.metronomeTapButton = document.getElementById("metronomeTapButton");
   el.metronomeBeats = document.getElementById("metronomeBeats");
+  el.metronomeSound = document.getElementById("metronomeSound");
   el.metronomeBeatDots = document.getElementById("metronomeBeatDots");
   el.tunerStatus = document.getElementById("tunerStatus");
   el.tunerInstrument = document.getElementById("tunerInstrument");
@@ -564,6 +567,7 @@ function wireEvents() {
   el.metronomeStartButton.addEventListener("click", toggleMetronome);
   el.metronomeTapButton.addEventListener("click", tapMetronomeTempo);
   el.metronomeBeats.addEventListener("change", () => setMetronomeBeats(Number(el.metronomeBeats.value)));
+  el.metronomeSound.addEventListener("change", () => setMetronomeSound(el.metronomeSound.value));
   el.tunerInstrument.addEventListener("change", () => setTunerInstrument(el.tunerInstrument.value));
   el.tunerStartButton.addEventListener("click", toggleTuner);
   el.pitchPreset.addEventListener("change", () => setPitchPreset(el.pitchPreset.value));
@@ -5185,12 +5189,14 @@ function loadMetronomeSettings() {
   const savedBeats = Number(saved.beatsPerMeasure);
   state.metronome.bpm = clamp(Number.isFinite(savedBpm) ? savedBpm : 90, 40, 220);
   state.metronome.beatsPerMeasure = [2, 3, 4, 6].includes(savedBeats) ? savedBeats : 4;
+  state.metronome.sound = METRONOME_SOUNDS.has(saved.sound) ? saved.sound : "wood";
 }
 
 function saveMetronomeSettings() {
   writeJson(STORAGE_KEYS.metronome, {
     bpm: state.metronome.bpm,
-    beatsPerMeasure: state.metronome.beatsPerMeasure
+    beatsPerMeasure: state.metronome.beatsPerMeasure,
+    sound: state.metronome.sound
   });
 }
 
@@ -5200,6 +5206,7 @@ function renderMetronome() {
   el.metronomeBpmOutput.value = String(state.metronome.bpm);
   if (el.pdfTempoInput) el.pdfTempoInput.value = String(state.metronome.bpm);
   el.metronomeBeats.value = String(state.metronome.beatsPerMeasure);
+  el.metronomeSound.value = state.metronome.sound;
   el.metronomeStartButton.textContent = state.metronome.running ? "Stop" : "Start";
   el.metronomeStatus.textContent = state.metronome.running ? "Playing" : "Stopped";
   if (el.pdfMetronomeButton) {
@@ -5232,6 +5239,12 @@ function setMetronomeBpm(value) {
 function setMetronomeBeats(value) {
   state.metronome.beatsPerMeasure = [2, 3, 4, 6].includes(value) ? value : 4;
   state.metronome.currentBeat = 0;
+  saveMetronomeSettings();
+  renderMetronome();
+}
+
+function setMetronomeSound(value) {
+  state.metronome.sound = METRONOME_SOUNDS.has(value) ? value : "wood";
   saveMetronomeSettings();
   renderMetronome();
 }
@@ -5301,16 +5314,67 @@ function scheduleMetronome() {
 function playMetronomeClick(time, isAccent) {
   const audioContext = state.metronome.audioContext;
   if (!audioContext) return;
+  if (state.metronome.sound === "classic") {
+    scheduleMetronomeTone(time, {
+      type: "square",
+      frequency: isAccent ? 1250 : 900,
+      gain: isAccent ? 0.24 : 0.15,
+      duration: 0.045
+    });
+    return;
+  }
+  if (state.metronome.sound === "pulse") {
+    scheduleMetronomeTone(time, {
+      type: "sine",
+      frequency: isAccent ? 520 : 390,
+      gain: isAccent ? 0.24 : 0.16,
+      duration: 0.11,
+      endFrequency: isAccent ? 440 : 330
+    });
+    return;
+  }
+  if (state.metronome.sound === "bell") {
+    const frequency = isAccent ? 880 : 660;
+    scheduleMetronomeTone(time, {
+      type: "sine",
+      frequency,
+      gain: isAccent ? 0.22 : 0.15,
+      duration: 0.24
+    });
+    scheduleMetronomeTone(time, {
+      type: "sine",
+      frequency: frequency * 2.01,
+      gain: isAccent ? 0.055 : 0.038,
+      duration: 0.18
+    });
+    return;
+  }
+  scheduleMetronomeTone(time, {
+    type: "triangle",
+    frequency: isAccent ? 560 : 430,
+    gain: isAccent ? 0.34 : 0.23,
+    duration: 0.075,
+    endFrequency: isAccent ? 190 : 155
+  });
+}
+
+function scheduleMetronomeTone(time, options) {
+  const audioContext = state.metronome.audioContext;
+  if (!audioContext) return;
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(isAccent ? 1150 : 850, time);
+  const duration = options.duration || 0.06;
+  oscillator.type = options.type || "sine";
+  oscillator.frequency.setValueAtTime(options.frequency, time);
+  if (options.endFrequency) {
+    oscillator.frequency.exponentialRampToValueAtTime(options.endFrequency, time + duration);
+  }
   gain.gain.setValueAtTime(0.0001, time);
-  gain.gain.exponentialRampToValueAtTime(isAccent ? 0.42 : 0.26, time + 0.004);
-  gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.055);
+  gain.gain.exponentialRampToValueAtTime(options.gain, time + Math.min(0.005, duration / 4));
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
   oscillator.connect(gain).connect(audioContext.destination);
   oscillator.start(time);
-  oscillator.stop(time + 0.06);
+  oscillator.stop(time + duration + 0.01);
 }
 
 function tapMetronomeTempo() {

@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-8">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-9">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-16" defer></script>
+    <script src="script.js?v=musicdocs-17" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -219,15 +219,26 @@
               <button id="metronomeStartButton" class="primary-button" type="button">Start</button>
               <button id="metronomeTapButton" class="secondary-button" type="button">Tap tempo</button>
             </div>
-            <label class="metronome-beats-field">
-              <span>Beats</span>
-              <select id="metronomeBeats">
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4" selected>4</option>
-                <option value="6">6</option>
-              </select>
-            </label>
+            <div class="metronome-options">
+              <label class="metronome-option-field">
+                <span>Beats</span>
+                <select id="metronomeBeats">
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4" selected>4</option>
+                  <option value="6">6</option>
+                </select>
+              </label>
+              <label class="metronome-option-field">
+                <span>Sound</span>
+                <select id="metronomeSound">
+                  <option value="wood" selected>Wood block</option>
+                  <option value="classic">Classic click</option>
+                  <option value="pulse">Soft pulse</option>
+                  <option value="bell">Bell</option>
+                </select>
+              </label>
+            </div>
             <div id="metronomeBeatDots" class="metronome-beat-dots" aria-hidden="true"></div>
           </div>
         </section>

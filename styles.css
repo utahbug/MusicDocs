@@ -1095,9 +1095,10 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .metronome-bpm-wrap span { color: var(--muted); font-size: 0.95rem; letter-spacing: 0.04em; margin-top: 2px; }
 .metronome-slider { accent-color: var(--accent); width: 100%; }
 .metronome-controls { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin: 16px 0; }
-.metronome-beats-field { align-items: center; display: flex; gap: 10px; justify-content: flex-start; margin: 0 0 16px; }
-.metronome-beats-field span { color: var(--muted); font-weight: 600; }
-.metronome-beats-field select { max-width: 96px; }
+.metronome-options { align-items: end; display: grid; gap: 12px; grid-template-columns: minmax(90px, 0.7fr) minmax(150px, 1.3fr); margin: 0 0 16px; }
+.metronome-option-field { display: grid; gap: 5px; }
+.metronome-option-field span { color: var(--muted); font-weight: 600; }
+.metronome-option-field select { min-width: 0; width: 100%; }
 .metronome-beat-dots { display: flex; gap: 10px; justify-content: center; min-height: 28px; }
 .metronome-dot { background: var(--accent-soft); border: 1px solid var(--line); border-radius: 999px; height: 18px; width: 18px; }
 .metronome-dot.active { background: var(--accent); border-color: var(--accent); }
@@ -1105,6 +1106,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 @media (max-width: 640px) {
   .metronome-panel { border-left: 0; border-right: 0; border-radius: 0; margin-left: -10px; margin-right: -10px; padding: 16px 14px; }
   .metronome-display { grid-template-columns: 52px 1fr 52px; }
+  .metronome-options { gap: 9px; grid-template-columns: minmax(82px, 0.62fr) minmax(140px, 1.38fr); }
 }
 .tuner-view { max-width: 450px; }
 .tuner-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
