@@ -1284,7 +1284,7 @@ function setupInitialSelections() {
   populateSelect(el.listSelect, state.lists || []);
   const defaultList = state.lists[0];
   state.activeListId = defaultList?.id || "";
-  state.expandedListIds = state.activeListId ? [state.activeListId] : [];
+  state.expandedListIds = [];
   el.listSelect.value = state.activeListId;
 }
 
