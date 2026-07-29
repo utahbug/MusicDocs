@@ -274,6 +274,7 @@ document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   collectElements();
+  setupKeyboardUi();
   applyAppSettings();
   wireEvents();
   configurePdfJs();
@@ -289,7 +290,6 @@ async function init() {
   renderPitch();
   renderPiano();
   renderPianoChordGuide();
-  updatePianoExploreTabs();
   renderAll();
   openInitialSection();
   setupServiceWorker();
@@ -319,6 +319,7 @@ function collectElements() {
     tuner: document.getElementById("tunerSection"),
     pitch: document.getElementById("pitchSection"),
     piano: document.getElementById("pianoSection"),
+    keyboard: document.getElementById("keyboardSection"),
     detail: document.getElementById("detailSection")
   };
 
@@ -400,14 +401,17 @@ function collectElements() {
   el.pianoVolume = document.getElementById("pianoVolume");
   el.pianoSoundStatus = document.getElementById("pianoSoundStatus");
   el.pianoSustainHint = document.getElementById("pianoSustainHint");
+  el.keyboardSound = document.getElementById("keyboardSound");
+  el.keyboardVolume = document.getElementById("keyboardVolume");
+  el.keyboardSoundStatus = document.getElementById("keyboardSoundStatus");
+  el.keyboardSustainHint = document.getElementById("keyboardSustainHint");
+  el.realKeyboard = document.getElementById("realKeyboard");
   el.pianoGames = document.getElementById("pianoGames");
   el.pianoCopyGameButton = document.getElementById("pianoCopyGameButton");
   el.pianoGuessGameButton = document.getElementById("pianoGuessGameButton");
   el.pianoGameReplayButton = document.getElementById("pianoGameReplayButton");
   el.pianoGameStopButton = document.getElementById("pianoGameStopButton");
   el.pianoGameStatus = document.getElementById("pianoGameStatus");
-  el.pianoGamesTab = document.getElementById("pianoGamesTab");
-  el.pianoChordTab = document.getElementById("pianoChordTab");
   el.pianoChordGuide = document.getElementById("pianoChordGuide");
   el.pianoChordRoot = document.getElementById("pianoChordRoot");
   el.pianoChordType = document.getElementById("pianoChordType");
@@ -620,29 +624,21 @@ function wireEvents() {
   el.pitchQuickButtons.addEventListener("click", handlePitchQuickButtonClick);
   el.pianoSound.addEventListener("change", handlePianoSoundChange);
   el.pianoVolume.addEventListener("input", handlePianoVolumeChange);
+  el.keyboardSound.addEventListener("change", handlePianoSoundChange);
+  el.keyboardVolume.addEventListener("input", handlePianoVolumeChange);
   el.pianoCopyGameButton.addEventListener("click", startPianoCopyGame);
   el.pianoGuessGameButton.addEventListener("click", startPianoGuessGame);
   el.pianoGameReplayButton.addEventListener("click", replayPianoGame);
   el.pianoGameStopButton.addEventListener("click", stopPianoGame);
-  el.pianoGamesTab.addEventListener("click", () => togglePianoExplorePanel("games"));
-  el.pianoChordTab.addEventListener("click", () => togglePianoExplorePanel("chords"));
   el.pianoGames.addEventListener("toggle", () => {
-    if (el.pianoGames.open) {
-      el.pianoChordGuide.open = false;
-    } else if (state.piano.game.mode) {
+    if (!el.pianoGames.open && state.piano.game.mode) {
       stopPianoGame();
     }
-    updatePianoExploreTabs();
-  });
-  el.pianoChordGuide.addEventListener("toggle", () => {
-    if (el.pianoChordGuide.open) el.pianoGames.open = false;
-    renderPianoChordGuide();
-    updatePianoExploreTabs();
   });
   el.pianoChordRoot.addEventListener("change", renderPianoChordGuide);
   el.pianoChordType.addEventListener("change", renderPianoChordGuide);
   el.pianoChordPlayButton.addEventListener("click", playPianoGuideChord);
-  document.querySelectorAll(".piano-note").forEach((button) => {
+  document.querySelectorAll(".piano-note, .keyboard-key").forEach((button) => {
     button.addEventListener("pointerdown", handlePianoPointerDown);
     button.addEventListener("pointermove", handlePianoPointerMove);
     button.addEventListener("pointerup", handlePianoPointerUp);
@@ -887,7 +883,7 @@ function setNavHighlight(sectionName) {
   el.navButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.section === sectionName);
   });
-  el.overflowMenuButton.classList.toggle("active", ["metronome", "tuner", "pitch", "piano"].includes(sectionName));
+  el.overflowMenuButton.classList.toggle("active", ["metronome", "tuner", "pitch", "piano", "keyboard"].includes(sectionName));
   el.infoMenuButton.classList.remove("active");
 }
 
@@ -5318,6 +5314,39 @@ const PIANO_CHORDS = {
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
 
+function setupKeyboardUi() {
+  if (!el.realKeyboard || !el.keyboardSound || !el.pianoSound) return;
+  el.keyboardSound.innerHTML = el.pianoSound.innerHTML;
+  const whiteMidis = [60, 62, 64, 65, 67, 69, 71, 72, 74, 76, 77, 79, 81, 83, 84];
+  const blackKeys = [
+    [61, 1], [63, 2], [66, 4], [68, 5], [70, 6],
+    [73, 8], [75, 9], [78, 11], [80, 12], [82, 13]
+  ];
+  const whiteWrap = document.createElement("div");
+  whiteWrap.className = "keyboard-white-keys";
+  whiteMidis.forEach((midi) => whiteWrap.appendChild(createKeyboardKey(midi, "keyboard-white")));
+  el.realKeyboard.replaceChildren(whiteWrap);
+  blackKeys.forEach(([midi, boundary]) => {
+    const key = createKeyboardKey(midi, "keyboard-black");
+    key.style.setProperty("--key-x", `${(boundary / whiteMidis.length) * 100}%`);
+    el.realKeyboard.appendChild(key);
+  });
+}
+
+function createKeyboardKey(midi, keyClass) {
+  const key = document.createElement("button");
+  const pitchClass = midi % 12;
+  const octave = Math.floor(midi / 12) - 1;
+  const accessibleNames = ["C", "C sharp", "D", "D sharp", "E", "F", "F sharp", "G", "G sharp", "A", "A sharp", "B"];
+  const displayNames = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
+  key.type = "button";
+  key.className = `keyboard-key ${keyClass}`;
+  key.dataset.midi = String(midi);
+  key.setAttribute("aria-label", `${accessibleNames[pitchClass]}${octave}`);
+  key.innerHTML = `<span>${displayNames[pitchClass]}</span>`;
+  return key;
+}
+
 function loadPianoSettings() {
   const saved = readJson(STORAGE_KEYS.piano, {});
   if (PIANO_SOUND_LABELS[saved.sound]) state.piano.sound = saved.sound;
@@ -5338,46 +5367,22 @@ function renderPiano() {
   el.pianoVolume.value = String(Math.round(state.piano.volume * 100));
   el.pianoSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
   el.pianoSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
+  if (el.keyboardSound) el.keyboardSound.value = state.piano.sound;
+  if (el.keyboardVolume) el.keyboardVolume.value = String(Math.round(state.piano.volume * 100));
+  if (el.keyboardSoundStatus) el.keyboardSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
+  if (el.keyboardSustainHint) el.keyboardSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
   if (state.piano.masterGain && state.piano.audioContext) {
     state.piano.masterGain.gain.setTargetAtTime(state.piano.volume, state.piano.audioContext.currentTime, 0.015);
   }
-}
-
-function pianoNotePitchClass(label) {
-  const match = String(label).match(/^([A-G])(?: sharp)?/i);
-  if (!match) return 0;
-  const base = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[match[1].toUpperCase()];
-  return (base + (/sharp/i.test(label) ? 1 : 0)) % 12;
-}
-
-function togglePianoExplorePanel(panel) {
-  if (panel === "games") {
-    const shouldOpen = !el.pianoGames.open;
-    el.pianoChordGuide.open = false;
-    el.pianoGames.open = shouldOpen;
-  } else {
-    const shouldOpen = !el.pianoChordGuide.open;
-    el.pianoGames.open = false;
-    el.pianoChordGuide.open = shouldOpen;
-  }
-  updatePianoExploreTabs();
-}
-
-function updatePianoExploreTabs() {
-  if (!el.pianoGamesTab || !el.pianoChordTab) return;
-  el.pianoGamesTab.classList.toggle("active", el.pianoGames.open);
-  el.pianoChordTab.classList.toggle("active", el.pianoChordGuide.open);
-  el.pianoGamesTab.setAttribute("aria-selected", String(el.pianoGames.open));
-  el.pianoChordTab.setAttribute("aria-selected", String(el.pianoChordGuide.open));
 }
 
 function renderPianoChordGuide() {
   if (!el.pianoChordRoot || !el.pianoChordType) return;
   const root = Number(el.pianoChordRoot.value) || 0;
   const chord = PIANO_CHORDS[el.pianoChordType.value] || PIANO_CHORDS.major;
-  const pitchClasses = new Set(chord.intervals.map((interval) => (root + interval) % 12));
-  document.querySelectorAll(".piano-note").forEach((button) => {
-    button.classList.toggle("chord-highlight", el.pianoChordGuide.open && pitchClasses.has(pianoNotePitchClass(button.getAttribute("aria-label"))));
+  const chordMidis = new Set(chord.intervals.map((interval) => 60 + root + interval));
+  document.querySelectorAll(".keyboard-key").forEach((button) => {
+    button.classList.toggle("chord-highlight", chordMidis.has(Number(button.dataset.midi)));
   });
   el.pianoChordUse.textContent = chord.use;
   const chordTypeLabel = el.pianoChordType.selectedOptions[0]?.textContent || "Chord";
@@ -5396,15 +5401,8 @@ function renderPianoChordGuide() {
 
 async function playPianoGuideChord() {
   renderPianoChordGuide();
-  const highlighted = Array.from(document.querySelectorAll(".piano-note.chord-highlight"));
-  const unique = [];
-  const usedPitchClasses = new Set();
-  highlighted.forEach((button) => {
-    const pitchClass = pianoNotePitchClass(button.getAttribute("aria-label"));
-    if (usedPitchClasses.has(pitchClass)) return;
-    usedPitchClasses.add(pitchClass);
-    unique.push(button);
-  });
+  const unique = Array.from(document.querySelectorAll(".keyboard-key.chord-highlight"))
+    .sort((a, b) => Number(a.dataset.midi) - Number(b.dataset.midi));
   const context = await getPianoAudioContext();
   if (!context) return;
   const voices = unique.map((button) => {
@@ -5575,15 +5573,17 @@ function stopPianoGame() {
 }
 
 
-function handlePianoSoundChange() {
+function handlePianoSoundChange(event) {
   stopAllPianoVoices();
-  state.piano.sound = PIANO_SOUND_LABELS[el.pianoSound.value] ? el.pianoSound.value : "grand-piano";
+  const value = event?.target?.value || el.pianoSound.value;
+  state.piano.sound = PIANO_SOUND_LABELS[value] ? value : "grand-piano";
   savePianoSettings();
   renderPiano();
 }
 
-function handlePianoVolumeChange() {
-  state.piano.volume = clamp(Number(el.pianoVolume.value) / 100, 0, 1);
+function handlePianoVolumeChange(event) {
+  const value = event?.target?.value ?? el.pianoVolume.value;
+  state.piano.volume = clamp(Number(value) / 100, 0, 1);
   savePianoSettings();
   renderPiano();
 }
@@ -5591,7 +5591,7 @@ function handlePianoVolumeChange() {
 async function getPianoAudioContext() {
   const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextCtor) {
-    window.alert("This browser cannot play Note Arc sounds.");
+    window.alert("This browser cannot play these music sounds.");
     return null;
   }
   if (!state.piano.audioContext) {
@@ -5630,7 +5630,7 @@ async function handlePianoPointerDown(event) {
   if (state.piano.voices.has(event.pointerId)) return;
   try { button.setPointerCapture(event.pointerId); } catch (_error) {}
   state.piano.pointerNotes.set(event.pointerId, button);
-  handlePianoGameInput(button);
+  if (button.classList.contains("piano-note")) handlePianoGameInput(button);
   await playPianoNoteForPointer(event.pointerId, button);
 }
 
@@ -5651,13 +5651,13 @@ function handlePianoPointerMove(event) {
   if (!state.piano.pointerNotes.has(event.pointerId)) return;
   event.preventDefault();
   const hit = document.elementFromPoint(event.clientX, event.clientY);
-  const nextButton = hit && hit.closest ? hit.closest(".piano-note") : null;
+  const nextButton = hit && hit.closest ? hit.closest(".piano-note, .keyboard-key") : null;
   if (!nextButton || nextButton === state.piano.pointerNotes.get(event.pointerId)) return;
   const currentVoice = state.piano.voices.get(event.pointerId);
   if (currentVoice) releasePianoVoice(currentVoice);
   state.piano.voices.delete(event.pointerId);
   state.piano.pointerNotes.set(event.pointerId, nextButton);
-  handlePianoGameInput(nextButton);
+  if (nextButton.classList.contains("piano-note")) handlePianoGameInput(nextButton);
   playPianoNoteForPointer(event.pointerId, nextButton);
 }
 

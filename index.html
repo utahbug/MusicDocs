@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-23">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-24">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-29" defer></script>
+    <script src="script.js?v=musicdocs-30" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -68,6 +68,7 @@
               <button type="button" role="menuitem" data-menu-section="tuner">Tuner</button>
               <button type="button" role="menuitem" data-menu-section="pitch">Pitch</button>
               <button type="button" role="menuitem" data-menu-section="piano">Fun Stuff</button>
+              <button type="button" role="menuitem" data-menu-section="keyboard">Keyboard</button>
             </div>
           </div>
           <div class="overflow-wrap header-info-wrap">
@@ -365,11 +366,7 @@
                 <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun stuff volume">
               </label>
             </div>
-            <div class="piano-explore-tabs" role="tablist" aria-label="Fun stuff activities">
-              <button id="pianoGamesTab" type="button" role="tab" aria-selected="false" aria-controls="pianoGames">Games</button>
-              <button id="pianoChordTab" type="button" role="tab" aria-selected="false" aria-controls="pianoChordGuide">Chord Guide</button>
-            </div>
-            <details id="pianoGames" class="piano-games" role="tabpanel" aria-labelledby="pianoGamesTab">
+            <details id="pianoGames" class="piano-games piano-games-standalone" open>
               <summary>Games</summary>
               <div class="piano-game-controls">
                 <button id="pianoCopyGameButton" class="secondary-button" type="button">Copy Me</button>
@@ -378,36 +375,6 @@
                 <button id="pianoGameStopButton" class="plain-button" type="button" hidden>End game</button>
               </div>
               <p id="pianoGameStatus" class="piano-game-status" aria-live="polite">Choose a game.</p>
-            </details>
-            <details id="pianoChordGuide" class="piano-chord-guide" role="tabpanel" aria-labelledby="pianoChordTab">
-              <summary>Chord Guide</summary>
-              <div class="piano-chord-controls">
-                <label><span>Root</span>
-                  <select id="pianoChordRoot" aria-label="Chord root">
-                    <option value="0">C</option><option value="1">C♯ / D♭</option><option value="2">D</option><option value="3">D♯ / E♭</option>
-                    <option value="4">E</option><option value="5">F</option><option value="6">F♯ / G♭</option><option value="7">G</option>
-                    <option value="8">G♯ / A♭</option><option value="9">A</option><option value="10">A♯ / B♭</option><option value="11">B</option>
-                  </select>
-                </label>
-                <label><span>Type</span>
-                  <select id="pianoChordType" aria-label="Chord type">
-                    <option value="major">Major</option><option value="minor">Minor</option><option value="diminished">Diminished</option>
-                    <option value="dominant7">Dominant 7th</option><option value="major7">Major 7th</option><option value="minor7">Minor 7th</option>
-                    <option value="diminished7">Diminished 7th</option><option value="halfDiminished">Half-diminished</option>
-                    <option value="sus2">Suspended 2nd</option><option value="sus4">Suspended 4th</option>
-                    <option value="augmented">Augmented</option><option value="sixth">6th</option><option value="ninth">9th</option>
-                  </select>
-                </label>
-                <button id="pianoChordPlayButton" class="primary-button" type="button">Play chord</button>
-              </div>
-              <div id="pianoChordNotes" class="piano-chord-notes" aria-live="polite"></div>
-              <p id="pianoChordUse" class="piano-chord-use"></p>
-              <div class="piano-genre-guide">
-                <p><strong>Blues:</strong> Dominant 7ths with I–IV–V.</p>
-                <p><strong>Country:</strong> Major I–IV–V, V7, minor vi, and suspended chords.</p>
-                <p><strong>Jazz:</strong> Major 7ths, minor 7ths, dominant 7ths, diminished passing chords, and ii–V–I.</p>
-              </div>
-              <div id="pianoChordFamily" class="piano-chord-family"></div>
             </details>
             <div class="piano-note-arc" aria-label="Playable notes">
               <button class="piano-note piano-natural" style="--px:8%;--py:22px;--wx:4%;--wy:20px" type="button" aria-label="C4">C</button>
@@ -437,6 +404,60 @@
               <button class="piano-note piano-accidental piano-wide-note" style="--wx:91.5%;--wy:85px" type="button" aria-label="A sharp 5">A&#9839;</button>
             </div>
             <p id="pianoSoundStatus" class="piano-prototype-note" aria-live="polite">Grand piano</p>
+          </div>
+        </section>
+
+        <section id="keyboardSection" class="view keyboard-view" data-view="keyboard" aria-labelledby="keyboardTitle">
+          <div class="keyboard-panel">
+            <div class="piano-header">
+              <h2 id="keyboardTitle">Keyboard</h2>
+              <span>Swipe across the keys to play</span>
+            </div>
+            <div class="piano-sound-controls">
+              <label>
+                <span>Sound</span>
+                <select id="keyboardSound" aria-label="Keyboard sound"></select>
+                <span id="keyboardSustainHint" class="piano-sustain-hint" hidden><span aria-hidden="true">↔</span> Hold notes for full sound</span>
+              </label>
+              <label class="piano-volume-control">
+                <span>Volume</span>
+                <input id="keyboardVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Keyboard volume">
+              </label>
+            </div>
+            <p id="keyboardSoundStatus" class="keyboard-sound-status" aria-live="polite">Grand piano</p>
+            <div class="keyboard-scroll" aria-label="Scrollable piano keyboard">
+              <div id="realKeyboard" class="real-keyboard" aria-label="Playable two-octave keyboard"></div>
+            </div>
+            <section id="pianoChordGuide" class="keyboard-chord-guide" aria-labelledby="keyboardChordHeading">
+              <h3 id="keyboardChordHeading">Chord Guide</h3>
+              <div class="piano-chord-controls">
+                <label><span>Root</span>
+                  <select id="pianoChordRoot" aria-label="Chord root">
+                    <option value="0">C</option><option value="1">C♯ / D♭</option><option value="2">D</option><option value="3">D♯ / E♭</option>
+                    <option value="4">E</option><option value="5">F</option><option value="6">F♯ / G♭</option><option value="7">G</option>
+                    <option value="8">G♯ / A♭</option><option value="9">A</option><option value="10">A♯ / B♭</option><option value="11">B</option>
+                  </select>
+                </label>
+                <label><span>Type</span>
+                  <select id="pianoChordType" aria-label="Chord type">
+                    <option value="major">Major</option><option value="minor">Minor</option><option value="diminished">Diminished</option>
+                    <option value="dominant7">Dominant 7th</option><option value="major7">Major 7th</option><option value="minor7">Minor 7th</option>
+                    <option value="diminished7">Diminished 7th</option><option value="halfDiminished">Half-diminished</option>
+                    <option value="sus2">Suspended 2nd</option><option value="sus4">Suspended 4th</option>
+                    <option value="augmented">Augmented</option><option value="sixth">6th</option><option value="ninth">9th</option>
+                  </select>
+                </label>
+                <button id="pianoChordPlayButton" class="primary-button" type="button">Play chord</button>
+              </div>
+              <div id="pianoChordNotes" class="piano-chord-notes" aria-live="polite"></div>
+              <p id="pianoChordUse" class="piano-chord-use"></p>
+              <div class="piano-genre-guide">
+                <p><strong>Blues:</strong> Dominant 7ths with I–IV–V.</p>
+                <p><strong>Country:</strong> Major I–IV–V, V7, minor vi, and suspended chords.</p>
+                <p><strong>Jazz:</strong> Major 7ths, minor 7ths, dominant 7ths, diminished passing chords, and ii–V–I.</p>
+              </div>
+              <div id="pianoChordFamily" class="piano-chord-family"></div>
+            </section>
           </div>
         </section>
 
