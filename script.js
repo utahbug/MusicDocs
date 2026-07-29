@@ -5243,14 +5243,10 @@ const PIANO_SOUND_LABELS = {
   violin: "Violin",
   "church-bell": "Church bell",
   "toy-piano": "Toy piano",
-  "soft-drum": "Soft drum",
   "water-drop": "Water drop",
   bubbles: "Bubbles",
-  barking: "Barking",
-  burp: "Burp",
   laser: "Laser",
   bell: "Bell",
-  frog: "Frog",
   chirp: "Chirp",
   boing: "Boing",
   spaceship: "Spaceship",
@@ -5492,9 +5488,6 @@ function createPianoVoice(context, frequency, sound) {
     addTone(1, "triangle", 0.25, 0.002, 0.8, 0.0001, 0, 1);
     addTone(2.02, "sine", 0.12, 0.002, 0.45, 0.0001, 0, 0.7);
     addTone(4.08, "sine", 0.045, 0.002, 0.25, 0.0001, 0, 0.4);
-  } else if (sound === "soft-drum") {
-    sweep(0.72, 0.22, "sine", 0.44, 0.38);
-    addNoise(0.035, 0.18, 900);
   } else if (sound === "water-drop") {
     sweep(1.35, 2.1, "sine", 0.28, 0.14);
     addTone(2.1, "sine", 0.11, 0.03, 0.48, 0.0001, 0, 0.6);
@@ -5503,27 +5496,12 @@ function createPianoVoice(context, frequency, sound) {
       const part = addTone(1.15 + index * 0.18, "sine", 0.13, delay + 0.006, delay + 0.22, 0.0001, 0, 0.55);
       part.oscillator.frequency.exponentialRampToValueAtTime(frequency * (1.75 + index * 0.22), now + delay + 0.19);
     });
-  } else if (sound === "barking") {
-    sweep(0.72, 0.42, "sawtooth", 0.17, 0.12);
-    addNoise(0.08, 0.14, 1250);
-    const second = addTone(0.65, "square", 0.11, 0.16, 0.3, 0.0001, 0, 0.36);
-    second.oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.38, now + 0.28);
-  } else if (sound === "burp") {
-    const part = addTone(0.42, "sawtooth", 0.13, 0.008, 0.55, 0.0001, -20, 0.7);
-    part.oscillator.frequency.exponentialRampToValueAtTime(Math.max(45, frequency * 0.2), now + 0.46);
-    part.oscillator.detune.setValueAtTime(90, now + 0.12);
-    part.oscillator.detune.linearRampToValueAtTime(-120, now + 0.48);
-    addNoise(0.025, 0.36, 520);
   } else if (sound === "laser") {
     sweep(3.8, 0.35, "sawtooth", 0.15, 0.42);
   } else if (sound === "bell") {
     addTone(1, "sine", 0.25, 0.002, 2.2, 0.0001, 0, 2.6);
     addTone(2.76, "sine", 0.1, 0.002, 1.5, 0.0001, 0, 1.9);
     addTone(5.4, "sine", 0.035, 0.002, 0.9, 0.0001, 0, 1.2);
-  } else if (sound === "frog") {
-    sweep(0.48, 0.34, "square", 0.12, 0.16);
-    const croak = addTone(0.38, "sawtooth", 0.1, 0.16, 0.42, 0.0001, -12, 0.55);
-    croak.oscillator.frequency.setValueAtTime(frequency * 0.46, now + 0.24);
   } else if (sound === "chirp") {
     sweep(1.6, 3.4, "sine", 0.2, 0.11);
     const echo = addTone(2.2, "sine", 0.09, 0.13, 0.27, 0.0001, 0, 0.34);
