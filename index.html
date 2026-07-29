@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-11">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-12">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-20" defer></script>
+    <script src="script.js?v=musicdocs-21" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -67,6 +67,7 @@
               <button type="button" role="menuitem" data-menu-section="metronome">Metronome</button>
               <button type="button" role="menuitem" data-menu-section="tuner">Tuner</button>
               <button type="button" role="menuitem" data-menu-section="pitch">Pitch</button>
+              <button type="button" role="menuitem" data-menu-section="piano">Piano</button>
             </div>
           </div>
           <div class="overflow-wrap header-info-wrap">
@@ -323,6 +324,43 @@
               <button id="pitchPlayButton" class="primary-button" type="button">Play pitch</button>
               <button id="pitchStopButton" class="secondary-button" type="button">Stop</button>
             </div>
+          </div>
+        </section>
+
+        <section id="pianoSection" class="view piano-view" data-view="piano" aria-labelledby="pianoTitle">
+          <div class="piano-panel">
+            <div class="piano-header">
+              <h2 id="pianoTitle">Note Arc</h2>
+              <span>Turn sideways for more notes</span>
+            </div>
+            <div class="piano-note-arc" aria-label="Silent piano note prototype">
+              <button class="piano-note piano-natural" style="--px:8%;--py:14px;--wx:3%;--wy:12px" type="button" aria-label="C4">C</button>
+              <button class="piano-note piano-natural" style="--px:20%;--py:34px;--wx:10%;--wy:30px" type="button" aria-label="D4">D</button>
+              <button class="piano-note piano-natural" style="--px:32%;--py:49px;--wx:17%;--wy:47px" type="button" aria-label="E4">E</button>
+              <button class="piano-note piano-natural" style="--px:44%;--py:57px;--wx:24%;--wy:61px" type="button" aria-label="F4">F</button>
+              <button class="piano-note piano-natural" style="--px:56%;--py:57px;--wx:31%;--wy:72px" type="button" aria-label="G4">G</button>
+              <button class="piano-note piano-natural" style="--px:68%;--py:49px;--wx:38%;--wy:79px" type="button" aria-label="A4">A</button>
+              <button class="piano-note piano-natural" style="--px:80%;--py:34px;--wx:45%;--wy:83px" type="button" aria-label="B4">B</button>
+              <button class="piano-note piano-natural" style="--px:92%;--py:14px;--wx:52%;--wy:84px" type="button" aria-label="C5">C</button>
+              <button class="piano-note piano-natural piano-wide-note" style="--wx:59%;--wy:81px" type="button" aria-label="D5">D</button>
+              <button class="piano-note piano-natural piano-wide-note" style="--wx:66%;--wy:75px" type="button" aria-label="E5">E</button>
+              <button class="piano-note piano-natural piano-wide-note" style="--wx:73%;--wy:65px" type="button" aria-label="F5">F</button>
+              <button class="piano-note piano-natural piano-wide-note" style="--wx:80%;--wy:52px" type="button" aria-label="G5">G</button>
+              <button class="piano-note piano-natural piano-wide-note" style="--wx:87%;--wy:36px" type="button" aria-label="A5">A</button>
+              <button class="piano-note piano-natural piano-wide-note" style="--wx:94%;--wy:16px" type="button" aria-label="B5">B</button>
+
+              <button class="piano-note piano-accidental" style="--px:14%;--py:8px;--wx:6.5%;--wy:8px" type="button" aria-label="C sharp 4">C&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:26%;--py:26px;--wx:13.5%;--wy:24px" type="button" aria-label="D sharp 4">D&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:50%;--py:43px;--wx:27.5%;--wy:48px" type="button" aria-label="F sharp 4">F&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:62%;--py:34px;--wx:34.5%;--wy:56px" type="button" aria-label="G sharp 4">G&#9839;</button>
+              <button class="piano-note piano-accidental" style="--px:74%;--py:20px;--wx:41.5%;--wy:60px" type="button" aria-label="A sharp 4">A&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:55.5%;--wy:60px" type="button" aria-label="C sharp 5">C&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:62.5%;--wy:57px" type="button" aria-label="D sharp 5">D&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:76.5%;--wy:43px" type="button" aria-label="F sharp 5">F&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:83.5%;--wy:32px" type="button" aria-label="G sharp 5">G&#9839;</button>
+              <button class="piano-note piano-accidental piano-wide-note" style="--wx:90.5%;--wy:17px" type="button" aria-label="A sharp 5">A&#9839;</button>
+            </div>
+            <p class="piano-prototype-note">Visual prototype — sound comes next.</p>
           </div>
         </section>
 

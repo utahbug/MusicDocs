@@ -295,6 +295,7 @@ function collectElements() {
     metronome: document.getElementById("metronomeSection"),
     tuner: document.getElementById("tunerSection"),
     pitch: document.getElementById("pitchSection"),
+    piano: document.getElementById("pianoSection"),
     detail: document.getElementById("detailSection")
   };
 
@@ -810,7 +811,7 @@ function setNavHighlight(sectionName) {
   el.navButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.section === sectionName);
   });
-  el.overflowMenuButton.classList.toggle("active", ["metronome", "tuner", "pitch"].includes(sectionName));
+  el.overflowMenuButton.classList.toggle("active", ["metronome", "tuner", "pitch", "piano"].includes(sectionName));
   el.infoMenuButton.classList.remove("active");
 }
 
