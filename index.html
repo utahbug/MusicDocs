@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-52">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-53">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-54" defer></script>
+    <script src="script.js?v=musicdocs-55" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -67,7 +67,7 @@
               <button type="button" role="menuitem" data-menu-section="metronome">Metronome</button>
               <button type="button" role="menuitem" data-menu-section="tuner">Tuner</button>
               <button type="button" role="menuitem" data-menu-section="pitch">Pitch</button>
-              <button type="button" role="menuitem" data-menu-section="piano">Fun Stuff</button>
+              <button type="button" role="menuitem" data-menu-section="piano">Sidetracked</button>
               <button type="button" role="menuitem" data-menu-section="keyboard">Keyboard</button>
               <button type="button" role="menuitem" data-menu-section="audio">Audio Library</button>
             </div>
@@ -341,7 +341,7 @@
         <section id="pianoSection" class="view piano-view" data-view="piano" aria-labelledby="pianoTitle">
           <div class="piano-panel">
             <div class="piano-header">
-              <h2 id="pianoTitle">Fun stuff</h2>
+              <h2 id="pianoTitle">Sidetracked</h2>
               <span>Turn sideways for more notes</span>
             </div>
             <div class="piano-sound-controls fun-sound-controls">
@@ -416,7 +416,7 @@
               </div>
               <label class="piano-volume-control">
                 <span>Volume</span>
-                <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun stuff volume">
+                <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Sidetracked volume">
               </label>
             </div>
             <div class="piano-shape-control">
@@ -435,25 +435,25 @@
                   <span>Twinkle Stars</span>
                 </button>
                 <button type="button" data-piano-shape="circle">
-                  <span class="activity-picture activity-circle-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
-                  <span>Circle</span>
+                  <span class="activity-picture activity-keyboard-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                  <span>Note keyboard</span>
                 </button>
                 <button type="button" data-piano-shape="zigzag">
-                  <span class="activity-picture activity-zigzag-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-                  <span>Zigzag</span>
+                  <span class="activity-picture activity-puzzle-picture" aria-hidden="true">&#x1F9E9;</span>
+                  <span>Key puzzle</span>
                 </button>
                 <button type="button" data-piano-shape="rainbow">
-                  <span class="activity-picture activity-rainbow-picture" aria-hidden="true">&#x1F308;</span>
-                  <span>Rainbow</span>
+                  <span class="activity-picture activity-air-picture" aria-hidden="true">&#x266B;</span>
+                  <span>Pop notes</span>
                 </button>
               </div>
-              <select id="pianoShape" class="sr-only" aria-label="Fun Stuff activity">
+              <select id="pianoShape" class="sr-only" aria-label="Sidetracked activity">
                 <option value="trail" selected>Sound Trail</option>
                 <option value="garden">Just sound</option>
                 <option value="twinkle">Twinkle Stars</option>
-                <option value="circle">Circle</option>
-                <option value="zigzag">Zigzag</option>
-                <option value="rainbow">Rainbow</option>
+                <option value="circle">Note keyboard</option>
+                <option value="zigzag">Key puzzle</option>
+                <option value="rainbow">Pop notes</option>
               </select>
             </div>
             <div class="piano-note-arc" aria-label="Playable sound objects">
@@ -487,13 +487,16 @@
               <button class="piano-note piano-play-object piano-wide-note" data-note="D sharp 6" data-object="&#x1F41D;" type="button" aria-label="Bee">&#x1F41D;</button>
               <button class="piano-note piano-play-object piano-wide-note" data-note="E6" data-object="&#x1F319;" type="button" aria-label="Moon">&#x1F319;</button>
               <button class="piano-note piano-play-object piano-wide-note" data-note="F6" data-object="&#x26BD;" type="button" aria-label="Soccer ball">&#x26BD;</button>
+              <div id="sidetrackKeyboard" class="sidetrack-special sidetrack-keyboard" hidden></div>
+              <div id="sidetrackPuzzle" class="sidetrack-special sidetrack-puzzle" hidden></div>
+              <div id="sidetrackAir" class="sidetrack-special sidetrack-air" hidden>
+                <p id="sidetrackAirStatus">Pop all 20 notes</p>
+                <div id="sidetrackAirField" class="sidetrack-air-field"></div>
+                <button id="sidetrackAirRestart" type="button">Play again</button>
+              </div>
             </div>
             <p id="pianoSoundStatus" class="piano-prototype-note" aria-live="polite">Grand piano</p>
           </div>
-          <button class="fun-keyboard-link" type="button" data-menu-section="keyboard">
-            <span class="mini-keyboard-icon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-            Open Keyboard
-          </button>
         </section>
 
         <section id="keyboardSection" class="view keyboard-view" data-view="keyboard" aria-labelledby="keyboardTitle">
@@ -547,10 +550,6 @@
               </div>
               <div id="pianoChordFamily" class="piano-chord-family"></div>
             </section>
-            <button class="fun-keyboard-link keyboard-fun-link" type="button" data-menu-section="piano">
-              <svg class="mini-frog-icon" viewBox="0 0 48 36" aria-hidden="true"><circle cx="14" cy="9" r="6"/><circle cx="34" cy="9" r="6"/><circle cx="14" cy="9" r="2"/><circle cx="34" cy="9" r="2"/><path d="M7 20c3-8 10-11 17-11s14 3 17 11c2 7-5 13-17 13S5 27 7 20Z"/><path d="M17 23c4 3 10 3 14 0"/></svg>
-              Fun Stuff
-            </button>
           </div>
         </section>
 

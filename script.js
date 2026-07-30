@@ -434,6 +434,12 @@ function collectElements() {
   el.pianoShape = document.getElementById("pianoShape");
   el.pianoShapeButtons = Array.from(document.querySelectorAll("[data-piano-shape]"));
   el.pianoNoteArc = document.querySelector(".piano-note-arc");
+  el.sidetrackKeyboard = document.getElementById("sidetrackKeyboard");
+  el.sidetrackPuzzle = document.getElementById("sidetrackPuzzle");
+  el.sidetrackAir = document.getElementById("sidetrackAir");
+  el.sidetrackAirField = document.getElementById("sidetrackAirField");
+  el.sidetrackAirStatus = document.getElementById("sidetrackAirStatus");
+  el.sidetrackAirRestart = document.getElementById("sidetrackAirRestart");
   el.pianoEffectPads = Array.from(document.querySelectorAll("[data-piano-effect]"));
   el.pianoSoundStatus = document.getElementById("pianoSoundStatus");
   el.pianoSustainHint = document.getElementById("pianoSustainHint");
@@ -698,6 +704,7 @@ function wireEvents() {
     el.pianoShape.value = button.dataset.pianoShape;
     handlePianoShapeChange();
   }));
+  initializeSidetrackActivities();
   el.pianoEffectPads.forEach((button) => button.addEventListener("click", () => playPianoEffect(button.dataset.pianoEffect, button)));
   el.keyboardSound.addEventListener("change", handlePianoSoundChange);
   el.keyboardVolume.addEventListener("input", handlePianoVolumeChange);
@@ -6268,6 +6275,161 @@ function handlePianoShapeChange() {
   renderPiano();
 }
 
+const SIDETRACK_NOTES = [
+  ["C4", "C"], ["C sharp 4", "C#"], ["D4", "D"], ["D sharp 4", "D#"],
+  ["E4", "E"], ["F4", "F"], ["F sharp 4", "F#"], ["G4", "G"],
+  ["G sharp 4", "G#"], ["A4", "A"], ["A sharp 4", "A#"], ["B4", "B"]
+];
+const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20 };
+let sidetrackPuzzleDrag = null;
+
+function initializeSidetrackActivities() {
+  if (!el.sidetrackKeyboard || el.sidetrackKeyboard.childElementCount) return;
+  SIDETRACK_NOTES.forEach(([note, label]) => {
+    const key = document.createElement("button");
+    key.type = "button";
+    key.className = `sidetrack-key keyboard-key ${label.includes("#") ? "is-black" : "is-white"}`;
+    key.dataset.note = note;
+    key.setAttribute("aria-label", `${label}; tap again to hide or show its name`);
+    key.innerHTML = `<span>${label}</span>`;
+    ["pointerdown", "pointermove", "pointerup", "pointercancel", "lostpointercapture"].forEach((eventName) => {
+      const handler = eventName === "pointerdown" ? handlePianoPointerDown
+        : eventName === "pointermove" ? handlePianoPointerMove : handlePianoPointerUp;
+      key.addEventListener(eventName, handler);
+    });
+    key.addEventListener("click", () => key.classList.toggle("show-note"));
+    el.sidetrackKeyboard.appendChild(key);
+  });
+  buildSidetrackPuzzle();
+  el.sidetrackAirRestart?.addEventListener("click", resetSidetrackAirGame);
+}
+
+function buildSidetrackPuzzle() {
+  if (!el.sidetrackPuzzle) return;
+  el.sidetrackPuzzle.innerHTML = `
+    <p class="sidetrack-puzzle-instruction">Drag the keys into keyboard order</p>
+    <div class="sidetrack-puzzle-board">${SIDETRACK_NOTES.filter(([, label]) => !label.includes("#")).map(([, label], index) => `<span class="sidetrack-puzzle-slot" data-puzzle-index="${index}"></span>`).join("")}</div>
+    <div class="sidetrack-puzzle-pieces"></div>
+    <p class="sidetrack-puzzle-status" aria-live="polite">Build the keyboard</p>`;
+  const naturalNotes = SIDETRACK_NOTES.filter(([, label]) => !label.includes("#"));
+  const pieces = naturalNotes.map(([note, label], index) => ({ note, label, index })).sort(() => Math.random() - 0.5);
+  const tray = el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-pieces");
+  pieces.forEach(({ note, label, index }) => {
+    const piece = document.createElement("button");
+    piece.type = "button";
+    piece.className = "sidetrack-puzzle-piece";
+    piece.dataset.note = note;
+    piece.dataset.puzzleIndex = String(index);
+    piece.textContent = label;
+    piece.addEventListener("pointerdown", startSidetrackPuzzleDrag);
+    piece.addEventListener("pointermove", moveSidetrackPuzzleDrag);
+    piece.addEventListener("pointerup", endSidetrackPuzzleDrag);
+    piece.addEventListener("pointercancel", cancelSidetrackPuzzleDrag);
+    tray.appendChild(piece);
+  });
+}
+
+function startSidetrackPuzzleDrag(event) {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  event.preventDefault();
+  const piece = event.currentTarget;
+  try { piece.setPointerCapture(event.pointerId); } catch (_error) {}
+  sidetrackPuzzleDrag = { piece, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY };
+  piece.classList.add("dragging");
+}
+
+function moveSidetrackPuzzleDrag(event) {
+  if (!sidetrackPuzzleDrag || sidetrackPuzzleDrag.pointerId !== event.pointerId) return;
+  event.preventDefault();
+  const { piece, startX, startY } = sidetrackPuzzleDrag;
+  piece.style.transform = `translate(${event.clientX - startX}px, ${event.clientY - startY}px) scale(1.06)`;
+}
+
+function endSidetrackPuzzleDrag(event) {
+  if (!sidetrackPuzzleDrag || sidetrackPuzzleDrag.pointerId !== event.pointerId) return;
+  const { piece } = sidetrackPuzzleDrag;
+  piece.style.visibility = "hidden";
+  const slot = document.elementFromPoint(event.clientX, event.clientY)?.closest(".sidetrack-puzzle-slot");
+  piece.style.visibility = "";
+  piece.classList.remove("dragging");
+  piece.style.transform = "";
+  if (slot && slot.dataset.puzzleIndex === piece.dataset.puzzleIndex) {
+    slot.appendChild(piece);
+    slot.classList.add("filled");
+    piece.disabled = true;
+    const remaining = el.sidetrackPuzzle.querySelectorAll(".sidetrack-puzzle-pieces .sidetrack-puzzle-piece").length;
+    const status = el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-status");
+    status.textContent = remaining ? `${remaining} key${remaining === 1 ? "" : "s"} left` : "Keyboard complete!";
+  }
+  sidetrackPuzzleDrag = null;
+}
+
+function cancelSidetrackPuzzleDrag(event) {
+  if (!sidetrackPuzzleDrag || sidetrackPuzzleDrag.pointerId !== event.pointerId) return;
+  sidetrackPuzzleDrag.piece.classList.remove("dragging");
+  sidetrackPuzzleDrag.piece.style.transform = "";
+  sidetrackPuzzleDrag = null;
+}
+
+function renderSidetrackActivity(shape) {
+  if (!el.sidetrackKeyboard) return;
+  el.sidetrackKeyboard.hidden = shape !== "circle";
+  el.sidetrackPuzzle.hidden = shape !== "zigzag";
+  el.sidetrackAir.hidden = shape !== "rainbow";
+  if (shape === "rainbow") {
+    if (!sidetrackAirGame.active && sidetrackAirGame.popped < sidetrackAirGame.total) resetSidetrackAirGame();
+  } else {
+    sidetrackAirGame.active = false;
+    el.sidetrackAirField?.replaceChildren();
+  }
+}
+
+function resetSidetrackAirGame() {
+  if (!el.sidetrackAirField) return;
+  sidetrackAirGame.active = true;
+  sidetrackAirGame.popped = 0;
+  sidetrackAirGame.created = 0;
+  el.sidetrackAirRestart.hidden = true;
+  el.sidetrackAirField.replaceChildren();
+  updateSidetrackAirStatus();
+  for (let index = 0; index < 4; index += 1) spawnSidetrackAirNote();
+}
+
+function spawnSidetrackAirNote() {
+  if (!sidetrackAirGame.active || sidetrackAirGame.created >= sidetrackAirGame.total) return;
+  const sequence = ["♪", "♫", "♩", "♬"];
+  const note = document.createElement("button");
+  note.type = "button";
+  note.className = "sidetrack-flying-note";
+  note.textContent = sequence[sidetrackAirGame.created % sequence.length];
+  note.style.setProperty("--air-y", `${8 + Math.random() * 76}%`);
+  note.style.setProperty("--air-duration", `${5.5 + Math.random() * 3}s`);
+  note.style.setProperty("--air-delay", `${-Math.random() * 3}s`);
+  note.setAttribute("aria-label", "Pop moving music note");
+  note.addEventListener("click", () => {
+    if (!sidetrackAirGame.active || note.classList.contains("popped")) return;
+    note.classList.add("popped");
+    sidetrackAirGame.popped += 1;
+    updateSidetrackAirStatus();
+    window.setTimeout(() => {
+      note.remove();
+      if (sidetrackAirGame.popped >= sidetrackAirGame.total) {
+        sidetrackAirGame.active = false;
+        el.sidetrackAirStatus.textContent = "Complete — all 20 notes popped!";
+        el.sidetrackAirRestart.hidden = false;
+      } else {
+        spawnSidetrackAirNote();
+      }
+    }, 180);
+  });
+  sidetrackAirGame.created += 1;
+  el.sidetrackAirField.appendChild(note);
+}
+
+function updateSidetrackAirStatus() {
+  if (el.sidetrackAirStatus) el.sidetrackAirStatus.textContent = `${sidetrackAirGame.popped} of ${sidetrackAirGame.total} notes popped`;
+}
+
 function setPianoMoreSounds(expanded) {
   if (!el.pianoMoreSounds || !el.pianoMoreSoundsButton) return;
   el.pianoMoreSounds.hidden = !expanded;
@@ -6301,7 +6463,7 @@ function applyPianoShape() {
   el.pianoNoteArc.dataset.shape = shape;
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button, buttonIndex) => {
-    const shapeLimit = shape === "twinkle" ? 10 : shape === "rainbow" ? 13 : shape === "circle" ? 16 : Infinity;
+    const shapeLimit = shape === "twinkle" ? 10 : ["circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity;
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
     button.classList.toggle("piano-shape-hidden", buttonIndex >= shapeLimit);
@@ -6320,6 +6482,7 @@ function applyPianoShape() {
     button.style.left = `${point.x}%`;
     button.style.bottom = `${point.y}px`;
   });
+  renderSidetrackActivity(shape);
   el.pianoSoundStatus.textContent = shape === "twinkle"
     ? "Tap any star to play Twinkle, Twinkle"
     : PIANO_SOUND_LABELS[state.piano.sound];
@@ -6329,9 +6492,9 @@ function pianoShapePoint(shape, index, count) {
   const progress = count > 1 ? index / (count - 1) : 0.5;
   if (shape === "trail") {
     const height = el.pianoNoteArc?.clientHeight || 360;
-    const upperCount = Math.max(5, Math.floor((count - 4) / 2));
-    const turnCount = 4;
-    const lowerCount = count - upperCount - turnCount;
+    const upperCount = 10;
+    const rightTurnCount = 5;
+    const lowerCount = 10;
     const upperY = height - 68;
     const lowerY = 28;
     if (index < upperCount) {
@@ -6341,18 +6504,26 @@ function pianoShapePoint(shape, index, count) {
         y: upperY + Math.sin(upperProgress * Math.PI * 2) * 18
       };
     }
-    if (index < upperCount + turnCount) {
-      const turnProgress = (index - upperCount + 1) / (turnCount + 1);
+    if (index < upperCount + rightTurnCount) {
+      const turnProgress = (index - upperCount + 1) / (rightTurnCount + 1);
       return {
         x: 88 + Math.sin(turnProgress * Math.PI) * 6,
         y: upperY + (lowerY - upperY) * turnProgress
       };
     }
-    const lowerIndex = index - upperCount - turnCount;
-    const lowerProgress = lowerCount > 1 ? lowerIndex / (lowerCount - 1) : 0.5;
+    if (index < upperCount + rightTurnCount + lowerCount) {
+      const lowerIndex = index - upperCount - rightTurnCount;
+      const lowerProgress = lowerCount > 1 ? lowerIndex / (lowerCount - 1) : 0.5;
+      return {
+        x: 88 - lowerProgress * 82,
+        y: lowerY + Math.sin(lowerProgress * Math.PI * 2) * 18
+      };
+    }
+    const leftTurnCount = Math.max(1, count - upperCount - rightTurnCount - lowerCount);
+    const leftProgress = (index - upperCount - rightTurnCount - lowerCount + 1) / (leftTurnCount + 1);
     return {
-      x: 88 - lowerProgress * 82,
-      y: lowerY + Math.sin(lowerProgress * Math.PI * 2) * 18
+      x: 6 - Math.sin(leftProgress * Math.PI) * 4,
+      y: lowerY + (upperY - lowerY) * leftProgress
     };
   }
   if (shape === "garden") {
