@@ -5415,7 +5415,7 @@ function moveToAdjacentPdfInList(direction) {
         listId: state.currentPdf.sequenceListId,
         initialPage: "first",
         preserveSequence: true,
-        sequenceNotice: "Starting list over"
+        sequenceNotice: "List starting over"
       });
       return true;
     }
