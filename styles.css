@@ -1323,7 +1323,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-chord-use { color: var(--text); font-size: 0.9rem; margin: 11px 2px; }
 .piano-chord-notes { align-items: center; background: linear-gradient(105deg, color-mix(in srgb, #237C7A 10%, var(--surface)), color-mix(in srgb, #3667A8 9%, var(--surface))); border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line)); border-radius: 10px; display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0 0 10px; padding: 10px 12px; }
 .piano-chord-notes strong { color: var(--accent-strong); }
-.piano-chord-notes span { color: var(--text); font-size: 1.02rem; font-weight: 800; letter-spacing: 0.025em; }
+.piano-chord-notes span { color: var(--text); font-size: 1.02rem; font-weight: 400; letter-spacing: 0.025em; }
 .piano-chord-family { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; gap: 6px; grid-template-columns: repeat(4, 1fr); margin-bottom: 10px; padding: 9px; }
 .piano-chord-family span { color: var(--muted); font-size: 0.76rem; text-align: center; }
 .piano-chord-family strong { color: var(--text); display: block; font-size: 1rem; }
