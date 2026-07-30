@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
   lists: storageKey("lists"),
   listEditSort: storageKey("listEditSort"),
   pdfPages: storageKey("pdfPages"),
+  pdfNumbering: storageKey("pdfNumbering"),
   quickIndexes: storageKey("quickIndexes"),
   recents: storageKey("recents"),
   settings: storageKey("settings"),
@@ -221,7 +222,8 @@ const state = {
     panY: 0,
     suppressClick: false,
     tipsTimer: null,
-    tipsMode: ""
+    tipsMode: "",
+    pageNoticeTimer: null
   },
   metronome: {
     bpm: 90,
@@ -474,6 +476,8 @@ function collectElements() {
   el.pdfTempoDownButton = document.getElementById("pdfTempoDownButton");
   el.pdfTitle = document.getElementById("pdfTitle");
   el.pdfPageStatus = document.getElementById("pdfPageStatus");
+  el.pdfPageNotice = document.getElementById("pdfPageNotice");
+  el.pdfPageMarker = document.getElementById("pdfPageMarker");
   el.pdfStage = document.getElementById("pdfStage");
   el.pdfZoneTips = document.getElementById("pdfZoneTips");
   el.pdfTipsShowOnOpen = document.getElementById("pdfTipsShowOnOpen");
@@ -481,6 +485,17 @@ function collectElements() {
   el.pdfCanvas = document.getElementById("pdfCanvas");
   el.pdfTapLeft = document.getElementById("pdfTapLeft");
   el.pdfTapRight = document.getElementById("pdfTapRight");
+  el.pdfSettingsLayer = document.getElementById("pdfSettingsLayer");
+  el.pdfSettingsCloseButton = document.getElementById("pdfSettingsCloseButton");
+  el.pdfShowTapZonesButton = document.getElementById("pdfShowTapZonesButton");
+  el.pdfNumberingMode = document.getElementById("pdfNumberingMode");
+  el.pdfSongNumberingFields = document.getElementById("pdfSongNumberingFields");
+  el.pdfSongStartButton = document.getElementById("pdfSongStartButton");
+  el.pdfSongPageCount = document.getElementById("pdfSongPageCount");
+  el.pdfSongNumberingStatus = document.getElementById("pdfSongNumberingStatus");
+  el.pdfMetronomeEnabled = document.getElementById("pdfMetronomeEnabled");
+  el.pdfSettingsTempoRow = document.getElementById("pdfSettingsTempoRow");
+  el.pdfSettingsTempoInput = document.getElementById("pdfSettingsTempoInput");
 
   el.importModal = document.getElementById("importModal");
   el.modalPanel = document.getElementById("modalPanel");
@@ -760,6 +775,20 @@ function wireEvents() {
   el.pdfTopHomeButton.addEventListener("click", returnFromPdfViewer);
   el.pdfHomeButton.addEventListener("click", returnFromPdfViewer);
   el.pdfTipsButton.addEventListener("click", togglePdfTips);
+  el.pdfSettingsCloseButton.addEventListener("click", closePdfSettings);
+  el.pdfSettingsLayer.addEventListener("click", (event) => {
+    if (event.target === el.pdfSettingsLayer) closePdfSettings();
+  });
+  el.pdfShowTapZonesButton.addEventListener("click", () => {
+    closePdfSettings();
+    syncPdfTipsPreference();
+    setPdfTipsVisible(true, 0, "manual");
+  });
+  el.pdfNumberingMode.addEventListener("change", savePdfNumberingMode);
+  el.pdfSongStartButton.addEventListener("click", savePdfSongStart);
+  el.pdfSongPageCount.addEventListener("change", savePdfSongPageCount);
+  el.pdfMetronomeEnabled.addEventListener("change", savePdfMetronomeVisibility);
+  el.pdfSettingsTempoInput.addEventListener("change", () => setMetronomeBpm(Number(el.pdfSettingsTempoInput.value)));
   el.pdfFollowButton.addEventListener("click", togglePdfFollow);
   el.pdfRestartListButton.addEventListener("click", restartPdfList);
   el.pdfZoneTips.addEventListener("click", handlePdfZoneTipsClick);
@@ -980,6 +1009,7 @@ function handleDocumentKeydown(event) {
   closeListEditModal();
   closeHelpModal();
   closeAboutModal();
+  closePdfSettings();
 }
 
 function handlePdfPageTurnKey(event) {
@@ -4845,6 +4875,7 @@ async function openPdf(item, options = {}) {
   }
   document.body.classList.add("pdf-open");
   el.pdfViewer.classList.remove("hidden");
+  syncPdfViewerSettings();
   if (!preserveSequence) showPdfTipsOnOpen();
 
   if (!window.pdfjsLib) {
@@ -4984,8 +5015,10 @@ function showPdfMessage(message) {
 
 function updatePdfStatus() {
   const sequence = getCurrentPdfSequencePosition();
-  const sequenceStatus = sequence ? ` · Song ${sequence.index + 1} of ${sequence.items.length}` : "";
-  el.pdfPageStatus.textContent = `Page ${state.currentPdf.pageNumber} of ${state.currentPdf.pageCount}${sequenceStatus}`;
+  const sequenceStatus = sequence ? `Song ${sequence.index + 1} of ${sequence.items.length}` : "";
+  const pageStatus = getPdfNumberingLabel();
+  el.pdfPageStatus.textContent = [pageStatus, sequenceStatus].filter(Boolean).join(" · ");
+  renderPdfPageNumbering(true);
   updatePdfSequenceControls();
 }
 
@@ -5000,13 +5033,138 @@ function returnFromPdfViewer() {
 }
 
 function togglePdfTips() {
-  const showTips = !el.pdfViewer.classList.contains("show-tips");
-  if (showTips) {
-    syncPdfTipsPreference();
-    setPdfTipsVisible(true, 0, "manual");
-  } else {
-    dismissPdfTips();
+  if (el.pdfSettingsLayer.classList.contains("hidden")) openPdfSettings();
+  else closePdfSettings();
+}
+
+function openPdfSettings() {
+  syncPdfViewerSettings();
+  el.pdfSettingsLayer.classList.remove("hidden");
+  el.pdfTipsButton.setAttribute("aria-expanded", "true");
+}
+
+function closePdfSettings() {
+  el.pdfSettingsLayer.classList.add("hidden");
+  el.pdfTipsButton.setAttribute("aria-expanded", "false");
+}
+
+function getPdfViewerSettings() {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  return {
+    numberingMode: ["document", "song"].includes(settings.pdfNumberingMode) ? settings.pdfNumberingMode : "off",
+    metronomeEnabled: settings.pdfMetronomeEnabled === true
+  };
+}
+
+function syncPdfViewerSettings() {
+  const settings = getPdfViewerSettings();
+  el.pdfNumberingMode.value = settings.numberingMode;
+  el.pdfMetronomeEnabled.checked = settings.metronomeEnabled;
+  el.pdfSettingsTempoInput.value = String(state.metronome.bpm);
+  el.pdfSettingsTempoRow.classList.toggle("hidden", !settings.metronomeEnabled);
+  el.pdfTempoInput.closest(".pdf-tempo-box")?.classList.toggle("hidden", !settings.metronomeEnabled);
+  el.pdfSongNumberingFields.classList.toggle("hidden", settings.numberingMode !== "song");
+  const custom = getCurrentPdfSongNumbering();
+  el.pdfSongPageCount.value = String(custom?.pageCount || 1);
+  el.pdfSongNumberingStatus.textContent = custom
+    ? `Song page 1 starts on document page ${custom.startPage}.`
+    : "Go to the first page of the song, then choose “Start song numbering on this page.”";
+  renderPdfPageNumbering(false);
+}
+
+function savePdfNumberingMode() {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  writeJson(STORAGE_KEYS.settings, { ...settings, pdfNumberingMode: el.pdfNumberingMode.value });
+  syncPdfViewerSettings();
+  updatePdfStatus();
+}
+
+function savePdfMetronomeVisibility() {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  writeJson(STORAGE_KEYS.settings, { ...settings, pdfMetronomeEnabled: el.pdfMetronomeEnabled.checked });
+  if (!el.pdfMetronomeEnabled.checked) stopMetronome();
+  syncPdfViewerSettings();
+}
+
+function getCurrentPdfSongNumbering() {
+  const itemId = state.currentPdf.item?.id;
+  if (!itemId) return null;
+  const all = readJson(STORAGE_KEYS.pdfNumbering, {});
+  const saved = all[itemId];
+  if (!saved) return null;
+  const startPage = clamp(Math.round(Number(saved.startPage) || 1), 1, Math.max(1, state.currentPdf.pageCount));
+  return {
+    startPage,
+    pageCount: clamp(Math.round(Number(saved.pageCount) || 1), 1, Math.max(1, state.currentPdf.pageCount - startPage + 1))
+  };
+}
+
+function writeCurrentPdfSongNumbering(numbering) {
+  const itemId = state.currentPdf.item?.id;
+  if (!itemId) return;
+  const all = readJson(STORAGE_KEYS.pdfNumbering, {});
+  all[itemId] = numbering;
+  writeJson(STORAGE_KEYS.pdfNumbering, all);
+}
+
+function savePdfSongStart() {
+  const maxCount = Math.max(1, state.currentPdf.pageCount - state.currentPdf.pageNumber + 1);
+  const pageCount = clamp(Math.round(Number(el.pdfSongPageCount.value) || 1), 1, maxCount);
+  writeCurrentPdfSongNumbering({ startPage: state.currentPdf.pageNumber, pageCount });
+  syncPdfViewerSettings();
+  updatePdfStatus();
+}
+
+function savePdfSongPageCount() {
+  const current = getCurrentPdfSongNumbering();
+  const startPage = current?.startPage || state.currentPdf.pageNumber;
+  const maxCount = Math.max(1, state.currentPdf.pageCount - startPage + 1);
+  const pageCount = clamp(Math.round(Number(el.pdfSongPageCount.value) || 1), 1, maxCount);
+  writeCurrentPdfSongNumbering({
+    startPage,
+    pageCount
+  });
+  syncPdfViewerSettings();
+  updatePdfStatus();
+}
+
+function getPdfDisplayedPage() {
+  const settings = getPdfViewerSettings();
+  if (settings.numberingMode === "document") {
+    return { number: state.currentPdf.pageNumber, count: state.currentPdf.pageCount };
   }
+  if (settings.numberingMode === "song") {
+    const custom = getCurrentPdfSongNumbering();
+    if (!custom) return null;
+    const number = state.currentPdf.pageNumber - custom.startPage + 1;
+    if (number < 1 || number > custom.pageCount) return null;
+    return { number, count: custom.pageCount };
+  }
+  return null;
+}
+
+function getPdfNumberingLabel() {
+  const displayed = getPdfDisplayedPage();
+  return displayed ? `Page ${displayed.number} of ${displayed.count}` : "";
+}
+
+function renderPdfPageNumbering(showNotice) {
+  window.clearTimeout(state.currentPdf.pageNoticeTimer);
+  state.currentPdf.pageNoticeTimer = null;
+  const displayed = getPdfDisplayedPage();
+  const useful = Boolean(displayed && displayed.count > 1);
+  el.pdfViewer.classList.toggle("show-page-number", useful);
+  el.pdfPageMarker.classList.toggle("hidden", !useful);
+  el.pdfPageMarker.textContent = useful ? `#${displayed.number}` : "";
+  if (!useful || !showNotice) {
+    el.pdfPageNotice.classList.add("hidden");
+    return;
+  }
+  el.pdfPageNotice.textContent = `${displayed.number} of ${displayed.count}`;
+  el.pdfPageNotice.classList.remove("hidden");
+  state.currentPdf.pageNoticeTimer = window.setTimeout(() => {
+    el.pdfPageNotice.classList.add("hidden");
+  }, 1200);
 }
 
 function showPdfTipsOnOpen() {
@@ -5056,7 +5214,6 @@ function setPdfTipsVisible(showTips, duration = 0, mode = "") {
   el.pdfViewer.classList.toggle("show-tips", showTips);
   el.pdfZoneTips.dataset.guideMode = showTips ? mode : "";
   el.pdfZoneTips.setAttribute("aria-hidden", showTips ? "false" : "true");
-  el.pdfTipsButton.setAttribute("aria-pressed", showTips ? "true" : "false");
   if (showTips && duration > 0) {
     state.currentPdf.tipsTimer = window.setTimeout(() => {
       setPdfTipsVisible(false);
@@ -5115,7 +5272,7 @@ function moveToAdjacentPdfInList(direction) {
   const targetIndex = sequence.index + direction;
   if (targetIndex < 0 || targetIndex >= sequence.items.length) {
     const edgeLabel = direction < 0 ? "Start of list" : "End of list";
-    el.pdfPageStatus.textContent = `Page ${state.currentPdf.pageNumber} of ${state.currentPdf.pageCount} · ${edgeLabel}`;
+    el.pdfPageStatus.textContent = [getPdfNumberingLabel(), edgeLabel].filter(Boolean).join(" · ");
     return false;
   }
 
@@ -5183,6 +5340,10 @@ function goToPdfPage(pageNumber) {
 
 function closePdfViewer() {
   hidePdfTips();
+  closePdfSettings();
+  window.clearTimeout(state.currentPdf.pageNoticeTimer);
+  el.pdfPageNotice.classList.add("hidden");
+  el.pdfPageMarker.classList.add("hidden");
   el.pdfViewer.classList.add("hidden");
   document.body.classList.remove("pdf-open");
   resetPdfZoom();
@@ -6564,6 +6725,7 @@ function renderMetronome() {
   el.metronomeBpm.value = String(state.metronome.bpm);
   el.metronomeBpmOutput.value = String(state.metronome.bpm);
   if (el.pdfTempoInput) el.pdfTempoInput.value = String(state.metronome.bpm);
+  if (el.pdfSettingsTempoInput) el.pdfSettingsTempoInput.value = String(state.metronome.bpm);
   el.metronomeBeats.value = String(state.metronome.beatsPerMeasure);
   el.metronomeSound.value = state.metronome.sound;
   el.metronomeStartButton.textContent = state.metronome.running ? "Stop" : "Start";

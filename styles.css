@@ -899,6 +899,10 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .pdf-home-glyph { display: block; fill: currentColor; height: 24px; width: 24px; }
 
 .pdf-stage { align-items: flex-start; display: flex; justify-content: center; min-height: 0px; overflow: hidden; padding: 4px 12px 12px; position: relative; touch-action: none; }
+.pdf-page-notice { background: color-mix(in srgb, var(--accent-strong) 58%, transparent); border: 1px solid color-mix(in srgb, #FFFFFF 55%, transparent); border-radius: 11px; box-shadow: 0 4px 14px rgba(22, 48, 78, 0.16); color: #FFFFFF; font-size: clamp(1rem, 3.2vw, 1.35rem); font-weight: 900; left: max(18px, env(safe-area-inset-left)); padding: 8px 13px; pointer-events: none; position: absolute; top: 18px; z-index: 4; }
+.pdf-page-marker { background: color-mix(in srgb, var(--surface) 68%, transparent); border: 1px solid color-mix(in srgb, var(--accent-strong) 38%, transparent); border-radius: 9px; bottom: 12px; color: var(--accent-strong); font-size: 0.9rem; font-weight: 900; padding: 5px 9px; pointer-events: none; position: absolute; right: max(14px, env(safe-area-inset-right)); z-index: 4; }
+.pdf-viewer.show-page-number .pdf-follow-button { bottom: 58px; }
+.pdf-viewer.show-page-number .pdf-restart-list-button { bottom: 102px; }
 
 .pdf-canvas { background: var(--surface); box-shadow: var(--shadow-pdf); display: block; max-height: 100%; max-width: 100%; transform-origin: top center; will-change: transform; }
 
@@ -969,8 +973,8 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .pdf-action-bar { align-items: center; background: color-mix(in srgb, var(--surface) 96%, var(--accent-soft)); border-top: 1px solid var(--line); display: flex; gap: clamp(8px, 2vw, 16px); justify-content: center; padding: 7px max(10px, env(safe-area-inset-right)) max(7px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
 .pdf-action-button { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 2px 7px color-mix(in srgb, var(--ink) 9%, transparent); color: var(--accent-strong); display: inline-flex; flex-direction: column; font-size: 1.2rem; font-weight: 800; gap: 0px; justify-content: center; min-height: 46px; min-width: 62px; padding: 4px 10px; }
 .pdf-action-button small { color: var(--muted); font-size: 0.62rem; font-weight: 750; line-height: 1.05; }
-.pdf-tips-action { min-width: 78px; }
-.pdf-tap-zones-label { color: var(--accent-strong); font-size: 0.72rem; font-weight: 850; line-height: 1.05; white-space: nowrap; }
+.pdf-settings-action { min-width: 70px; }
+.pdf-settings-glyph { color: var(--accent-strong); font-size: 1.38rem; line-height: 1; }
 .pdf-action-button:hover, .pdf-action-button:focus-visible, .pdf-action-button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
 .pdf-home-action { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent-strong) 55%, var(--line)); color: var(--accent-strong); }
 .pdf-home-action .pdf-home-glyph { height: 26px; width: 26px; }
@@ -985,6 +989,22 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .pdf-tempo-steppers button:active { background: var(--accent); color: #FFFFFF; }
 .pdf-tempo-toggle { align-items: center; background: var(--accent); border: 0px; border-radius: 8px; color: #FFFFFF; display: inline-flex; font-size: 0.82rem; height: 34px; justify-content: center; padding: 0px; width: 34px; }
 .pdf-tempo-toggle.is-playing { background: #B94A48; }
+.pdf-settings-layer { align-items: center; background: rgba(20, 35, 50, 0.42); display: flex; inset: 0; justify-content: center; padding: 14px; position: absolute; z-index: 20; }
+.pdf-settings-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 15px; box-shadow: var(--shadow-modal); max-height: calc(100dvh - 28px); max-width: 440px; overflow-y: auto; padding: 16px; width: 100%; }
+.pdf-settings-panel > header { align-items: center; border-bottom: 2px solid color-mix(in srgb, var(--accent) 55%, var(--line)); display: flex; justify-content: space-between; margin-bottom: 5px; padding-bottom: 10px; }
+.pdf-settings-panel > header h2 { color: var(--accent-strong); font-size: 1.28rem; margin: 0; }
+.pdf-settings-panel > header button { align-items: center; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 9px; color: var(--ink); display: flex; font-size: 1.35rem; height: 40px; justify-content: center; padding: 0; width: 40px; }
+.pdf-settings-group { border-bottom: 1px solid var(--line); display: grid; gap: 10px; padding: 13px 2px; }
+.pdf-settings-group:last-child { border-bottom: 0; padding-bottom: 2px; }
+.pdf-settings-group h3 { color: var(--ink); font-size: 1rem; margin: 0; }
+.pdf-settings-group > label, .pdf-song-numbering-fields label { display: grid; gap: 5px; }
+.pdf-settings-group label > span, .pdf-song-numbering-fields label > span { color: var(--muted); font-size: 0.8rem; font-weight: 800; }
+.pdf-settings-group select, .pdf-settings-group input[type="number"] { min-height: 42px; }
+.pdf-setting-toggle { align-items: center; display: flex !important; gap: 9px !important; }
+.pdf-setting-toggle input { height: 20px; margin: 0; width: 20px; }
+.pdf-setting-toggle span { color: var(--ink) !important; font-size: 0.86rem !important; }
+.pdf-song-numbering-fields { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); border: 1px solid var(--line); border-radius: 10px; display: grid; gap: 9px; padding: 10px; }
+.pdf-song-numbering-fields p { color: var(--muted); font-size: 0.75rem; line-height: 1.35; margin: 0; }
 
 @media (max-width: 760px) {
   :root { --identity-height: 48px; }
