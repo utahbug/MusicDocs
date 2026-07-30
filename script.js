@@ -5279,6 +5279,7 @@ const PIANO_SOUND_LABELS = {
   "grand-piano": "Grand piano",
   "electric-piano": "Electric piano",
   "acoustic-guitar": "Acoustic guitar",
+  "classical-guitar": "Classical guitar",
   marimba: "Marimba",
   clarinet: "Clarinet",
   flute: "Flute",
@@ -5319,7 +5320,7 @@ const TWINKLE_MELODY = [
   "C4", "C4", "G4", "G4", "A4", "A4", "G4",
   "F4", "F4", "E4", "E4", "D4", "D4", "C4"
 ];
-const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "acoustic-guitar", "marimba", "church-bell", "water-drop", "spaceship"]);
+const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "acoustic-guitar", "classical-guitar", "marimba", "church-bell", "water-drop", "spaceship"]);
 
 function setupKeyboardUi() {
   if (!el.realKeyboard || !el.keyboardSound || !el.pianoSound) return;
@@ -5959,6 +5960,13 @@ function createPianoVoice(context, frequency, sound) {
     addTone(4, "sine", 0.045, 0.001, 0.2, 0.0001, 3, 0.32);
     addNoise(0.075, 0.055, 5600);
     voice.release = 0.045;
+  } else if (sound === "classical-guitar") {
+    addTone(1, "triangle", 0.31, 0.003, 1.25, 0.0001, -2, 1.5);
+    addTone(1, "sine", 0.16, 0.002, 0.9, 0.0001, 2, 1.15);
+    addTone(2, "sine", 0.075, 0.002, 0.48, 0.0001, 0, 0.7);
+    addTone(3, "sine", 0.028, 0.002, 0.28, 0.0001, 0, 0.45);
+    addNoise(0.025, 0.04, 3000);
+    voice.release = 0.075;
   } else if (sound === "marimba") {
     addTone(1, "sine", 0.42, 0.003, 1.15, 0.0001, 0, 1.4);
     addTone(4, "sine", 0.075, 0.002, 0.42, 0.0001, 0, 0.6);
