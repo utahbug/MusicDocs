@@ -254,8 +254,9 @@ const state = {
     note: "E2",
     playing: false,
     audioContext: null,
-    oscillator: null,
-    gain: null
+    oscillators: [],
+    gain: null,
+    playRequestId: 0
   },
   piano: {
     sound: "grand-piano",
@@ -5697,23 +5698,24 @@ function handlePitchQuickButtonClick(event) {
   const button = event.target.closest("[data-pitch-note]");
   if (!button) return;
   setPitchNote(button.dataset.pitchNote);
-  playPitch();
+  if (!state.pitch.playing) playPitch();
 }
 
 async function playPitch() {
+  const requestId = ++state.pitch.playRequestId;
   const note = getSelectedPitchNote();
   const audioContext = await ensurePitchAudio();
-  if (!audioContext) return;
+  if (!audioContext || requestId !== state.pitch.playRequestId) return;
   stopPitchTone(false);
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
-  oscillator.type = "sine";
+  oscillator.type = "triangle";
   oscillator.frequency.setValueAtTime(note.frequency, audioContext.currentTime);
   gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.28, audioContext.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.32, audioContext.currentTime + 0.025);
   oscillator.connect(gain).connect(audioContext.destination);
   oscillator.start();
-  state.pitch.oscillator = oscillator;
+  state.pitch.oscillators = [oscillator];
   state.pitch.gain = gain;
   state.pitch.playing = true;
   renderPitch();
@@ -5735,6 +5737,7 @@ async function ensurePitchAudio() {
 }
 
 function stopPitch() {
+  state.pitch.playRequestId += 1;
   stopPitchTone(true);
   if (state.pitch.audioContext) {
     state.pitch.audioContext.close?.();
@@ -5743,22 +5746,29 @@ function stopPitch() {
 }
 
 function stopPitchTone(shouldRender = true) {
-  if (state.pitch.gain && state.pitch.audioContext && state.pitch.audioContext.state !== "closed") {
+  const audioContext = state.pitch.audioContext;
+  const gain = state.pitch.gain;
+  const oscillators = Array.isArray(state.pitch.oscillators) ? [...state.pitch.oscillators] : [];
+  if (gain && audioContext && audioContext.state !== "closed") {
     const now = state.pitch.audioContext.currentTime;
     try {
-      state.pitch.gain.gain.cancelScheduledValues(now);
-      state.pitch.gain.gain.setValueAtTime(Math.max(state.pitch.gain.gain.value, 0.0001), now);
-      state.pitch.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
     } catch (error) { /* Ignore gain ramp errors during shutdown. */ }
   }
-  if (state.pitch.oscillator) {
-    try { state.pitch.oscillator.stop(state.pitch.audioContext.currentTime + 0.04); } catch (error) { /* Ignore repeated stop calls. */ }
-    try { state.pitch.oscillator.disconnect(); } catch (error) { /* Ignore disconnect errors. */ }
+  oscillators.forEach((oscillator) => {
+    oscillator.onended = () => {
+      try { oscillator.disconnect(); } catch (error) { /* Ignore disconnect errors after release. */ }
+    };
+    try { oscillator.stop((audioContext?.currentTime || 0) + 0.045); } catch (error) { /* Ignore repeated stop calls. */ }
+  });
+  if (gain) {
+    window.setTimeout(() => {
+      try { gain.disconnect(); } catch (error) { /* Ignore disconnect errors after release. */ }
+    }, 70);
   }
-  if (state.pitch.gain) {
-    try { state.pitch.gain.disconnect(); } catch (error) { /* Ignore disconnect errors. */ }
-  }
-  state.pitch.oscillator = null;
+  state.pitch.oscillators = [];
   state.pitch.gain = null;
   state.pitch.playing = false;
   if (shouldRender) renderPitch();
