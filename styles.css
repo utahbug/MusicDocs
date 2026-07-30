@@ -1303,11 +1303,12 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .activity-keyboard-picture i { border: 1px solid #7890A1; border-right: 0; flex: 1; position: relative; }
 .activity-keyboard-picture i:last-child { border-right: 1px solid #7890A1; }
 .activity-keyboard-picture i:nth-child(2)::after, .activity-keyboard-picture i:nth-child(4)::after { background: #263746; content: ""; height: 20px; position: absolute; right: -4px; top: 0; width: 7px; z-index: 1; }
-.activity-puzzle-picture { align-items: end; background: linear-gradient(145deg, #FFE9DF, #F09A76); display: flex; justify-content: center; overflow: visible; padding: 8px 5px 5px; }
-.activity-puzzle-picture i { background: linear-gradient(#FFFFFF, #E5ECF3); border: 1px solid #6F8190; border-radius: 2px 2px 4px 4px; height: 28px; width: 11px; }
-.activity-puzzle-picture i + i { margin-left: -1px; }
-.activity-puzzle-picture i:nth-child(2) { transform: translateY(-5px); }
-.activity-puzzle-picture b { align-items: center; background: #325B87; border: 2px solid #FFFFFF; border-radius: 50%; color: #FFFFFF; display: flex; font-size: 0.72rem; height: 19px; justify-content: center; position: absolute; right: -4px; top: -4px; width: 19px; }
+.activity-puzzle-picture { background: linear-gradient(145deg, #FFE9DF, #F09A76); overflow: visible; }
+.activity-puzzle-picture svg { height: 47px; overflow: visible; width: 53px; }
+.key-order-piano-body { fill: #315879; stroke: #183B58; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.2; }
+.key-order-piano-keys { fill: #FFFFFF; stroke: #263F52; stroke-width: 1.35; }
+.key-order-question-badge { fill: #F5C84C; stroke: #FFFFFF; stroke-width: 2.5; }
+.key-order-question { fill: #503A0E; font-family: system-ui, sans-serif; font-size: 17px; font-weight: 900; text-anchor: middle; }
 .activity-air-picture { align-items: center; background: linear-gradient(145deg, #DDF5FF, #69B8DE 62%, #4387B4); border-radius: 52% 48% 50% 50% / 45% 45% 55% 55%; color: #174F73; display: flex; font-size: 1.9rem; height: 40px; justify-content: center; margin-bottom: 5px; overflow: visible; width: 43px; }
 .activity-air-picture::after { border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #4387B4; bottom: -5px; content: ""; left: calc(50% - 5px); position: absolute; }
 .activity-air-picture::before { border-left: 1.5px solid #5684A2; border-radius: 0 0 0 70%; bottom: -12px; content: ""; height: 8px; left: 51%; opacity: 0.72; position: absolute; transform: rotate(8deg); width: 5px; }

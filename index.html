@@ -28,7 +28,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-87">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-88">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
     <script src="script.js?v=musicdocs-85" defer></script>
@@ -417,7 +417,14 @@
                   <span>Keyboard</span>
                 </button>
                 <button type="button" data-piano-shape="zigzag">
-                  <span class="activity-picture activity-puzzle-picture" aria-hidden="true"><i></i><i></i><i></i><b>?</b></span>
+                  <span class="activity-picture activity-puzzle-picture" aria-hidden="true">
+                    <svg viewBox="0 0 64 52">
+                      <path class="key-order-piano-body" d="M8 8h42v29H8zM12 4h34l4 4H8zM12 37v10M46 37v10"></path>
+                      <path class="key-order-piano-keys" d="M11 23h36v13H11zM17 23v13M23 23v13M29 23v13M35 23v13M41 23v13M15 23v7M27 23v7M33 23v7M45 23v7"></path>
+                      <circle class="key-order-question-badge" cx="50" cy="12" r="11"></circle>
+                      <text class="key-order-question" x="50" y="17">?</text>
+                    </svg>
+                  </span>
                   <span>Key Order</span>
                 </button>
                 <button type="button" data-piano-shape="rainbow">
