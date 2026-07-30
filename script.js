@@ -6506,6 +6506,7 @@ function applyPianoShape() {
   const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "trail";
   el.pianoNoteArc.dataset.shape = shape;
   if (shape === "garden") ensureGardenFill();
+  if (shape === "twinkle") ensureTwinkleFill();
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button, buttonIndex) => {
     const shapeLimit = ["circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity;
@@ -6520,8 +6521,15 @@ function applyPianoShape() {
   const buttons = allButtons
     .filter((button) => !button.classList.contains("piano-shape-hidden"))
     .filter((button) => shape === "garden" || !button.classList.contains("garden-extra"))
+    .filter((button) => shape === "twinkle" || !button.classList.contains("twinkle-extra"))
     .filter((button) => includeWide || !button.classList.contains("piano-wide-note"))
-    .sort((a, b) => pianoNoteMidi(a.dataset.note) - pianoNoteMidi(b.dataset.note));
+    .sort((a, b) => {
+      if (shape === "twinkle") {
+        const extraOrder = Number(a.classList.contains("twinkle-extra")) - Number(b.classList.contains("twinkle-extra"));
+        if (extraOrder) return extraOrder;
+      }
+      return pianoNoteMidi(a.dataset.note) - pianoNoteMidi(b.dataset.note);
+    });
   const count = buttons.length;
   buttons.forEach((button, index) => {
     const point = pianoShapePoint(shape, index, count);
@@ -6567,6 +6575,30 @@ function ensureGardenFill() {
   while (baseButtons.length + extras.length > targetCount && extras.length) extras.pop().remove();
 }
 
+function ensureTwinkleFill() {
+  const width = el.pianoNoteArc?.clientWidth || 680;
+  const columns = width < 430 ? 5 : 6;
+  const baseButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note:not(.garden-extra):not(.twinkle-extra)"));
+  const rows = Math.ceil(baseButtons.length / columns);
+  const targetExtraCount = Math.max(0, (columns - 1) * (rows - 1));
+  let extras = Array.from(el.pianoNoteArc.querySelectorAll(".twinkle-extra"));
+  while (extras.length < targetExtraCount) {
+    const source = baseButtons[extras.length % baseButtons.length];
+    const clone = source.cloneNode(true);
+    clone.classList.remove("piano-wide-note", "piano-shape-hidden", "is-playing");
+    clone.classList.add("twinkle-extra");
+    clone.removeAttribute("style");
+    clone.addEventListener("pointerdown", handlePianoPointerDown);
+    clone.addEventListener("pointermove", handlePianoPointerMove);
+    clone.addEventListener("pointerup", handlePianoPointerUp);
+    clone.addEventListener("pointercancel", handlePianoPointerUp);
+    clone.addEventListener("lostpointercapture", handlePianoPointerUp);
+    el.pianoNoteArc.appendChild(clone);
+    extras.push(clone);
+  }
+  while (extras.length > targetExtraCount) extras.pop().remove();
+}
+
 function pianoShapePoint(shape, index, count) {
   const progress = count > 1 ? index / (count - 1) : 0.5;
   if (shape === "trail") {
@@ -6601,7 +6633,18 @@ function pianoShapePoint(shape, index, count) {
     const width = el.pianoNoteArc?.clientWidth || 680;
     const height = el.pianoNoteArc?.clientHeight || 360;
     const columns = width < 430 ? 5 : 6;
-    const rows = Math.ceil(count / columns);
+    const baseCount = el.pianoNoteArc?.querySelectorAll(".piano-note:not(.garden-extra):not(.twinkle-extra)").length || 30;
+    const rows = Math.ceil(baseCount / columns);
+    if (index >= baseCount) {
+      const extraIndex = index - baseCount;
+      const betweenColumns = columns - 1;
+      const row = Math.floor(extraIndex / betweenColumns);
+      const column = extraIndex % betweenColumns;
+      return {
+        x: ((column + 1) / columns) * 100,
+        y: 12 + ((row + 0.5) / Math.max(1, rows - 1)) * (height - 70)
+      };
+    }
     const row = Math.floor(index / columns);
     const column = index % columns;
     return {

@@ -1353,11 +1353,12 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-note:active { filter: brightness(0.9); transform: translateX(-50%) translateY(1px) scale(0.96); }
 .piano-note.is-playing { box-shadow: 0 0 0 5px color-mix(in srgb, #2F9E91 42%, transparent), 0 7px 17px rgba(25, 66, 101, 0.32); filter: brightness(1.08); transform: translateX(-50%) translateY(-3px) scale(1.06); }
 .piano-wide-note { display: none; }
-.garden-extra { display: none; }
+.garden-extra, .twinkle-extra { display: none; }
 .piano-note-arc[data-shape="garden"] .piano-wide-note,
 .piano-note-arc[data-shape="trail"] .piano-wide-note { display: inline-flex; }
 .piano-note-arc[data-shape="garden"] .garden-extra,
-.piano-note-arc[data-shape="twinkle"] .piano-wide-note { display: inline-flex; }
+.piano-note-arc[data-shape="twinkle"] .piano-wide-note,
+.piano-note-arc[data-shape="twinkle"] .twinkle-extra { display: inline-flex; }
 .piano-note.piano-shape-hidden { display: none !important; }
 .sidetrack-special[hidden] { display: none !important; }
 .sidetrack-special { inset: 0; position: absolute; z-index: 4; }
