@@ -252,7 +252,7 @@ textarea { resize: vertical; }
 
 .photo-icon::after { border: 2px solid currentcolor; border-radius: 999px; content: ""; height: 6px; left: 5px; position: absolute; top: 4px; width: 6px; }
 
-.rich-card-editor, .rich-card-content { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-family: Verdana, Arial, sans-serif; font-size: clamp(1rem, 4vw, 1.14rem); font-weight: 400; line-height: 1.55; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
+.rich-card-editor, .rich-card-content { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-family: Georgia, "Times New Roman", serif; font-size: clamp(1rem, 4vw, 1.14rem); font-weight: 400; line-height: 1.65; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
 
 .rich-card-editor { background: var(--surface); height: min(32dvh, 300px); min-height: 220px; outline: none; overflow: auto; resize: vertical; }
 
@@ -262,7 +262,7 @@ textarea { resize: vertical; }
 
 .lyrics-card-detail { align-content: start; min-height: calc(100dvh - 150px); }
 .lyrics-card-title { font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.55rem, 7vw, 2.4rem); font-weight: 500; line-height: 1.15; margin: 0; }
-.lyrics-card-content { color: var(--ink); font-family: Verdana, Arial, sans-serif; font-size: clamp(1.18rem, 5.2vw, 1.65rem); line-height: 1.5; overflow-wrap: anywhere; }
+.lyrics-card-content { color: var(--ink); font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.18rem, 5.2vw, 1.65rem); line-height: 1.6; overflow-wrap: anywhere; }
 .card-detail-card[data-card-reading-level="0"] .lyrics-card-content { font-size: clamp(0.98rem, 4.25vw, 1.36rem); }
 .card-detail-card[data-card-reading-level="1"] .lyrics-card-content { font-size: clamp(1.08rem, 4.7vw, 1.5rem); }
 .card-detail-card[data-card-reading-level="3"] .lyrics-card-content { font-size: clamp(1.32rem, 5.8vw, 1.85rem); }

@@ -42,7 +42,7 @@ const AUDIO_DB_NAME = `${APP_STORAGE_SCOPE}.audio`;
 const AUDIO_DB_VERSION = 1;
 const AUDIO_STORE_NAME = "audioFiles";
 const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
-const CARD_FONT_FACES = ["Verdana", "system-ui", "Arial", "Trebuchet MS", "Georgia", "Atkinson Hyperlegible"];
+const CARD_FONT_FACES = ["Verdana", "Aptos, Calibri, Arial, sans-serif", "Calibri, Aptos, Arial, sans-serif", "system-ui", "Arial", "Trebuchet MS", "Georgia", "Atkinson Hyperlegible"];
 const CARD_READING_SCALES = [0.82, 0.9, 1, 1.12, 1.25, 1.4];
 const METRONOME_SOUNDS = new Set(["wood", "classic", "pulse", "bell", "marimba", "bubble", "water"]);
 const PDF_TIPS_REMINDER_MS = 3000;
@@ -1614,7 +1614,7 @@ function resetImportForm() {
   el.importCardContent.value = "";
   el.importPlainContent.value = "";
   el.importCardEditor.innerHTML = "";
-  el.cardFontPicker.value = "Verdana";
+  el.cardFontPicker.value = "Georgia";
   updateFilePickerName(el.importPdfFile, el.importPdfFileName);
   updateFilePickerName(el.importCardImage, el.importCardImageName, "No image selected");
   el.importType.disabled = false;
@@ -1791,7 +1791,7 @@ function handleRichToolbarClick(event) {
 }
 
 function handleCardFontChange() {
-  const face = CARD_FONT_FACES.includes(el.cardFontPicker.value) ? el.cardFontPicker.value : "Verdana";
+  const face = CARD_FONT_FACES.includes(el.cardFontPicker.value) ? el.cardFontPicker.value : "Georgia";
   restoreCardEditorSelection();
   document.execCommand("fontName", false, face);
   syncCardEditorToHiddenField();
@@ -1955,14 +1955,23 @@ function plainCardLinesToHtml(lines = []) {
 }
 
 function lyricsTextToHtml(text = "") {
+  let inChorus = false;
   return String(text)
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
     .split("\n")
     .map((line) => {
       const verse = line.match(/^(\d+\.)\s+(.*)$/);
-      if (verse) return `<p>${escapeHtml(verse[1])} ${escapeHtml(verse[2])}</p>`;
-      if (/^chorus:?$/i.test(line)) return `<p><strong>${escapeHtml(line)}</strong></p>`;
+      if (verse) {
+        inChorus = false;
+        return `<p>${escapeHtml(verse[1])} ${escapeHtml(verse[2])}</p>`;
+      }
+      if (/^chorus:?$/i.test(line)) {
+        inChorus = true;
+        return `<p><strong>${escapeHtml(line)}</strong></p>`;
+      }
+      if (/^(by\s|©|copyright\b)/i.test(line.trim())) inChorus = false;
+      if (line && inChorus) return `<div><em>${escapeHtml(line)}</em></div>`;
       return line ? `<div>${escapeHtml(line)}</div>` : "<div><br></div>";
     })
     .join("");
@@ -4822,10 +4831,19 @@ function cardFactsHtml(item) {
 function cardContentHtml(item, options = {}) {
   if (item.lyricsCard && item.lyricsText) {
     const lines = String(item.lyricsText).replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+    let inChorus = false;
     const html = lines.map((line) => {
       const verse = line.match(/^(\d+\.)\s+(.*)$/);
-      if (verse) return `<p class="lyrics-verse">${escapeHtml(verse[1])} ${escapeHtml(verse[2])}</p>`;
-      if (/^chorus:?$/i.test(line)) return `<p class="lyrics-chorus-label"><strong>${escapeHtml(line)}</strong></p>`;
+      if (verse) {
+        inChorus = false;
+        return `<p class="lyrics-verse">${escapeHtml(verse[1])} ${escapeHtml(verse[2])}</p>`;
+      }
+      if (/^chorus:?$/i.test(line)) {
+        inChorus = true;
+        return `<p class="lyrics-chorus-label"><strong>${escapeHtml(line)}</strong></p>`;
+      }
+      if (/^(by\s|©|copyright\b)/i.test(line.trim())) inChorus = false;
+      if (line && inChorus) return `<div class="lyrics-chorus-line"><em>${escapeHtml(line)}</em></div>`;
       return line ? `<div>${escapeHtml(line)}</div>` : "<div><br></div>";
     }).join("");
     return `<div class="lyrics-card-content${options.preview ? " lyrics-card-preview" : ""}">${html}</div>`;

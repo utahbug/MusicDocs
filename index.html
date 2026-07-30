@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-42">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-44">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-42" defer></script>
+    <script src="script.js?v=musicdocs-43" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -715,11 +715,13 @@
                 <label class="rich-font-picker">
                   <span class="sr-only">Font</span>
                   <select id="cardFontPicker" aria-label="Font" title="Font">
-                    <option value="Verdana" selected>Verdana</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Aptos, Calibri, Arial, sans-serif">Aptos</option>
+                    <option value="Calibri, Aptos, Arial, sans-serif">Calibri</option>
                     <option value="system-ui">System</option>
                     <option value="Arial">Arial</option>
                     <option value="Trebuchet MS">Trebuchet</option>
-                    <option value="Georgia">Georgia</option>
+                    <option value="Georgia" selected>Georgia</option>
                     <option value="Atkinson Hyperlegible">Atkinson</option>
                   </select>
                 </label>
