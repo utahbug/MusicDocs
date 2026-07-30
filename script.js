@@ -6453,18 +6453,33 @@ function resetSidetrackAirGame() {
 
 function spawnSidetrackAirNote() {
   if (!sidetrackAirGame.active || sidetrackAirGame.created >= sidetrackAirGame.total) return;
-  const sequence = ["♪", "♫", "♩", "♬"];
+  const sequence = [
+    { label: "music note", content: "♪" },
+    { label: "music notes", content: "♫" },
+    { label: "quarter note", content: "♩" },
+    { label: "beamed notes", content: "♬" },
+    { label: "treble clef", content: "𝄞" },
+    { label: "bass clef", content: "𝄢" },
+    { label: "drum", content: "🥁" },
+    { label: "keyboard", content: "🎹" },
+    { label: "clarinet", icon: "sound-icon-clarinet" }
+  ];
   const note = document.createElement("button");
   note.type = "button";
   note.className = "sidetrack-flying-note";
-  note.textContent = sequence[sidetrackAirGame.created % sequence.length];
+  const balloon = sequence[sidetrackAirGame.created % sequence.length];
+  if (balloon.icon) {
+    note.innerHTML = `<svg aria-hidden="true"><use href="#${balloon.icon}"></use></svg>`;
+  } else {
+    note.textContent = balloon.content;
+  }
   note.style.setProperty("--air-x", `${8 + Math.random() * 78}%`);
   note.style.setProperty("--air-y", `${10 + Math.random() * 66}%`);
   note.style.setProperty("--air-drift-x", `${-38 + Math.random() * 76}px`);
   note.style.setProperty("--air-drift-y", `${-42 + Math.random() * 84}px`);
   note.style.setProperty("--air-duration", `${11 + Math.random() * 7}s`);
   note.style.setProperty("--air-delay", `${-Math.random() * 8}s`);
-  note.setAttribute("aria-label", "Pop moving music note");
+  note.setAttribute("aria-label", `Pop moving ${balloon.label}`);
   note.addEventListener("click", () => {
     if (!sidetrackAirGame.active || note.classList.contains("popped")) return;
     note.classList.add("popped");
