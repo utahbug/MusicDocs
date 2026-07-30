@@ -6216,6 +6216,18 @@ const KEY_SIGNATURE_POSITIONS = {
 const keyboardKeyChange = { steps: 0 };
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
 const PIANO_SHAPES = new Set(["trail", "garden", "twinkle", "circle", "zigzag", "rainbow"]);
+const PIANO_GARDEN_OBJECTS = [
+  ["🐶", "Dog"], ["🐱", "Cat"], ["🎵", "Music note"],
+  ["🦊", "Fox"], ["🐼", "Panda"], ["🎹", "Keyboard"],
+  ["🐵", "Monkey"], ["🦁", "Lion"], ["🎺", "Trumpet"],
+  ["🐯", "Tiger"], ["🐨", "Koala"], ["🎸", "Guitar"],
+  ["🐰", "Rabbit"], ["🐙", "Octopus"], ["🥁", "Drum"],
+  ["🦋", "Butterfly"], ["🐳", "Whale"], ["🎻", "Violin"],
+  ["🐢", "Turtle"], ["🦄", "Unicorn"], ["🎷", "Saxophone"],
+  ["🐞", "Ladybug"], ["🐟", "Fish"], ["🎼", "Music"],
+  ["🦖", "Dinosaur"], ["🐝", "Bee"], ["🎤", "Microphone"],
+  ["🦉", "Owl"], ["🐸", "Frog"], ["🎶", "Music notes"]
+];
 const PIANO_WAVE_NOTES = [
   ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"],
   ["A3", "B3", "C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"],
@@ -6540,10 +6552,21 @@ function applyPianoShape() {
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button, buttonIndex) => {
     const shapeLimit = ["circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity;
+    if (!button.dataset.objectLabel) button.dataset.objectLabel = button.getAttribute("aria-label") || "Sound object";
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
     button.classList.toggle("piano-shape-hidden", buttonIndex >= shapeLimit);
-    button.textContent = shape === "twinkle" ? "★" : button.dataset.object;
+    if (shape === "twinkle") {
+      button.textContent = "★";
+      button.setAttribute("aria-label", "Play the next Twinkle note");
+    } else if (shape === "garden") {
+      const [symbol, label] = PIANO_GARDEN_OBJECTS[buttonIndex % PIANO_GARDEN_OBJECTS.length];
+      button.textContent = symbol;
+      button.setAttribute("aria-label", label);
+    } else {
+      button.textContent = button.dataset.object;
+      button.setAttribute("aria-label", button.dataset.objectLabel);
+    }
   });
 
   const includeWide = shape === "garden" || shape === "trail" || shape === "twinkle"
