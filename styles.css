@@ -1273,18 +1273,10 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .fun-activity-grid button.selected { background: linear-gradient(145deg, color-mix(in srgb, #237C7A 15%, var(--surface)), color-mix(in srgb, #3667A8 18%, var(--surface))); border-color: #2F7892; box-shadow: 0 0 0 3px color-mix(in srgb, #2F9E91 25%, transparent), 0 4px 12px rgba(29, 71, 103, 0.2); }
 .activity-picture { background: linear-gradient(145deg, #DDF5FF, #87CDEB); border: 1px solid rgba(47, 126, 151, 0.42); border-radius: 12px; display: block; height: 45px; overflow: hidden; position: relative; width: 48px; }
 .activity-trail-picture { background: linear-gradient(145deg, #C8E7FF, #6473C8 62%, #38447F); }
-.activity-trail-picture i { background: linear-gradient(#FFFFFF, #DCE8F4); border: 1px solid rgba(32,52,102,0.7); border-radius: 2px 2px 4px 4px; bottom: var(--wave-key-y); box-shadow: 0 2px 3px rgba(25,35,76,0.25); height: 23px; left: var(--wave-key-x); position: absolute; transform: rotate(var(--wave-key-rotate)); width: 7px; }
-.activity-trail-picture i:nth-child(1) { --wave-key-rotate: -17deg; --wave-key-x: 1px; --wave-key-y: 4px; }
-.activity-trail-picture i:nth-child(2) { --wave-key-rotate: -11deg; --wave-key-x: 7px; --wave-key-y: 8px; }
-.activity-trail-picture i:nth-child(3) { --wave-key-rotate: -5deg; --wave-key-x: 14px; --wave-key-y: 12px; }
-.activity-trail-picture i:nth-child(4) { --wave-key-rotate: 2deg; --wave-key-x: 21px; --wave-key-y: 14px; }
-.activity-trail-picture i:nth-child(5) { --wave-key-rotate: 8deg; --wave-key-x: 28px; --wave-key-y: 11px; }
-.activity-trail-picture i:nth-child(6) { --wave-key-rotate: 13deg; --wave-key-x: 35px; --wave-key-y: 7px; }
-.activity-trail-picture i:nth-child(7) { --wave-key-rotate: 18deg; --wave-key-x: 41px; --wave-key-y: 3px; }
-.activity-trail-picture i:nth-child(2)::after,
-.activity-trail-picture i:nth-child(3)::after,
-.activity-trail-picture i:nth-child(5)::after,
-.activity-trail-picture i:nth-child(6)::after { background: #243149; border-radius: 0 0 2px 2px; content: ""; height: 13px; position: absolute; right: -3px; top: -1px; width: 4px; z-index: 2; }
+.activity-trail-picture b { filter: drop-shadow(0 2px 2px rgba(30,39,84,0.3)); font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; font-size: 1.9rem; font-weight: 400; left: 7px; position: absolute; top: 8px; transform: rotate(-13deg); }
+.activity-trail-picture i { color: #FFFFFF; font-family: Georgia, serif; font-style: normal; position: absolute; text-shadow: 0 2px 3px rgba(27,35,83,0.42); }
+.activity-trail-picture i:nth-of-type(1) { font-size: 0.92rem; right: 8px; top: 5px; transform: rotate(12deg); }
+.activity-trail-picture i:nth-of-type(2) { bottom: 4px; font-size: 1rem; right: 3px; transform: rotate(-9deg); }
 .activity-sound-picture { align-items: center; background: linear-gradient(145deg, #E2F5D8, #9DD6B3); display: flex; justify-content: center; }
 .activity-sound-picture svg { height: 43px; overflow: visible; width: 47px; }
 .activity-sound-picture .sound-music-clef { fill: #205B75; font-family: "Segoe UI Symbol", "Noto Music", serif; font-size: 39px; font-weight: 500; }
@@ -1373,6 +1365,13 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 }
 .piano-note-arc { background: linear-gradient(155deg, color-mix(in srgb, #78BCEF 10%, var(--surface)), color-mix(in srgb, #69C7B1 9%, var(--surface))); border: 1px solid color-mix(in srgb, var(--line) 76%, #78BCEF); border-radius: 16px; height: 230px; margin: 8px auto 0px; max-width: 680px; overflow: hidden; overscroll-behavior: contain; position: relative; touch-action: none; transition: background 180ms ease, height 180ms ease; user-select: none; -webkit-touch-callout: none; -webkit-user-select: none; }
 .piano-note-arc[data-shape="trail"] { background-image: linear-gradient(to bottom, color-mix(in srgb, #78BCEF 11%, var(--surface)) 0 46%, transparent 46% 54%, color-mix(in srgb, #69C7B1 10%, var(--surface)) 54% 100%), linear-gradient(155deg, color-mix(in srgb, #78BCEF 7%, var(--surface)), color-mix(in srgb, #69C7B1 7%, var(--surface))); height: 360px; }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key { background: linear-gradient(#FFFFFF, #E5EDF5); border: 1px solid #526F91; border-radius: 3px 3px 7px 7px; box-shadow: inset 0 -8px 10px rgba(55,82,110,0.08), 0 4px 8px rgba(31,56,85,0.18); font-size: 0; height: 52px; transform: translateX(-50%) rotate(var(--jazzy-angle)); width: 9.3%; z-index: 2; }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key-lower { border-color: #3A897E; box-shadow: inset 0 -8px 10px rgba(42,115,103,0.09), 0 4px 8px rgba(31,78,72,0.18); }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key.has-black-key::after { background: linear-gradient(#35465A, #111D29); border: 1px solid #0E1B27; border-radius: 0 0 3px 3px; box-shadow: 0 2px 3px rgba(15,28,40,0.28); content: ""; height: 30px; position: absolute; right: -17%; top: -1px; width: 34%; z-index: 4; }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key:hover,
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key:focus-visible,
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key.is-playing { filter: brightness(0.96); transform: translateX(-50%) translateY(-3px) rotate(var(--jazzy-angle)) scale(1.025); }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key:active { transform: translateX(-50%) translateY(1px) rotate(var(--jazzy-angle)) scale(0.985); }
 .piano-note-arc[data-shape="garden"], .piano-note-arc[data-shape="twinkle"], .piano-note-arc[data-shape="circle"], .piano-note-arc[data-shape="zigzag"], .piano-note-arc[data-shape="rainbow"] { height: 360px; }
 .piano-note-arc[data-shape="garden"] { background-image: radial-gradient(circle at 18% 22%, rgba(255,255,255,0.62) 0 3px, transparent 4px), radial-gradient(circle at 78% 72%, rgba(255,255,255,0.52) 0 4px, transparent 5px), linear-gradient(155deg, color-mix(in srgb, #B9E8C6 18%, var(--surface)), color-mix(in srgb, #82C7F2 14%, var(--surface))); }
 .piano-note-arc[data-shape="twinkle"] { background-image: radial-gradient(circle at 20% 22%, rgba(241,184,75,0.14) 0 3px, transparent 4px), radial-gradient(circle at 80% 72%, rgba(105,199,177,0.14) 0 4px, transparent 5px), linear-gradient(155deg, color-mix(in srgb, #FFF7D6 18%, var(--surface)), color-mix(in srgb, #F4E6B8 12%, var(--surface))); }

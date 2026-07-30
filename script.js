@@ -6657,14 +6657,17 @@ function applyPianoShape() {
     button.style.removeProperty("right");
     button.style.removeProperty("top");
     button.style.removeProperty("transform");
+    button.style.removeProperty("--jazzy-angle");
+    button.classList.remove("jazzy-key", "jazzy-key-upper", "jazzy-key-lower", "has-black-key");
     button.classList.toggle("piano-shape-hidden", buttonIndex >= shapeLimit);
     if (shape === "twinkle") {
       button.textContent = "★";
       button.setAttribute("aria-label", "Play the next Twinkle note");
     } else if (shape === "trail") {
-      const [symbol, label] = PIANO_WAVE_OBJECTS[buttonIndex % PIANO_WAVE_OBJECTS.length];
-      button.textContent = symbol;
-      button.setAttribute("aria-label", label);
+      const wave = Math.min(1, Math.floor(buttonIndex / 10));
+      const note = PIANO_WAVE_NOTES[wave][buttonIndex % 10];
+      button.textContent = "";
+      button.setAttribute("aria-label", `Play ${note}`);
     } else if (shape !== "garden") {
       button.textContent = button.dataset.object;
       button.setAttribute("aria-label", button.dataset.objectLabel);
@@ -6697,8 +6700,13 @@ function applyPianoShape() {
     button.style.left = `${point.x}%`;
     button.style.bottom = `${point.y}px`;
     if (shape === "trail") {
-      const wave = Math.min(2, Math.floor(index / 10));
-      button.dataset.trailNote = PIANO_WAVE_NOTES[wave][index % 10];
+      const wave = Math.min(1, Math.floor(index / 10));
+      const position = index % 10;
+      const waveProgress = position / 9;
+      button.dataset.trailNote = PIANO_WAVE_NOTES[wave][position];
+      button.classList.add("jazzy-key", wave ? "jazzy-key-lower" : "jazzy-key-upper");
+      button.classList.toggle("has-black-key", [0, 1, 3, 4, 5].includes(position));
+      button.style.setProperty("--jazzy-angle", `${Math.cos(waveProgress * Math.PI * 2) * 11}deg`);
     } else {
       delete button.dataset.trailNote;
     }
