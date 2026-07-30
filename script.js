@@ -6566,7 +6566,8 @@ function spawnSidetrackAirNote() {
       note.remove();
       if (sidetrackAirGame.popped >= sidetrackAirGame.total) {
         sidetrackAirGame.active = false;
-        el.sidetrackAirStatus.textContent = "Complete — all 20 notes popped!";
+        el.sidetrackAirStatus.classList.add("complete");
+        el.sidetrackAirStatus.setAttribute("aria-label", "Complete. All 20 notes popped.");
         el.sidetrackAirRestart.hidden = false;
       } else {
         spawnSidetrackAirNote();
@@ -6578,7 +6579,17 @@ function spawnSidetrackAirNote() {
 }
 
 function updateSidetrackAirStatus() {
-  if (el.sidetrackAirStatus) el.sidetrackAirStatus.textContent = `${sidetrackAirGame.popped} of ${sidetrackAirGame.total} notes popped`;
+  if (!el.sidetrackAirStatus) return;
+  el.sidetrackAirStatus.classList.toggle("complete", sidetrackAirGame.popped >= sidetrackAirGame.total);
+  el.sidetrackAirStatus.setAttribute("aria-valuenow", String(sidetrackAirGame.popped));
+  el.sidetrackAirStatus.setAttribute("aria-valuemax", String(sidetrackAirGame.total));
+  el.sidetrackAirStatus.setAttribute("aria-label", `${sidetrackAirGame.popped} of ${sidetrackAirGame.total} notes popped`);
+  el.sidetrackAirStatus.replaceChildren(...Array.from({ length: sidetrackAirGame.total }, (_, index) => {
+    const bubble = document.createElement("span");
+    bubble.className = index < sidetrackAirGame.popped ? "filled" : "";
+    bubble.setAttribute("aria-hidden", "true");
+    return bubble;
+  }));
 }
 
 function setPianoMoreSounds(expanded) {

@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-77">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-78">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-78" defer></script>
+    <script src="script.js?v=musicdocs-79" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -486,7 +486,7 @@
               <div id="sidetrackKeyboard" class="sidetrack-special sidetrack-keyboard" hidden></div>
               <div id="sidetrackPuzzle" class="sidetrack-special sidetrack-puzzle" hidden></div>
               <div id="sidetrackAir" class="sidetrack-special sidetrack-air" hidden>
-                <p id="sidetrackAirStatus">Pop all 20 notes</p>
+                <div id="sidetrackAirStatus" class="sidetrack-air-progress" role="progressbar" aria-label="0 of 20 notes popped" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"></div>
                 <div id="sidetrackAirField" class="sidetrack-air-field"></div>
                 <button id="sidetrackAirRestart" type="button">Play again</button>
               </div>
