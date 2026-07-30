@@ -1303,7 +1303,11 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .activity-keyboard-picture i { border: 1px solid #7890A1; border-right: 0; flex: 1; position: relative; }
 .activity-keyboard-picture i:last-child { border-right: 1px solid #7890A1; }
 .activity-keyboard-picture i:nth-child(2)::after, .activity-keyboard-picture i:nth-child(4)::after { background: #263746; content: ""; height: 20px; position: absolute; right: -4px; top: 0; width: 7px; z-index: 1; }
-.activity-puzzle-picture { align-items: center; background: linear-gradient(145deg, #FFE1D5, #F09A76); display: flex; font-size: 1.75rem; justify-content: center; }
+.activity-puzzle-picture { align-items: end; background: linear-gradient(145deg, #FFE9DF, #F09A76); display: flex; justify-content: center; overflow: visible; padding: 8px 5px 5px; }
+.activity-puzzle-picture i { background: linear-gradient(#FFFFFF, #E5ECF3); border: 1px solid #6F8190; border-radius: 2px 2px 4px 4px; height: 28px; width: 11px; }
+.activity-puzzle-picture i + i { margin-left: -1px; }
+.activity-puzzle-picture i:nth-child(2) { transform: translateY(-5px); }
+.activity-puzzle-picture b { align-items: center; background: #325B87; border: 2px solid #FFFFFF; border-radius: 50%; color: #FFFFFF; display: flex; font-size: 0.72rem; height: 19px; justify-content: center; position: absolute; right: -4px; top: -4px; width: 19px; }
 .activity-air-picture { align-items: center; background: linear-gradient(145deg, #DDF5FF, #69B8DE 62%, #4387B4); border-radius: 52% 48% 50% 50% / 45% 45% 55% 55%; color: #174F73; display: flex; font-size: 1.9rem; height: 40px; justify-content: center; margin-bottom: 5px; overflow: visible; width: 43px; }
 .activity-air-picture::after { border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #4387B4; bottom: -5px; content: ""; left: calc(50% - 5px); position: absolute; }
 .activity-air-picture::before { border-left: 1.5px solid #5684A2; border-radius: 0 0 0 70%; bottom: -12px; content: ""; height: 8px; left: 51%; opacity: 0.72; position: absolute; transform: rotate(8deg); width: 5px; }
@@ -1365,13 +1369,22 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 }
 .piano-note-arc { background: linear-gradient(155deg, color-mix(in srgb, #78BCEF 10%, var(--surface)), color-mix(in srgb, #69C7B1 9%, var(--surface))); border: 1px solid color-mix(in srgb, var(--line) 76%, #78BCEF); border-radius: 16px; height: 230px; margin: 8px auto 0px; max-width: 680px; overflow: hidden; overscroll-behavior: contain; position: relative; touch-action: none; transition: background 180ms ease, height 180ms ease; user-select: none; -webkit-touch-callout: none; -webkit-user-select: none; }
 .piano-note-arc[data-shape="trail"] { background-image: linear-gradient(to bottom, color-mix(in srgb, #78BCEF 11%, var(--surface)) 0 46%, transparent 46% 54%, color-mix(in srgb, #69C7B1 10%, var(--surface)) 54% 100%), linear-gradient(155deg, color-mix(in srgb, #78BCEF 7%, var(--surface)), color-mix(in srgb, #69C7B1 7%, var(--surface))); height: 360px; }
-.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key { background: linear-gradient(#FFFFFF, #E5EDF5); border: 1px solid #526F91; border-radius: 3px 3px 7px 7px; box-shadow: inset 0 -8px 10px rgba(55,82,110,0.08), 0 4px 8px rgba(31,56,85,0.18); font-size: 0; height: 52px; transform: translateX(-50%) rotate(var(--jazzy-angle)); width: 9.3%; z-index: 2; }
-.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key-lower { border-color: #3A897E; box-shadow: inset 0 -8px 10px rgba(42,115,103,0.09), 0 4px 8px rgba(31,78,72,0.18); }
-.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key.has-black-key::after { background: linear-gradient(#35465A, #111D29); border: 1px solid #0E1B27; border-radius: 0 0 3px 3px; box-shadow: 0 2px 3px rgba(15,28,40,0.28); content: ""; height: 30px; position: absolute; right: -17%; top: -1px; width: 34%; z-index: 4; }
+.jazzy-ribbon { display: none; height: 126px; left: 7%; overflow: visible; pointer-events: none; position: absolute; width: 86%; z-index: 1; }
+.piano-note-arc[data-shape="trail"] .jazzy-ribbon { display: block; }
+.jazzy-ribbon-upper { top: 18px; }
+.jazzy-ribbon-lower { bottom: 18px; transform: scaleX(-1); }
+.jazzy-ribbon-shadow { fill: rgba(32,65,101,0.15); }
+.jazzy-ribbon-white { fill: #F9FCFF; stroke: #526F91; stroke-width: 3; }
+.jazzy-ribbon-lower .jazzy-ribbon-white { stroke: #3A897E; }
+.jazzy-ribbon-lines { fill: none; stroke: #71869B; stroke-width: 2; }
+.jazzy-ribbon-black { fill: #172637; stroke: #0C1722; stroke-linejoin: round; stroke-width: 3; }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key { background: transparent; border: 0; border-radius: 12px; box-shadow: none; font-size: 0; height: 86px; transform: translateX(-50%); width: 9.4%; z-index: 3; }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key-lower { box-shadow: none; }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key.has-black-key::after { content: none; }
 .piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key:hover,
 .piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key:focus-visible,
-.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key.is-playing { filter: brightness(0.96); transform: translateX(-50%) translateY(-3px) rotate(var(--jazzy-angle)) scale(1.025); }
-.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key:active { transform: translateX(-50%) translateY(1px) rotate(var(--jazzy-angle)) scale(0.985); }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key.is-playing { background: rgba(74,145,197,0.16); box-shadow: inset 0 0 0 2px rgba(47,126,151,0.32); filter: none; transform: translateX(-50%) translateY(-2px); }
+.piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key:active { background: rgba(47,158,145,0.2); transform: translateX(-50%) translateY(1px); }
 .piano-note-arc[data-shape="garden"], .piano-note-arc[data-shape="twinkle"], .piano-note-arc[data-shape="circle"], .piano-note-arc[data-shape="zigzag"], .piano-note-arc[data-shape="rainbow"] { height: 360px; }
 .piano-note-arc[data-shape="garden"] { background-image: radial-gradient(circle at 18% 22%, rgba(255,255,255,0.62) 0 3px, transparent 4px), radial-gradient(circle at 78% 72%, rgba(255,255,255,0.52) 0 4px, transparent 5px), linear-gradient(155deg, color-mix(in srgb, #B9E8C6 18%, var(--surface)), color-mix(in srgb, #82C7F2 14%, var(--surface))); }
 .piano-note-arc[data-shape="twinkle"] { background-image: radial-gradient(circle at 20% 22%, rgba(241,184,75,0.14) 0 3px, transparent 4px), radial-gradient(circle at 80% 72%, rgba(105,199,177,0.14) 0 4px, transparent 5px), linear-gradient(155deg, color-mix(in srgb, #FFF7D6 18%, var(--surface)), color-mix(in srgb, #F4E6B8 12%, var(--surface))); }

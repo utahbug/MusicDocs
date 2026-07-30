@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-84">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-86">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-83" defer></script>
+    <script src="script.js?v=musicdocs-84" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -417,8 +417,8 @@
                   <span>Keyboard</span>
                 </button>
                 <button type="button" data-piano-shape="zigzag">
-                  <span class="activity-picture activity-puzzle-picture" aria-hidden="true">&#x1F9E9;</span>
-                  <span>Piano puzzle</span>
+                  <span class="activity-picture activity-puzzle-picture" aria-hidden="true"><i></i><i></i><i></i><b>?</b></span>
+                  <span>Key Order</span>
                 </button>
                 <button type="button" data-piano-shape="rainbow">
                   <span class="activity-picture activity-air-picture" aria-hidden="true">&#x266B;</span>
@@ -445,7 +445,7 @@
               </div>
               <select id="pianoShape" class="sr-only" aria-label="Fun Stuff activity">
                 <option value="circle">Keyboard</option>
-                <option value="zigzag">Piano puzzle</option>
+                <option value="zigzag">Key Order</option>
                 <option value="rainbow">Pop notes</option>
                 <option value="garden">Just sound</option>
                 <option value="twinkle">Twinkle Stars</option>
@@ -483,6 +483,18 @@
               <button class="piano-note piano-play-object piano-wide-note" data-note="D sharp 6" data-object="&#x1F41D;" type="button" aria-label="Bee">&#x1F41D;</button>
               <button class="piano-note piano-play-object piano-wide-note" data-note="E6" data-object="&#x1F319;" type="button" aria-label="Moon">&#x1F319;</button>
               <button class="piano-note piano-play-object piano-wide-note" data-note="F6" data-object="&#x26BD;" type="button" aria-label="Soccer ball">&#x26BD;</button>
+              <svg class="jazzy-ribbon jazzy-ribbon-upper" viewBox="0 0 1000 150" aria-hidden="true">
+                <path class="jazzy-ribbon-shadow" d="M5 53C170 8 330 8 500 53S830 98 995 53L995 117C830 162 670 162 500 117S170 72 5 117Z"/>
+                <path class="jazzy-ribbon-white" d="M0 45C170 0 330 0 500 45S830 90 1000 45L1000 109C830 154 670 154 500 109S170 64 0 109Z"/>
+                <path class="jazzy-ribbon-lines" d="M72 29L72 93M143 14L143 78M214 7L214 71M286 7L286 71M357 14L357 78M429 29L429 93M500 45L500 109M571 61L571 125M643 76L643 140M714 83L714 147M786 83L786 147M857 76L857 140M929 61L929 125"/>
+                <path class="jazzy-ribbon-black" d="M92 18L135 10L135 60L92 68ZM235 1L278 0L278 50L235 51ZM378 18L421 27L421 77L378 68ZM521 48L564 58L564 108L521 98ZM664 78L707 82L707 132L664 128ZM807 81L850 75L850 125L807 131"/>
+              </svg>
+              <svg class="jazzy-ribbon jazzy-ribbon-lower" viewBox="0 0 1000 150" aria-hidden="true">
+                <path class="jazzy-ribbon-shadow" d="M5 53C170 8 330 8 500 53S830 98 995 53L995 117C830 162 670 162 500 117S170 72 5 117Z"/>
+                <path class="jazzy-ribbon-white" d="M0 45C170 0 330 0 500 45S830 90 1000 45L1000 109C830 154 670 154 500 109S170 64 0 109Z"/>
+                <path class="jazzy-ribbon-lines" d="M72 29L72 93M143 14L143 78M214 7L214 71M286 7L286 71M357 14L357 78M429 29L429 93M500 45L500 109M571 61L571 125M643 76L643 140M714 83L714 147M786 83L786 147M857 76L857 140M929 61L929 125"/>
+                <path class="jazzy-ribbon-black" d="M92 18L135 10L135 60L92 68ZM235 1L278 0L278 50L235 51ZM378 18L421 27L421 77L378 68ZM521 48L564 58L564 108L521 98ZM664 78L707 82L707 132L664 128ZM807 81L850 75L850 125L807 131"/>
+              </svg>
               <div id="sidetrackKeyboard" class="sidetrack-special sidetrack-keyboard" hidden></div>
               <div id="sidetrackPuzzle" class="sidetrack-special sidetrack-puzzle" hidden></div>
               <div id="sidetrackAir" class="sidetrack-special sidetrack-air" hidden>
