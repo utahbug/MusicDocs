@@ -339,7 +339,7 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .list-title-mark { align-items: center; background: linear-gradient(135deg, #4A84C4, #245A9A); border-radius: 8px; color: #FFFFFF; display: inline-flex; flex: 0 0 27px; font-size: 1rem; font-weight: 900; height: 27px; justify-content: center; line-height: 1; }
 .list-tab-group.active .list-title-mark { background: rgba(255, 255, 255, 0.16); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25); }
-.list-tab-title { color: inherit; flex: 1 1 auto; font-size: 0.96rem; font-weight: 700; min-width: 0px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-tab-title { color: inherit; flex: 1 1 auto; font-size: 0.96rem; font-weight: 400; min-width: 0px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .list-tab-count { color: var(--muted); flex: 0 0 auto; font-size: 0.82rem; font-weight: 750; margin-left: 5px; }
 
