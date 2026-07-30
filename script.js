@@ -2945,8 +2945,13 @@ function showSection(sectionName) {
   }
 
   updateNavPlacement(sectionName);
+  const funTitle = document.getElementById("pianoTitle");
+  funTitle?.classList.remove("fun-title-animated");
   if (sectionName === "piano") {
-    window.requestAnimationFrame(() => applyPianoShape());
+    window.requestAnimationFrame(() => {
+      applyPianoShape();
+      funTitle?.classList.add("fun-title-animated");
+    });
   }
 }
 
