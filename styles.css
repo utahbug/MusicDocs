@@ -1457,6 +1457,14 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 @media (max-width: 480px) {
   .jazz-puzzle-tray { grid-template-columns: minmax(125px, 46vw); max-width: 170px; min-height: 106px; }
 }
+.piano-note-arc[data-shape="trail"] { height: 500px; }
+.jazz-puzzle-board { width: min(88vw, 360px); }
+.jazz-puzzle-slot { cursor: pointer; }
+.jazz-puzzle-piece.selected { box-shadow: 0 0 0 5px color-mix(in srgb, #F1B84B 48%, transparent), 0 7px 17px rgba(19,42,69,0.34); filter: brightness(1.08); }
+.jazz-puzzle-floating { margin: 0; pointer-events: none; position: fixed; z-index: 9999; }
+@media (max-width: 480px) {
+  .jazz-puzzle-board { width: min(88vw, 360px); }
+}
 .sidetrack-keyboard { align-items: stretch; display: flex; justify-content: center; padding: 38px 22px 28px; }
 .sidetrack-key { border: 1px solid #7890A1; border-radius: 0 0 7px 7px; flex: 1; max-width: 58px; min-width: 0; position: relative; touch-action: none; }
 .sidetrack-key.is-white { background: linear-gradient(#FFFFFF, #E9F0F5); color: #173F72; height: 250px; z-index: 1; }

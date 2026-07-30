@@ -6439,6 +6439,7 @@ const SIDETRACK_NOTES = [
 const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20, lastPhrase: -1 };
 let sidetrackPuzzleDrag = null;
 let sidetrackJazzDrag = null;
+let sidetrackJazzSelected = null;
 
 function initializeSidetrackActivities() {
   if (!el.sidetrackKeyboard || el.sidetrackKeyboard.childElementCount) return;
@@ -6486,15 +6487,24 @@ function buildJazzPuzzle() {
     piece.addEventListener("pointerup", endJazzPuzzleDrag);
     piece.addEventListener("pointercancel", cancelJazzPuzzleDrag);
   });
+  el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-slot").forEach((slot) => {
+    slot.addEventListener("click", () => {
+      if (!sidetrackJazzSelected) return;
+      if (slot.dataset.jazzIndex === sidetrackJazzSelected.dataset.jazzIndex) {
+        placeJazzPuzzlePiece(sidetrackJazzSelected, slot);
+      } else {
+        el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-status").textContent = "Try another space";
+      }
+    });
+  });
   el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-reset")?.addEventListener("click", resetJazzPuzzle);
 }
 
 function resetJazzPuzzle() {
-  if (sidetrackJazzDrag?.piece) {
-    sidetrackJazzDrag.piece.classList.remove("dragging");
-    sidetrackJazzDrag.piece.style.transform = "";
-  }
+  sidetrackJazzDrag?.floating?.remove();
+  sidetrackJazzDrag?.piece?.classList.remove("dragging");
   sidetrackJazzDrag = null;
+  sidetrackJazzSelected = null;
   buildJazzPuzzle();
 }
 
@@ -6503,43 +6513,101 @@ function startJazzPuzzleDrag(event) {
   event.preventDefault();
   const piece = event.currentTarget;
   try { piece.setPointerCapture(event.pointerId); } catch (_error) {}
-  sidetrackJazzDrag = { piece, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY };
+  const slot = el.sidetrackJazzPuzzle.querySelector(`.jazz-puzzle-slot[data-jazz-index="${piece.dataset.jazzIndex}"]`);
+  const targetRect = slot.getBoundingClientRect();
+  const floating = piece.cloneNode(false);
+  floating.classList.add("jazz-puzzle-floating");
+  floating.style.width = `${targetRect.width}px`;
+  floating.style.height = `${targetRect.height}px`;
+  document.body.appendChild(floating);
+  sidetrackJazzDrag = {
+    piece, floating, slot, pointerId: event.pointerId,
+    startX: event.clientX, startY: event.clientY, moved: false
+  };
   piece.classList.add("dragging");
+  positionJazzPuzzleFloating(event);
 }
 
 function moveJazzPuzzleDrag(event) {
   if (!sidetrackJazzDrag || sidetrackJazzDrag.pointerId !== event.pointerId) return;
   event.preventDefault();
-  const { piece, startX, startY } = sidetrackJazzDrag;
-  piece.style.transform = `translate(${event.clientX - startX}px, ${event.clientY - startY}px) scale(1.05)`;
+  const distance = Math.hypot(event.clientX - sidetrackJazzDrag.startX, event.clientY - sidetrackJazzDrag.startY);
+  if (distance > 7) sidetrackJazzDrag.moved = true;
+  if (sidetrackJazzDrag.moved) positionJazzPuzzleFloating(event);
 }
 
 function endJazzPuzzleDrag(event) {
   if (!sidetrackJazzDrag || sidetrackJazzDrag.pointerId !== event.pointerId) return;
   event.preventDefault();
-  const { piece } = sidetrackJazzDrag;
-  piece.style.visibility = "hidden";
-  const slot = document.elementFromPoint(event.clientX, event.clientY)?.closest(".jazz-puzzle-slot");
-  piece.style.visibility = "";
+  const { piece, floating, slot, moved } = sidetrackJazzDrag;
   piece.classList.remove("dragging");
-  piece.style.transform = "";
-  if (slot && !slot.classList.contains("filled") && slot.dataset.jazzIndex === piece.dataset.jazzIndex) {
-    slot.appendChild(piece);
-    slot.classList.add("filled");
-    piece.disabled = true;
-    const remaining = el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-tray .jazz-puzzle-piece").length;
-    const status = el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-status");
-    status.textContent = remaining ? `Piece ${10 - remaining} of 9` : "Jazz ensemble complete!";
-    el.sidetrackJazzPuzzle.classList.toggle("complete", remaining === 0);
+  if (moved && jazzPuzzleFloatingOverSlot(floating, slot)) {
+    placeJazzPuzzlePiece(piece, slot);
+  } else if (!moved) {
+    sidetrackJazzSelected?.classList.remove("selected");
+    sidetrackJazzSelected = piece;
+    piece.classList.add("selected");
+    el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-status").textContent = "Now tap its matching space";
+  } else {
+    el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-status").textContent = "Try again";
   }
+  floating.remove();
   sidetrackJazzDrag = null;
 }
 
 function cancelJazzPuzzleDrag(event) {
   if (!sidetrackJazzDrag || sidetrackJazzDrag.pointerId !== event.pointerId) return;
   sidetrackJazzDrag.piece.classList.remove("dragging");
-  sidetrackJazzDrag.piece.style.transform = "";
+  sidetrackJazzDrag.floating.remove();
   sidetrackJazzDrag = null;
+}
+
+function positionJazzPuzzleFloating(event) {
+  const floating = sidetrackJazzDrag?.floating;
+  if (!floating) return;
+  const width = floating.offsetWidth;
+  const height = floating.offsetHeight;
+  const left = clamp(event.clientX - width / 2, 6, window.innerWidth - width - 6);
+  const top = clamp(event.clientY - height - 22, 6, window.innerHeight - height - 6);
+  floating.style.left = `${left}px`;
+  floating.style.top = `${top}px`;
+}
+
+function jazzPuzzleFloatingOverSlot(floating, slot) {
+  if (!floating || !slot) return false;
+  const pieceRect = floating.getBoundingClientRect();
+  const targetRect = slot.getBoundingClientRect();
+  const tolerance = Math.max(14, Math.min(28, Math.max(targetRect.width, targetRect.height) * 0.22));
+  const centerX = pieceRect.left + pieceRect.width / 2;
+  const centerY = pieceRect.top + pieceRect.height / 2;
+  return centerX >= targetRect.left - tolerance
+    && centerX <= targetRect.right + tolerance
+    && centerY >= targetRect.top - tolerance
+    && centerY <= targetRect.bottom + tolerance;
+}
+
+function placeJazzPuzzlePiece(piece, slot) {
+  sidetrackJazzSelected?.classList.remove("selected");
+  sidetrackJazzSelected = null;
+  slot.appendChild(piece);
+  slot.classList.add("filled");
+  piece.disabled = true;
+  const remaining = el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-tray .jazz-puzzle-piece").length;
+  const status = el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-status");
+  status.textContent = remaining ? `Piece ${10 - remaining} of 9` : "Jazz ensemble complete!";
+  el.sidetrackJazzPuzzle.classList.toggle("complete", remaining === 0);
+  playJazzPuzzleSuccess();
+}
+
+async function playJazzPuzzleSuccess() {
+  const context = await getPianoAudioContext();
+  if (!context) return;
+  ["C5", "E5", "G5"].forEach((note, index) => {
+    window.setTimeout(() => {
+      const voice = createPianoVoice(context, pianoNoteFrequency(note), state.piano.sound);
+      window.setTimeout(() => releasePianoVoice(voice, true), 360);
+    }, index * 115);
+  });
 }
 
 function buildSidetrackPuzzle() {
