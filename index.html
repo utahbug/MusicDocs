@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-31">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-32">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-38" defer></script>
+    <script src="script.js?v=musicdocs-39" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -69,6 +69,7 @@
               <button type="button" role="menuitem" data-menu-section="pitch">Pitch</button>
               <button type="button" role="menuitem" data-menu-section="piano">Fun Stuff</button>
               <button type="button" role="menuitem" data-menu-section="keyboard">Keyboard</button>
+              <button type="button" role="menuitem" data-menu-section="audio">Audio Library</button>
             </div>
           </div>
           <div class="overflow-wrap header-info-wrap">
@@ -501,6 +502,53 @@
               </div>
               <div id="pianoChordFamily" class="piano-chord-family"></div>
             </section>
+          </div>
+        </section>
+
+        <section id="audioSection" class="view audio-view" data-view="audio" aria-labelledby="audioTitle">
+          <div class="audio-panel">
+            <div class="audio-header">
+              <div>
+                <h2 id="audioTitle">Audio Library</h2>
+                <p>Practice recordings stay on this device and can keep playing while you open sheet music.</p>
+              </div>
+              <label class="audio-import-button">
+                <span>+ Add audio</span>
+                <input id="audioFileInput" type="file" accept="audio/*,video/mp4,.mp3,.mp4,.m4a,.aac,.wav,.ogg" multiple>
+              </label>
+            </div>
+            <div class="audio-mode-tabs" role="tablist" aria-label="Audio view">
+              <button id="audioLibraryTab" class="active" type="button" role="tab" aria-selected="true">All audio</button>
+              <button id="audioPlaylistTab" type="button" role="tab" aria-selected="false">Playlist</button>
+            </div>
+            <div class="audio-playlist-bar">
+              <label><span>Playlist</span><select id="audioPlaylistSelect" aria-label="Audio playlist"></select></label>
+              <button id="audioNewPlaylistButton" class="secondary-button" type="button">New</button>
+              <button id="audioDeletePlaylistButton" class="plain-button danger-text" type="button">Delete</button>
+            </div>
+            <p id="audioLibraryStatus" class="audio-library-status" aria-live="polite"></p>
+            <div id="audioTrackList" class="audio-track-list"></div>
+          </div>
+          <div class="audio-now-playing" aria-label="Now playing">
+            <div class="audio-now-playing-copy">
+              <span>Now playing</span>
+              <strong id="audioNowTitle">Nothing selected</strong>
+            </div>
+            <div class="audio-transport">
+              <button id="audioPreviousButton" type="button" aria-label="Previous track">⏮</button>
+              <button id="audioPlayButton" class="audio-main-play" type="button" aria-label="Play">▶</button>
+              <button id="audioNextButton" type="button" aria-label="Next track">⏭</button>
+            </div>
+            <div class="audio-progress-row">
+              <span id="audioElapsed">0:00</span>
+              <input id="audioProgress" type="range" min="0" max="1000" value="0" aria-label="Track position">
+              <span id="audioDuration">0:00</span>
+            </div>
+            <div class="audio-play-options">
+              <button id="audioShuffleButton" class="plain-button" type="button" aria-pressed="false">Shuffle: Off</button>
+              <button id="audioRepeatButton" class="plain-button" type="button" aria-pressed="false">Repeat: Off</button>
+            </div>
+            <audio id="audioPlayer" preload="metadata"></audio>
           </div>
         </section>
 

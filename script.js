@@ -21,6 +21,9 @@ const STORAGE_KEYS = {
   piano: storageKey("piano"),
   tuner: storageKey("tuner"),
   pitch: storageKey("pitch"),
+  audioTracks: storageKey("audioTracks"),
+  audioPlaylists: storageKey("audioPlaylists"),
+  audioSelectedPlaylist: storageKey("audioSelectedPlaylist"),
   welcomeSeen: storageKey("welcomeSeen"),
   starterDataVersion: storageKey("starterDataVersion"),
   starterFavorites: storageKey("starterFavorites"),
@@ -34,6 +37,9 @@ const STORAGE_KEYS = {
 const IMPORT_DB_NAME = `${APP_STORAGE_SCOPE}.imports`;
 const IMPORT_DB_VERSION = 1;
 const PDF_STORE_NAME = "pdfFiles";
+const AUDIO_DB_NAME = `${APP_STORAGE_SCOPE}.audio`;
+const AUDIO_DB_VERSION = 1;
+const AUDIO_STORE_NAME = "audioFiles";
 const RICH_TOGGLE_COMMANDS = ["bold", "italic", "strikeThrough", "insertUnorderedList", "insertOrderedList"];
 const CARD_FONT_FACES = ["Verdana", "system-ui", "Arial", "Trebuchet MS", "Georgia", "Atkinson Hyperlegible"];
 const CARD_READING_SCALES = [0.82, 0.9, 1, 1.12, 1.25, 1.4];
@@ -267,6 +273,17 @@ const state = {
       acceptingInput: false,
       playToken: 0
     }
+  },
+  audio: {
+    tracks: [],
+    playlists: [],
+    selectedPlaylistId: "",
+    mode: "library",
+    currentTrackId: "",
+    queue: [],
+    objectUrl: "",
+    shuffle: false,
+    repeat: false
   }
 };
 
@@ -286,12 +303,14 @@ async function init() {
   loadTunerSettings();
   loadPitchSettings();
   loadPianoSettings();
+  await loadAudioLibrary();
   setupInitialSelections();
   renderMetronome();
   renderTuner();
   renderPitch();
   renderPiano();
   renderPianoChordGuide();
+  renderAudioLibrary();
   renderAll();
   openInitialSection();
   setupServiceWorker();
@@ -322,6 +341,7 @@ function collectElements() {
     pitch: document.getElementById("pitchSection"),
     piano: document.getElementById("pianoSection"),
     keyboard: document.getElementById("keyboardSection"),
+    audio: document.getElementById("audioSection"),
     detail: document.getElementById("detailSection")
   };
 
@@ -414,6 +434,24 @@ function collectElements() {
   el.keyboardSoundStatus = document.getElementById("keyboardSoundStatus");
   el.keyboardSustainHint = document.getElementById("keyboardSustainHint");
   el.realKeyboard = document.getElementById("realKeyboard");
+  el.audioFileInput = document.getElementById("audioFileInput");
+  el.audioLibraryTab = document.getElementById("audioLibraryTab");
+  el.audioPlaylistTab = document.getElementById("audioPlaylistTab");
+  el.audioPlaylistSelect = document.getElementById("audioPlaylistSelect");
+  el.audioNewPlaylistButton = document.getElementById("audioNewPlaylistButton");
+  el.audioDeletePlaylistButton = document.getElementById("audioDeletePlaylistButton");
+  el.audioLibraryStatus = document.getElementById("audioLibraryStatus");
+  el.audioTrackList = document.getElementById("audioTrackList");
+  el.audioNowTitle = document.getElementById("audioNowTitle");
+  el.audioPreviousButton = document.getElementById("audioPreviousButton");
+  el.audioPlayButton = document.getElementById("audioPlayButton");
+  el.audioNextButton = document.getElementById("audioNextButton");
+  el.audioProgress = document.getElementById("audioProgress");
+  el.audioElapsed = document.getElementById("audioElapsed");
+  el.audioDuration = document.getElementById("audioDuration");
+  el.audioShuffleButton = document.getElementById("audioShuffleButton");
+  el.audioRepeatButton = document.getElementById("audioRepeatButton");
+  el.audioPlayer = document.getElementById("audioPlayer");
   el.pianoChordGuide = document.getElementById("pianoChordGuide");
   el.pianoChordRoot = document.getElementById("pianoChordRoot");
   el.pianoChordType = document.getElementById("pianoChordType");
@@ -635,6 +673,24 @@ function wireEvents() {
   el.pianoChordRoot.addEventListener("change", renderPianoChordGuide);
   el.pianoChordType.addEventListener("change", renderPianoChordGuide);
   el.pianoChordPlayButton.addEventListener("click", playPianoGuideChord);
+  el.audioFileInput.addEventListener("change", importAudioFiles);
+  el.audioLibraryTab.addEventListener("click", () => setAudioMode("library"));
+  el.audioPlaylistTab.addEventListener("click", () => setAudioMode("playlist"));
+  el.audioPlaylistSelect.addEventListener("change", selectAudioPlaylist);
+  el.audioNewPlaylistButton.addEventListener("click", createAudioPlaylist);
+  el.audioDeletePlaylistButton.addEventListener("click", deleteAudioPlaylist);
+  el.audioTrackList.addEventListener("click", handleAudioTrackAction);
+  el.audioPlayButton.addEventListener("click", toggleAudioPlayback);
+  el.audioPreviousButton.addEventListener("click", () => playAdjacentAudio(-1));
+  el.audioNextButton.addEventListener("click", () => playAdjacentAudio(1));
+  el.audioProgress.addEventListener("input", seekAudioTrack);
+  el.audioShuffleButton.addEventListener("click", toggleAudioShuffle);
+  el.audioRepeatButton.addEventListener("click", toggleAudioRepeat);
+  el.audioPlayer.addEventListener("play", renderAudioPlayer);
+  el.audioPlayer.addEventListener("pause", renderAudioPlayer);
+  el.audioPlayer.addEventListener("timeupdate", renderAudioProgress);
+  el.audioPlayer.addEventListener("loadedmetadata", renderAudioProgress);
+  el.audioPlayer.addEventListener("ended", handleAudioEnded);
   document.querySelectorAll(".piano-note, .keyboard-key").forEach((button) => {
     button.addEventListener("pointerdown", handlePianoPointerDown);
     button.addEventListener("pointermove", handlePianoPointerMove);
@@ -656,6 +712,7 @@ function wireEvents() {
     stopTuner();
     stopPitch();
     stopAllPianoVoices();
+    if (state.audio.objectUrl) URL.revokeObjectURL(state.audio.objectUrl);
   });
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
   window.addEventListener("pointermove", moveModalDrag);
@@ -881,7 +938,7 @@ function setNavHighlight(sectionName) {
   el.navButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.section === sectionName);
   });
-  el.overflowMenuButton.classList.toggle("active", ["metronome", "tuner", "pitch", "piano", "keyboard"].includes(sectionName));
+  el.overflowMenuButton.classList.toggle("active", ["metronome", "tuner", "pitch", "piano", "keyboard", "audio"].includes(sectionName));
   el.infoMenuButton.classList.remove("active");
 }
 
@@ -2679,6 +2736,470 @@ function showSection(sectionName) {
   }
 
   updateNavPlacement(sectionName);
+}
+
+async function loadAudioLibrary() {
+  state.audio.tracks = readJson(STORAGE_KEYS.audioTracks, []);
+  state.audio.playlists = readJson(STORAGE_KEYS.audioPlaylists, []);
+  state.audio.selectedPlaylistId = localStorage.getItem(STORAGE_KEYS.audioSelectedPlaylist) || "";
+
+  if (!Array.isArray(state.audio.tracks)) state.audio.tracks = [];
+  if (!Array.isArray(state.audio.playlists)) state.audio.playlists = [];
+  state.audio.tracks = state.audio.tracks.filter((track) => track?.id && track?.title);
+  state.audio.playlists = state.audio.playlists
+    .filter((playlist) => playlist?.id && playlist?.name)
+    .map((playlist) => ({
+      ...playlist,
+      trackIds: Array.isArray(playlist.trackIds)
+        ? playlist.trackIds.filter((id) => state.audio.tracks.some((track) => track.id === id))
+        : []
+    }));
+
+  if (!state.audio.playlists.length) {
+    state.audio.playlists.push({
+      id: "audio-playlist-default",
+      name: "My Playlist",
+      trackIds: []
+    });
+  }
+  if (!state.audio.playlists.some((playlist) => playlist.id === state.audio.selectedPlaylistId)) {
+    state.audio.selectedPlaylistId = state.audio.playlists[0].id;
+  }
+  saveAudioLibrary();
+  setupAudioMediaSession();
+}
+
+function saveAudioLibrary() {
+  writeJson(STORAGE_KEYS.audioTracks, state.audio.tracks);
+  writeJson(STORAGE_KEYS.audioPlaylists, state.audio.playlists);
+  localStorage.setItem(STORAGE_KEYS.audioSelectedPlaylist, state.audio.selectedPlaylistId);
+}
+
+function openAudioDatabase() {
+  return new Promise((resolve, reject) => {
+    if (!("indexedDB" in window)) {
+      reject(new Error("This browser cannot store audio files."));
+      return;
+    }
+    const request = indexedDB.open(AUDIO_DB_NAME, AUDIO_DB_VERSION);
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(AUDIO_STORE_NAME)) {
+        database.createObjectStore(AUDIO_STORE_NAME, { keyPath: "id" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("Audio storage could not be opened."));
+  });
+}
+
+async function writeAudioBlob(id, blob) {
+  const database = await openAudioDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(AUDIO_STORE_NAME, "readwrite");
+    transaction.objectStore(AUDIO_STORE_NAME).put({ id, blob });
+    transaction.oncomplete = () => {
+      database.close();
+      resolve();
+    };
+    transaction.onerror = () => {
+      database.close();
+      reject(transaction.error || new Error("The audio file could not be saved."));
+    };
+  });
+}
+
+async function readAudioBlob(id) {
+  const database = await openAudioDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(AUDIO_STORE_NAME, "readonly");
+    const request = transaction.objectStore(AUDIO_STORE_NAME).get(id);
+    request.onsuccess = () => resolve(request.result?.blob || null);
+    request.onerror = () => reject(request.error || new Error("The audio file could not be read."));
+    transaction.oncomplete = () => database.close();
+  });
+}
+
+async function deleteAudioBlob(id) {
+  const database = await openAudioDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(AUDIO_STORE_NAME, "readwrite");
+    transaction.objectStore(AUDIO_STORE_NAME).delete(id);
+    transaction.oncomplete = () => {
+      database.close();
+      resolve();
+    };
+    transaction.onerror = () => {
+      database.close();
+      reject(transaction.error || new Error("The audio file could not be deleted."));
+    };
+  });
+}
+
+async function importAudioFiles(event) {
+  const files = Array.from(event.target.files || []).filter((file) => file.type.startsWith("audio/") || file.type === "video/mp4" || /\.(mp3|mp4|m4a|aac|wav|ogg)$/i.test(file.name));
+  event.target.value = "";
+  if (!files.length) {
+    setAudioStatus("Choose an MP3, MP4, M4A, AAC, WAV, or OGG recording.");
+    return;
+  }
+
+  setAudioStatus(`Adding ${files.length} ${files.length === 1 ? "track" : "tracks"}…`);
+  const playlist = getSelectedAudioPlaylist();
+  let added = 0;
+  for (const file of files) {
+    const id = `audio-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+    try {
+      await writeAudioBlob(id, file);
+      state.audio.tracks.push({
+        id,
+        title: file.name.replace(/\.[^.]+$/, "") || "Untitled audio",
+        artist: "",
+        fileName: file.name,
+        type: file.type || "audio",
+        size: file.size,
+        addedAt: Date.now()
+      });
+      if (playlist && !playlist.trackIds.includes(id)) playlist.trackIds.push(id);
+      added += 1;
+    } catch (error) {
+      console.warn("Audio import failed", error);
+    }
+  }
+  saveAudioLibrary();
+  renderAudioLibrary();
+  setAudioStatus(added
+    ? `${added} ${added === 1 ? "track" : "tracks"} added to this device${playlist ? ` and “${playlist.name}”` : ""}.`
+    : "The selected audio could not be stored on this device.");
+}
+
+function setAudioMode(mode) {
+  state.audio.mode = mode === "playlist" ? "playlist" : "library";
+  renderAudioLibrary();
+}
+
+function selectAudioPlaylist() {
+  state.audio.selectedPlaylistId = el.audioPlaylistSelect.value;
+  saveAudioLibrary();
+  renderAudioLibrary();
+}
+
+function getSelectedAudioPlaylist() {
+  return state.audio.playlists.find((playlist) => playlist.id === state.audio.selectedPlaylistId) || state.audio.playlists[0] || null;
+}
+
+function createAudioPlaylist() {
+  const requestedName = window.prompt("Name this playlist:", "New Playlist");
+  const name = requestedName?.trim();
+  if (!name) return;
+  const playlist = {
+    id: `audio-playlist-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    name,
+    trackIds: []
+  };
+  state.audio.playlists.push(playlist);
+  state.audio.selectedPlaylistId = playlist.id;
+  state.audio.mode = "playlist";
+  saveAudioLibrary();
+  renderAudioLibrary();
+  setAudioStatus(`“${name}” is ready. Add tracks from All audio.`);
+}
+
+function deleteAudioPlaylist() {
+  const playlist = getSelectedAudioPlaylist();
+  if (!playlist || state.audio.playlists.length <= 1) return;
+  if (!window.confirm(`Delete the playlist “${playlist.name}”? The audio files will remain in All audio.`)) return;
+  state.audio.playlists = state.audio.playlists.filter((entry) => entry.id !== playlist.id);
+  state.audio.selectedPlaylistId = state.audio.playlists[0].id;
+  saveAudioLibrary();
+  renderAudioLibrary();
+  setAudioStatus("Playlist deleted. Its audio files remain in All audio.");
+}
+
+function getVisibleAudioTracks() {
+  if (state.audio.mode !== "playlist") return [...state.audio.tracks];
+  const playlist = getSelectedAudioPlaylist();
+  if (!playlist) return [];
+  return playlist.trackIds
+    .map((id) => state.audio.tracks.find((track) => track.id === id))
+    .filter(Boolean);
+}
+
+function renderAudioLibrary() {
+  if (!el.audioTrackList) return;
+  const playlist = getSelectedAudioPlaylist();
+  el.audioPlaylistSelect.innerHTML = "";
+  state.audio.playlists.forEach((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.id;
+    option.textContent = entry.name;
+    option.selected = entry.id === state.audio.selectedPlaylistId;
+    el.audioPlaylistSelect.appendChild(option);
+  });
+  el.audioLibraryTab.classList.toggle("active", state.audio.mode === "library");
+  el.audioPlaylistTab.classList.toggle("active", state.audio.mode === "playlist");
+  el.audioLibraryTab.setAttribute("aria-selected", String(state.audio.mode === "library"));
+  el.audioPlaylistTab.setAttribute("aria-selected", String(state.audio.mode === "playlist"));
+  el.audioDeletePlaylistButton.disabled = state.audio.playlists.length <= 1;
+  el.audioPlaylistSelect.closest(".audio-playlist-bar")?.classList.toggle("playlist-active", state.audio.mode === "playlist");
+
+  const tracks = getVisibleAudioTracks();
+  state.audio.queue = tracks.map((track) => track.id);
+  if (!tracks.length) {
+    el.audioTrackList.innerHTML = `
+      <div class="audio-empty">
+        <strong>${state.audio.mode === "playlist" ? "This playlist is empty" : "Your Audio Library is ready"}</strong>
+        <p>${state.audio.mode === "playlist"
+          ? "Open All audio and use + Playlist beside a track."
+          : "Add a practice recording stored on this device. MP3, MP4, M4A, AAC, WAV, and OGG are supported when the browser can play them."}</p>
+      </div>`;
+  } else {
+    el.audioTrackList.innerHTML = tracks.map((track, index) => {
+      const isCurrent = track.id === state.audio.currentTrackId;
+      const inPlaylist = Boolean(playlist?.trackIds.includes(track.id));
+      const actions = state.audio.mode === "playlist"
+        ? `
+          <button type="button" data-audio-action="up" data-track-id="${escapeHtml(track.id)}" aria-label="Move up" ${index === 0 ? "disabled" : ""}>↑</button>
+          <button type="button" data-audio-action="down" data-track-id="${escapeHtml(track.id)}" aria-label="Move down" ${index === tracks.length - 1 ? "disabled" : ""}>↓</button>
+          <button class="danger-text" type="button" data-audio-action="remove" data-track-id="${escapeHtml(track.id)}">Remove</button>`
+        : `
+          <button type="button" data-audio-action="add" data-track-id="${escapeHtml(track.id)}" ${inPlaylist ? "disabled" : ""}>${inPlaylist ? "In playlist" : "+ Playlist"}</button>
+          <button class="danger-text" type="button" data-audio-action="delete" data-track-id="${escapeHtml(track.id)}" aria-label="Delete ${escapeHtml(track.title)}">Delete</button>`;
+      return `
+        <article class="audio-track-row ${isCurrent ? "is-current" : ""}">
+          <button class="audio-track-play" type="button" data-audio-action="play" data-track-id="${escapeHtml(track.id)}" aria-label="Play ${escapeHtml(track.title)}">${isCurrent && !el.audioPlayer.paused ? "❚❚" : "▶"}</button>
+          <div class="audio-track-copy">
+            <strong>${escapeHtml(track.title)}</strong>
+            <span>${escapeHtml(audioTypeLabel(track))} · ${formatAudioSize(track.size)}</span>
+          </div>
+          <div class="audio-track-actions">${actions}</div>
+        </article>`;
+    }).join("");
+  }
+  renderAudioPlayer();
+}
+
+async function handleAudioTrackAction(event) {
+  const button = event.target.closest("[data-audio-action]");
+  if (!button) return;
+  const { audioAction: action, trackId } = button.dataset;
+  if (action === "play") {
+    if (trackId === state.audio.currentTrackId) toggleAudioPlayback();
+    else await playAudioTrack(trackId);
+    return;
+  }
+  const playlist = getSelectedAudioPlaylist();
+  if (action === "add" && playlist && !playlist.trackIds.includes(trackId)) {
+    playlist.trackIds.push(trackId);
+    saveAudioLibrary();
+    renderAudioLibrary();
+    setAudioStatus(`Added to “${playlist.name}”.`);
+  } else if (action === "remove" && playlist) {
+    playlist.trackIds = playlist.trackIds.filter((id) => id !== trackId);
+    saveAudioLibrary();
+    renderAudioLibrary();
+  } else if ((action === "up" || action === "down") && playlist) {
+    const currentIndex = playlist.trackIds.indexOf(trackId);
+    const nextIndex = currentIndex + (action === "up" ? -1 : 1);
+    if (currentIndex >= 0 && nextIndex >= 0 && nextIndex < playlist.trackIds.length) {
+      [playlist.trackIds[currentIndex], playlist.trackIds[nextIndex]] = [playlist.trackIds[nextIndex], playlist.trackIds[currentIndex]];
+      saveAudioLibrary();
+      renderAudioLibrary();
+    }
+  } else if (action === "delete") {
+    await deleteAudioTrack(trackId);
+  }
+}
+
+async function deleteAudioTrack(trackId) {
+  const track = state.audio.tracks.find((entry) => entry.id === trackId);
+  if (!track || !window.confirm(`Delete “${track.title}” from this device?`)) return;
+  if (state.audio.currentTrackId === trackId) stopAudioPlayback();
+  state.audio.tracks = state.audio.tracks.filter((entry) => entry.id !== trackId);
+  state.audio.playlists.forEach((playlist) => {
+    playlist.trackIds = playlist.trackIds.filter((id) => id !== trackId);
+  });
+  try {
+    await deleteAudioBlob(trackId);
+  } catch (error) {
+    console.warn("Audio blob deletion failed", error);
+  }
+  saveAudioLibrary();
+  renderAudioLibrary();
+  setAudioStatus("Audio deleted from this device.");
+}
+
+async function playAudioTrack(trackId) {
+  const track = state.audio.tracks.find((entry) => entry.id === trackId);
+  if (!track) return;
+  try {
+    const blob = await readAudioBlob(trackId);
+    if (!blob) throw new Error("The stored audio file is missing.");
+    if (state.audio.objectUrl) URL.revokeObjectURL(state.audio.objectUrl);
+    state.audio.objectUrl = URL.createObjectURL(blob);
+    state.audio.currentTrackId = trackId;
+    state.audio.queue = getVisibleAudioTracks().map((entry) => entry.id);
+    el.audioPlayer.src = state.audio.objectUrl;
+    updateAudioMediaMetadata(track);
+    await el.audioPlayer.play();
+    renderAudioLibrary();
+  } catch (error) {
+    console.warn("Audio playback failed", error);
+    setAudioStatus("This audio file could not be played. Try importing it again.");
+  }
+}
+
+function toggleAudioPlayback() {
+  if (!state.audio.currentTrackId) {
+    const firstTrackId = getVisibleAudioTracks()[0]?.id;
+    if (firstTrackId) playAudioTrack(firstTrackId);
+    return;
+  }
+  if (el.audioPlayer.paused) el.audioPlayer.play().catch(() => setAudioStatus("Tap a track to begin playing."));
+  else el.audioPlayer.pause();
+}
+
+function stopAudioPlayback() {
+  el.audioPlayer.pause();
+  el.audioPlayer.removeAttribute("src");
+  el.audioPlayer.load();
+  if (state.audio.objectUrl) URL.revokeObjectURL(state.audio.objectUrl);
+  state.audio.objectUrl = "";
+  state.audio.currentTrackId = "";
+  if ("mediaSession" in navigator) navigator.mediaSession.metadata = null;
+  renderAudioPlayer();
+}
+
+function playAdjacentAudio(direction) {
+  const queue = state.audio.queue.length ? state.audio.queue : getVisibleAudioTracks().map((track) => track.id);
+  if (!queue.length) return;
+  let nextId;
+  if (state.audio.shuffle && queue.length > 1) {
+    const alternatives = queue.filter((id) => id !== state.audio.currentTrackId);
+    nextId = alternatives[Math.floor(Math.random() * alternatives.length)];
+  } else {
+    const currentIndex = Math.max(0, queue.indexOf(state.audio.currentTrackId));
+    let nextIndex = currentIndex + direction;
+    if (nextIndex < 0) nextIndex = queue.length - 1;
+    if (nextIndex >= queue.length) nextIndex = 0;
+    nextId = queue[nextIndex];
+  }
+  if (nextId) playAudioTrack(nextId);
+}
+
+function handleAudioEnded() {
+  if (state.audio.repeat) {
+    el.audioPlayer.currentTime = 0;
+    el.audioPlayer.play();
+    return;
+  }
+  playAdjacentAudio(1);
+}
+
+function seekAudioTrack() {
+  if (!Number.isFinite(el.audioPlayer.duration) || !el.audioPlayer.duration) return;
+  el.audioPlayer.currentTime = (Number(el.audioProgress.value) / 1000) * el.audioPlayer.duration;
+}
+
+function toggleAudioShuffle() {
+  state.audio.shuffle = !state.audio.shuffle;
+  renderAudioPlayer();
+}
+
+function toggleAudioRepeat() {
+  state.audio.repeat = !state.audio.repeat;
+  renderAudioPlayer();
+}
+
+function renderAudioPlayer() {
+  if (!el.audioPlayer) return;
+  const track = state.audio.tracks.find((entry) => entry.id === state.audio.currentTrackId);
+  const isPlaying = Boolean(track) && !el.audioPlayer.paused;
+  el.audioNowTitle.textContent = track?.title || "Nothing selected";
+  el.audioPlayButton.textContent = isPlaying ? "❚❚" : "▶";
+  el.audioPlayButton.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
+  el.audioShuffleButton.textContent = `Shuffle: ${state.audio.shuffle ? "On" : "Off"}`;
+  el.audioShuffleButton.setAttribute("aria-pressed", String(state.audio.shuffle));
+  el.audioRepeatButton.textContent = `Repeat: ${state.audio.repeat ? "On" : "Off"}`;
+  el.audioRepeatButton.setAttribute("aria-pressed", String(state.audio.repeat));
+  el.audioPreviousButton.disabled = !state.audio.tracks.length;
+  el.audioNextButton.disabled = !state.audio.tracks.length;
+  renderAudioProgress();
+}
+
+function renderAudioProgress() {
+  if (!el.audioPlayer) return;
+  const duration = Number.isFinite(el.audioPlayer.duration) ? el.audioPlayer.duration : 0;
+  const elapsed = Number.isFinite(el.audioPlayer.currentTime) ? el.audioPlayer.currentTime : 0;
+  el.audioElapsed.textContent = formatAudioTime(elapsed);
+  el.audioDuration.textContent = formatAudioTime(duration);
+  el.audioProgress.value = duration ? String(Math.round((elapsed / duration) * 1000)) : "0";
+  if ("mediaSession" in navigator && duration > 0 && navigator.mediaSession.setPositionState) {
+    try {
+      navigator.mediaSession.setPositionState({
+        duration,
+        playbackRate: el.audioPlayer.playbackRate,
+        position: Math.min(elapsed, duration)
+      });
+    } catch {
+      // Some browsers expose Media Session without accepting position updates.
+    }
+  }
+}
+
+function setupAudioMediaSession() {
+  if (!("mediaSession" in navigator)) return;
+  const actions = {
+    play: () => el.audioPlayer.play(),
+    pause: () => el.audioPlayer.pause(),
+    previoustrack: () => playAdjacentAudio(-1),
+    nexttrack: () => playAdjacentAudio(1),
+    seekbackward: (details) => {
+      el.audioPlayer.currentTime = Math.max(0, el.audioPlayer.currentTime - (details.seekOffset || 10));
+    },
+    seekforward: (details) => {
+      el.audioPlayer.currentTime = Math.min(el.audioPlayer.duration || 0, el.audioPlayer.currentTime + (details.seekOffset || 10));
+    },
+    seekto: (details) => {
+      if (Number.isFinite(details.seekTime)) el.audioPlayer.currentTime = details.seekTime;
+    }
+  };
+  Object.entries(actions).forEach(([action, handler]) => {
+    try {
+      navigator.mediaSession.setActionHandler(action, handler);
+    } catch {
+      // Unsupported Media Session actions are safe to ignore.
+    }
+  });
+}
+
+function updateAudioMediaMetadata(track) {
+  if (!("mediaSession" in navigator) || typeof MediaMetadata === "undefined") return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: track.title,
+    artist: track.artist || "MusicDocs Audio Library",
+    album: "Personal audio"
+  });
+}
+
+function setAudioStatus(message) {
+  el.audioLibraryStatus.textContent = message;
+}
+
+function formatAudioTime(value) {
+  const seconds = Math.max(0, Math.floor(Number(value) || 0));
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function formatAudioSize(value) {
+  const bytes = Number(value) || 0;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(bytes >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
+}
+
+function audioTypeLabel(track) {
+  const extension = track.fileName?.split(".").pop()?.toUpperCase();
+  return extension && extension.length <= 5 ? extension : "Audio";
 }
 
 function renderLibrary() {
