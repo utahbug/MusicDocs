@@ -251,15 +251,14 @@ const state = {
   piano: {
     sound: "grand-piano",
     volume: 0.58,
-    shape: "wave",
+    shape: "trail",
     audioContext: null,
     masterGain: null,
     compressor: null,
     voices: new Map(),
     pointerNotes: new Map(),
     pointerTokens: new Map(),
-    shapeNotesPlayed: new Set(),
-    shapeChangePending: false,
+    twinkleIndex: 0,
     game: {
       mode: "",
       sequence: [],
@@ -415,12 +414,6 @@ function collectElements() {
   el.keyboardSoundStatus = document.getElementById("keyboardSoundStatus");
   el.keyboardSustainHint = document.getElementById("keyboardSustainHint");
   el.realKeyboard = document.getElementById("realKeyboard");
-  el.pianoGames = document.getElementById("pianoGames");
-  el.pianoCopyGameButton = document.getElementById("pianoCopyGameButton");
-  el.pianoGuessGameButton = document.getElementById("pianoGuessGameButton");
-  el.pianoGameReplayButton = document.getElementById("pianoGameReplayButton");
-  el.pianoGameStopButton = document.getElementById("pianoGameStopButton");
-  el.pianoGameStatus = document.getElementById("pianoGameStatus");
   el.pianoChordGuide = document.getElementById("pianoChordGuide");
   el.pianoChordRoot = document.getElementById("pianoChordRoot");
   el.pianoChordType = document.getElementById("pianoChordType");
@@ -639,15 +632,6 @@ function wireEvents() {
   el.pianoEffectPads.forEach((button) => button.addEventListener("click", () => playPianoEffect(button.dataset.pianoEffect, button)));
   el.keyboardSound.addEventListener("change", handlePianoSoundChange);
   el.keyboardVolume.addEventListener("input", handlePianoVolumeChange);
-  el.pianoCopyGameButton.addEventListener("click", startPianoCopyGame);
-  el.pianoGuessGameButton.addEventListener("click", startPianoGuessGame);
-  el.pianoGameReplayButton.addEventListener("click", replayPianoGame);
-  el.pianoGameStopButton.addEventListener("click", stopPianoGame);
-  el.pianoGames.addEventListener("toggle", () => {
-    if (!el.pianoGames.open && state.piano.game.mode) {
-      stopPianoGame();
-    }
-  });
   el.pianoChordRoot.addEventListener("change", renderPianoChordGuide);
   el.pianoChordType.addEventListener("change", renderPianoChordGuide);
   el.pianoChordPlayButton.addEventListener("click", playPianoGuideChord);
@@ -5326,8 +5310,15 @@ const PIANO_CHORDS = {
 };
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
-const PIANO_SHAPES = new Set(["arch", "wave", "figure-eight", "swirl"]);
-const PIANO_SHAPE_SEQUENCE = ["wave", "figure-eight", "swirl", "arch"];
+const PIANO_SHAPES = new Set(["trail", "garden", "twinkle"]);
+const TWINKLE_MELODY = [
+  "C4", "C4", "G4", "G4", "A4", "A4", "G4",
+  "F4", "F4", "E4", "E4", "D4", "D4", "C4",
+  "G4", "G4", "F4", "F4", "E4", "E4", "D4",
+  "G4", "G4", "F4", "F4", "E4", "E4", "D4",
+  "C4", "C4", "G4", "G4", "A4", "A4", "G4",
+  "F4", "F4", "E4", "E4", "D4", "D4", "C4"
+];
 const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "acoustic-guitar", "marimba", "church-bell", "water-drop", "spaceship"]);
 
 function setupKeyboardUi() {
@@ -5366,9 +5357,8 @@ function createKeyboardKey(midi, keyClass) {
 function loadPianoSettings() {
   const saved = readJson(STORAGE_KEYS.piano, {});
   if (PIANO_SOUND_LABELS[saved.sound]) state.piano.sound = saved.sound;
-  if (saved.shape === "circle") state.piano.shape = "figure-eight";
-  else if (saved.shape === "constellation") state.piano.shape = "swirl";
-  else if (PIANO_SHAPES.has(saved.shape)) state.piano.shape = saved.shape;
+  if (PIANO_SHAPES.has(saved.shape)) state.piano.shape = saved.shape;
+  else if (saved.shape) state.piano.shape = "trail";
   const savedVolume = Number(saved.volume);
   if (Number.isFinite(savedVolume)) state.piano.volume = clamp(savedVolume, 0, 1);
 }
@@ -5405,9 +5395,8 @@ function renderPiano() {
 }
 
 function handlePianoShapeChange() {
-  state.piano.shape = PIANO_SHAPES.has(el.pianoShape.value) ? el.pianoShape.value : "wave";
-  state.piano.shapeNotesPlayed.clear();
-  state.piano.shapeChangePending = false;
+  state.piano.shape = PIANO_SHAPES.has(el.pianoShape.value) ? el.pianoShape.value : "trail";
+  state.piano.twinkleIndex = 0;
   savePianoSettings();
   applyPianoShape();
 }
@@ -5441,66 +5430,44 @@ function pianoNoteMidi(label) {
 
 function applyPianoShape() {
   if (!el.pianoNoteArc) return;
-  const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "wave";
+  const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "trail";
   el.pianoNoteArc.dataset.shape = shape;
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button) => {
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
+    button.textContent = shape === "twinkle" ? "★" : button.dataset.object;
   });
-  if (shape === "arch") return;
 
   const includeWide = window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches;
   const buttons = allButtons
     .filter((button) => includeWide || !button.classList.contains("piano-wide-note"))
-    .sort((a, b) => pianoNoteMidi(a.getAttribute("aria-label")) - pianoNoteMidi(b.getAttribute("aria-label")));
+    .sort((a, b) => pianoNoteMidi(a.dataset.note) - pianoNoteMidi(b.dataset.note));
   const count = buttons.length;
   buttons.forEach((button, index) => {
     const point = pianoShapePoint(shape, index, count);
     button.style.left = `${point.x}%`;
     button.style.bottom = `${point.y}px`;
   });
+  el.pianoSoundStatus.textContent = shape === "twinkle"
+    ? "Tap any star to play Twinkle, Twinkle"
+    : PIANO_SOUND_LABELS[state.piano.sound];
 }
 
 function pianoShapePoint(shape, index, count) {
   const progress = count > 1 ? index / (count - 1) : 0.5;
-  if (shape === "wave") {
-    return { x: 6 + progress * 88, y: 82 + Math.sin(progress * Math.PI * 2) * 48 };
+  if (shape === "trail") {
+    return { x: 7 + progress * 86, y: 94 + Math.sin(progress * Math.PI * 2) * 56 };
   }
-  if (shape === "figure-eight") {
-    const angle = ((index + 0.5) / count) * Math.PI * 2;
-    return {
-      x: 50 + Math.sin(angle) * 43,
-      y: 95 + Math.sin(angle * 2) * 68
-    };
-  }
-  const turns = count > 16 ? 1.7 : 1.25;
-  const angle = -Math.PI * 0.85 + progress * Math.PI * 2 * turns;
-  const radius = 27 + progress * 20;
+  const columns = count > 16 ? 6 : 4;
+  const row = Math.floor(index / columns);
+  const column = index % columns;
+  const rowCount = Math.min(columns, count - row * columns);
+  const visualColumn = row % 2 ? rowCount - 1 - column : column;
   return {
-    x: 50 + Math.cos(angle) * radius,
-    y: 94 + Math.sin(angle) * radius * 1.6
+    x: rowCount > 1 ? 10 + (visualColumn / (rowCount - 1)) * 80 : 50,
+    y: 35 + row * 82
   };
-}
-
-function recordPianoShapeProgress(button) {
-  if (!button?.classList.contains("piano-note") || state.piano.game.mode || state.piano.shapeChangePending) return;
-  state.piano.shapeNotesPlayed.add(button.getAttribute("aria-label"));
-  const includeWide = window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches;
-  const requiredNotes = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"))
-    .filter((candidate) => includeWide || !candidate.classList.contains("piano-wide-note"))
-    .map((candidate) => candidate.getAttribute("aria-label"));
-  if (!requiredNotes.every((label) => state.piano.shapeNotesPlayed.has(label))) return;
-
-  state.piano.shapeChangePending = true;
-  window.setTimeout(() => {
-    const currentIndex = PIANO_SHAPE_SEQUENCE.indexOf(state.piano.shape);
-    state.piano.shape = PIANO_SHAPE_SEQUENCE[(currentIndex + 1 + PIANO_SHAPE_SEQUENCE.length) % PIANO_SHAPE_SEQUENCE.length];
-    state.piano.shapeNotesPlayed.clear();
-    state.piano.shapeChangePending = false;
-    savePianoSettings();
-    renderPiano();
-  }, 220);
 }
 
 async function playPianoEffect(effect, button) {
@@ -5847,10 +5814,6 @@ async function handlePianoPointerDown(event) {
   if (state.piano.voices.has(event.pointerId)) return;
   try { button.setPointerCapture(event.pointerId); } catch (_error) {}
   state.piano.pointerNotes.set(event.pointerId, button);
-  if (button.classList.contains("piano-note")) {
-    handlePianoGameInput(button);
-    recordPianoShapeProgress(button);
-  }
   await playPianoNoteForPointer(event.pointerId, button);
 }
 
@@ -5860,7 +5823,15 @@ async function playPianoNoteForPointer(pointerId, button) {
   const context = await getPianoAudioContext();
   if (!context) return;
   if (state.piano.pointerTokens.get(pointerId) !== token) return;
-  const frequency = pianoNoteFrequency(button.getAttribute("aria-label"));
+  let note = button.dataset.note || button.getAttribute("aria-label");
+  if (button.classList.contains("piano-note") && state.piano.shape === "twinkle") {
+    note = TWINKLE_MELODY[state.piano.twinkleIndex % TWINKLE_MELODY.length];
+    state.piano.twinkleIndex = (state.piano.twinkleIndex + 1) % TWINKLE_MELODY.length;
+    el.pianoSoundStatus.textContent = state.piano.twinkleIndex
+      ? `Twinkle, Twinkle • note ${state.piano.twinkleIndex} of ${TWINKLE_MELODY.length}`
+      : "Twinkle complete — tap a star to play again";
+  }
+  const frequency = pianoNoteFrequency(note);
   const voice = createPianoVoice(context, frequency, state.piano.sound);
   voice.button = button;
   state.piano.voices.set(pointerId, voice);
@@ -5877,10 +5848,6 @@ function handlePianoPointerMove(event) {
   if (currentVoice) releasePianoVoice(currentVoice);
   state.piano.voices.delete(event.pointerId);
   state.piano.pointerNotes.set(event.pointerId, nextButton);
-  if (nextButton.classList.contains("piano-note")) {
-    handlePianoGameInput(nextButton);
-    recordPianoShapeProgress(nextButton);
-  }
   playPianoNoteForPointer(event.pointerId, nextButton);
 }
 
@@ -5972,21 +5939,26 @@ function createPianoVoice(context, frequency, sound) {
   };
 
   if (sound === "grand-piano") {
-    addTone(1, "triangle", 0.34, 0.006, 2.8, 0.0001, -3, 3.2);
-    addTone(1, "sine", 0.24, 0.004, 2.3, 0.0001, 3, 2.8);
-    addTone(2, "sine", 0.09, 0.003, 1.35, 0.0001, -4, 1.7);
-    addTone(3, "sine", 0.035, 0.002, 0.7, 0.0001, 5, 1);
-    addNoise(0.025, 0.045, 3800);
-    voice.release = 0.14;
+    addTone(1, "triangle", 0.36, 0.003, 1.35, 0.0001, -3, 1.6);
+    addTone(1, "sine", 0.2, 0.002, 1.05, 0.0001, 3, 1.3);
+    addTone(2, "sine", 0.11, 0.001, 0.5, 0.0001, -4, 0.7);
+    addTone(3, "sine", 0.04, 0.001, 0.24, 0.0001, 5, 0.4);
+    addNoise(0.035, 0.035, 4200);
+    voice.release = 0.055;
   } else if (sound === "electric-piano") {
-    addTone(1, "sine", 0.38, 0.008, 2.4, 0.0001, 0, 2.8);
-    addTone(2, "sine", 0.13, 0.006, 1.5, 0.0001, 4, 1.9);
-    addTone(3, "sine", 0.055, 0.006, 0.9, 0.0001, -5, 1.2);
+    addTone(1, "sine", 0.31, 0.004, 2.1, 0.0001, -7, 2.5);
+    addTone(1, "sine", 0.22, 0.004, 1.8, 0.0001, 7, 2.2);
+    addTone(2.01, "sine", 0.17, 0.002, 1.15, 0.0001, 0, 1.45);
+    addTone(3.98, "sine", 0.075, 0.001, 0.55, 0.0001, 0, 0.8);
+    addTone(7.96, "sine", 0.025, 0.001, 0.22, 0.0001, 0, 0.4);
+    voice.release = 0.11;
   } else if (sound === "acoustic-guitar") {
-    addTone(1, "triangle", 0.3, 0.004, 1.7, 0.0001, 0, 2);
-    addTone(2, "sine", 0.11, 0.003, 0.8, 0.0001, 2, 1.1);
-    addTone(3, "sine", 0.045, 0.002, 0.45, 0.0001, -3, 0.7);
-    addNoise(0.04, 0.035, 4200);
+    addTone(1, "sawtooth", 0.16, 0.002, 0.42, 0.0001, -5, 0.65);
+    addTone(1, "triangle", 0.24, 0.002, 0.95, 0.0001, 4, 1.15);
+    addTone(2, "triangle", 0.12, 0.001, 0.34, 0.0001, -2, 0.5);
+    addTone(4, "sine", 0.045, 0.001, 0.2, 0.0001, 3, 0.32);
+    addNoise(0.075, 0.055, 5600);
+    voice.release = 0.045;
   } else if (sound === "marimba") {
     addTone(1, "sine", 0.42, 0.003, 1.15, 0.0001, 0, 1.4);
     addTone(4, "sine", 0.075, 0.002, 0.42, 0.0001, 0, 0.6);

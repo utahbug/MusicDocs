@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-29">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-30">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-36" defer></script>
+    <script src="script.js?v=musicdocs-37" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -407,55 +407,38 @@
               </label>
             </div>
             <label class="piano-shape-control">
-              <span>Shape</span>
-              <select id="pianoShape" aria-label="Fun Stuff note shape">
-                <option value="arch">Arch</option>
-                <option value="wave" selected>Wave</option>
-                <option value="figure-eight">Sideways 8</option>
-                <option value="swirl">Swirl</option>
+              <span>Activity</span>
+              <select id="pianoShape" aria-label="Fun Stuff activity">
+                <option value="trail" selected>Sound Trail</option>
+                <option value="garden">Sound Garden</option>
+                <option value="twinkle">Twinkle Stars</option>
               </select>
             </label>
-            <details id="pianoGames" class="piano-games piano-games-standalone" open>
-              <summary>Games</summary>
-              <div class="piano-game-controls">
-                <button id="pianoCopyGameButton" class="secondary-button" type="button">Copy Me</button>
-                <button id="pianoGuessGameButton" class="secondary-button" type="button">Guess the Note</button>
-                <button id="pianoGameReplayButton" class="secondary-button" type="button" hidden>Replay</button>
-                <button id="pianoGameStopButton" class="plain-button" type="button" hidden>End game</button>
-              </div>
-              <p id="pianoGameStatus" class="piano-game-status" aria-live="polite">Choose a game.</p>
-            </details>
-            <div class="piano-note-arc" aria-label="Playable notes">
-              <button class="piano-note piano-natural" style="--px:8%;--py:22px;--wx:4%;--wy:20px" type="button" aria-label="C4">C</button>
-              <button class="piano-note piano-natural" style="--px:20%;--py:58px;--wx:11%;--wy:50px" type="button" aria-label="D4">D</button>
-              <button class="piano-note piano-natural" style="--px:32%;--py:88px;--wx:18%;--wy:78px" type="button" aria-label="E4">E</button>
-              <button class="piano-note piano-natural" style="--px:44%;--py:108px;--wx:25%;--wy:102px" type="button" aria-label="F4">F</button>
-              <button class="piano-note piano-natural" style="--px:56%;--py:108px;--wx:32%;--wy:122px" type="button" aria-label="G4">G</button>
-              <button class="piano-note piano-natural" style="--px:68%;--py:88px;--wx:39%;--wy:138px" type="button" aria-label="A4">A</button>
-              <button class="piano-note piano-natural" style="--px:80%;--py:58px;--wx:46%;--wy:148px" type="button" aria-label="B4">B</button>
-              <button class="piano-note piano-natural" style="--px:92%;--py:22px;--wx:53%;--wy:148px" type="button" aria-label="C5">C</button>
-              <button class="piano-note piano-natural piano-wide-note" style="--wx:60%;--wy:138px" type="button" aria-label="D5">D</button>
-              <button class="piano-note piano-natural piano-wide-note" style="--wx:67%;--wy:122px" type="button" aria-label="E5">E</button>
-              <button class="piano-note piano-natural piano-wide-note" style="--wx:74%;--wy:102px" type="button" aria-label="F5">F</button>
-              <button class="piano-note piano-natural piano-wide-note" style="--wx:81%;--wy:78px" type="button" aria-label="G5">G</button>
-              <button class="piano-note piano-natural piano-wide-note" style="--wx:88%;--wy:50px" type="button" aria-label="A5">A</button>
-              <button class="piano-note piano-natural piano-wide-note" style="--wx:95%;--wy:20px" type="button" aria-label="B5">B</button>
-
-              <button class="piano-note piano-accidental" style="--px:14%;--py:105px;--wx:7.5%;--wy:112px" type="button" aria-label="C sharp 4">C&#9839;</button>
-              <button class="piano-note piano-accidental" style="--px:26%;--py:138px;--wx:14.5%;--wy:140px" type="button" aria-label="D sharp 4">D&#9839;</button>
-              <button class="piano-note piano-accidental" style="--px:50%;--py:170px;--wx:28.5%;--wy:184px" type="button" aria-label="F sharp 4">F&#9839;</button>
-              <button class="piano-note piano-accidental" style="--px:62%;--py:160px;--wx:35.5%;--wy:200px" type="button" aria-label="G sharp 4">G&#9839;</button>
-              <button class="piano-note piano-accidental" style="--px:74%;--py:138px;--wx:42.5%;--wy:210px" type="button" aria-label="A sharp 4">A&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:56.5%;--wy:210px" type="button" aria-label="C sharp 5">C&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:63.5%;--wy:200px" type="button" aria-label="D sharp 5">D&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:77.5%;--wy:164px" type="button" aria-label="F sharp 5">F&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:84.5%;--wy:140px" type="button" aria-label="G sharp 5">G&#9839;</button>
-              <button class="piano-note piano-accidental piano-wide-note" style="--wx:91.5%;--wy:112px" type="button" aria-label="A sharp 5">A&#9839;</button>
-              <div class="piano-effect-pads" aria-label="Playful sound effects">
-                <button class="piano-effect-pad effect-drum" type="button" data-piano-effect="drum"><svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="11" rx="10" ry="4"/><path d="M6 11v10c0 2 5 4 10 4s10-2 10-4V11M8 5l7 6m9-6-7 6"/></svg><small>Drum</small></button>
-                <button class="piano-effect-pad effect-firework" type="button" data-piano-effect="firework"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3v7m0 12v7M3 16h7m12 0h7M7 7l5 5m8 8 5 5M25 7l-5 5m-8 8-5 5"/><circle cx="16" cy="16" r="3"/></svg><small>Firework</small></button>
-                <button class="piano-effect-pad effect-drop" type="button" data-piano-effect="drop"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3S7 14 7 21a9 9 0 0 0 18 0C25 14 16 3 16 3zM11 21c0 3 2 5 5 5"/></svg><small>Drop</small></button>
-              </div>
+            <div class="piano-note-arc" aria-label="Playable sound objects">
+              <button class="piano-note piano-play-object" data-note="C4" data-object="🐶" type="button" aria-label="Dog">🐶</button>
+              <button class="piano-note piano-play-object" data-note="C sharp 4" data-object="🐱" type="button" aria-label="Cat">🐱</button>
+              <button class="piano-note piano-play-object" data-note="D4" data-object="🐸" type="button" aria-label="Frog">🐸</button>
+              <button class="piano-note piano-play-object" data-note="D sharp 4" data-object="🦊" type="button" aria-label="Fox">🦊</button>
+              <button class="piano-note piano-play-object" data-note="E4" data-object="🐼" type="button" aria-label="Panda">🐼</button>
+              <button class="piano-note piano-play-object" data-note="F4" data-object="🐵" type="button" aria-label="Monkey">🐵</button>
+              <button class="piano-note piano-play-object" data-note="F sharp 4" data-object="🦁" type="button" aria-label="Lion">🦁</button>
+              <button class="piano-note piano-play-object" data-note="G4" data-object="🐯" type="button" aria-label="Tiger">🐯</button>
+              <button class="piano-note piano-play-object" data-note="G sharp 4" data-object="🐨" type="button" aria-label="Koala">🐨</button>
+              <button class="piano-note piano-play-object" data-note="A4" data-object="🐰" type="button" aria-label="Rabbit">🐰</button>
+              <button class="piano-note piano-play-object" data-note="A sharp 4" data-object="🐙" type="button" aria-label="Octopus">🐙</button>
+              <button class="piano-note piano-play-object" data-note="B4" data-object="🦋" type="button" aria-label="Butterfly">🦋</button>
+              <button class="piano-note piano-play-object" data-note="C5" data-object="🌟" type="button" aria-label="Star">🌟</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="C sharp 5" data-object="🌈" type="button" aria-label="Rainbow">🌈</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="D5" data-object="🚀" type="button" aria-label="Rocket">🚀</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="D sharp 5" data-object="🐳" type="button" aria-label="Whale">🐳</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="E5" data-object="🍎" type="button" aria-label="Apple">🍎</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="F5" data-object="🌻" type="button" aria-label="Sunflower">🌻</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="F sharp 5" data-object="🐞" type="button" aria-label="Ladybug">🐞</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="G5" data-object="🐢" type="button" aria-label="Turtle">🐢</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="G sharp 5" data-object="🦄" type="button" aria-label="Unicorn">🦄</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="A5" data-object="🚗" type="button" aria-label="Car">🚗</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="A sharp 5" data-object="🎈" type="button" aria-label="Balloon">🎈</button>
+              <button class="piano-note piano-play-object piano-wide-note" data-note="B5" data-object="🍓" type="button" aria-label="Strawberry">🍓</button>
             </div>
             <p id="pianoSoundStatus" class="piano-prototype-note" aria-live="polite">Grand piano</p>
           </div>
