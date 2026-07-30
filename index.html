@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-55">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-57">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-57" defer></script>
+    <script src="script.js?v=musicdocs-59" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -436,11 +436,11 @@
                 </button>
                 <button type="button" data-piano-shape="circle">
                   <span class="activity-picture activity-keyboard-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-                  <span>Note keyboard</span>
+                  <span>Keyboard</span>
                 </button>
                 <button type="button" data-piano-shape="zigzag">
                   <span class="activity-picture activity-puzzle-picture" aria-hidden="true">&#x1F9E9;</span>
-                  <span>Key puzzle</span>
+                  <span>Piano puzzle</span>
                 </button>
                 <button type="button" data-piano-shape="rainbow">
                   <span class="activity-picture activity-air-picture" aria-hidden="true">&#x266B;</span>
@@ -451,8 +451,8 @@
                 <option value="trail" selected>Sound Trail</option>
                 <option value="garden">Just sound</option>
                 <option value="twinkle">Twinkle Stars</option>
-                <option value="circle">Note keyboard</option>
-                <option value="zigzag">Key puzzle</option>
+                <option value="circle">Keyboard</option>
+                <option value="zigzag">Piano puzzle</option>
                 <option value="rainbow">Pop notes</option>
               </select>
             </div>
@@ -520,6 +520,10 @@
             <div class="keyboard-scroll" aria-label="Scrollable piano keyboard">
               <div id="realKeyboard" class="real-keyboard" aria-label="Playable two-octave keyboard"></div>
             </div>
+            <div class="keyboard-guide-tabs" role="tablist" aria-label="Keyboard guides">
+              <button id="chordGuideTab" class="selected" type="button" role="tab" aria-selected="true" aria-controls="pianoChordGuide">Chord Guide</button>
+              <button id="keyChangeTab" type="button" role="tab" aria-selected="false" aria-controls="keyChangeGuide">Key Changes</button>
+            </div>
             <section id="pianoChordGuide" class="keyboard-chord-guide" aria-labelledby="keyboardChordHeading">
               <div class="piano-chord-controls keyboard-chord-controls">
                 <h3 id="keyboardChordHeading">Chord Guide</h3>
@@ -549,6 +553,25 @@
                 <p><strong>Jazz:</strong> Major 7ths, minor 7ths, dominant 7ths, diminished passing chords, and ii–V–I.</p>
               </div>
               <div id="pianoChordFamily" class="piano-chord-family"></div>
+            </section>
+            <section id="keyChangeGuide" class="keyboard-key-change" aria-labelledby="keyChangeHeading" hidden>
+              <div class="key-change-controls">
+                <h3 id="keyChangeHeading">Key Changes</h3>
+                <label><span>Starting key</span>
+                  <select id="keyChangeRoot" aria-label="Starting key">
+                    <option value="0">C</option><option value="1">D&#x266D;</option><option value="2">D</option><option value="3">E&#x266D;</option>
+                    <option value="4">E</option><option value="5">F</option><option value="6">G&#x266D;</option><option value="7">G</option>
+                    <option value="8">A&#x266D;</option><option value="9">A</option><option value="10">B&#x266D;</option><option value="11">B</option>
+                  </select>
+                </label>
+                <div class="key-change-stepper">
+                  <span>Semitones</span>
+                  <div><button id="keyChangeDown" type="button" aria-label="Lower one semitone">&#x2212;</button><output id="keyChangeSteps">0</output><button id="keyChangeUp" type="button" aria-label="Raise one semitone">+</button></div>
+                </div>
+              </div>
+              <p class="key-change-hint">One semitone equals one half step.</p>
+              <div id="keyChangeResult" class="key-change-result" aria-live="polite"></div>
+              <div id="keyChangeTable" class="key-change-table" aria-label="Keys from six semitones down through six semitones up"></div>
             </section>
           </div>
         </section>

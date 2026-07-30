@@ -317,6 +317,7 @@ async function init() {
   renderPitch();
   renderPiano();
   renderPianoChordGuide();
+  renderKeyChangeGuide();
   renderAudioLibrary();
   renderAll();
   openInitialSection();
@@ -473,6 +474,15 @@ function collectElements() {
   el.pianoChordUse = document.getElementById("pianoChordUse");
   el.pianoChordNotes = document.getElementById("pianoChordNotes");
   el.pianoChordFamily = document.getElementById("pianoChordFamily");
+  el.chordGuideTab = document.getElementById("chordGuideTab");
+  el.keyChangeTab = document.getElementById("keyChangeTab");
+  el.keyChangeGuide = document.getElementById("keyChangeGuide");
+  el.keyChangeRoot = document.getElementById("keyChangeRoot");
+  el.keyChangeDown = document.getElementById("keyChangeDown");
+  el.keyChangeUp = document.getElementById("keyChangeUp");
+  el.keyChangeSteps = document.getElementById("keyChangeSteps");
+  el.keyChangeResult = document.getElementById("keyChangeResult");
+  el.keyChangeTable = document.getElementById("keyChangeTable");
 
   el.detailContent = document.getElementById("detailContent");
 
@@ -711,6 +721,12 @@ function wireEvents() {
   el.pianoChordRoot.addEventListener("change", renderPianoChordGuide);
   el.pianoChordType.addEventListener("change", renderPianoChordGuide);
   el.pianoChordPlayButton.addEventListener("click", playPianoGuideChord);
+  el.chordGuideTab.addEventListener("click", () => showKeyboardGuide("chord"));
+  el.keyChangeTab.addEventListener("click", () => showKeyboardGuide("key"));
+  el.keyChangeRoot.addEventListener("change", renderKeyChangeGuide);
+  el.keyChangeDown.addEventListener("click", () => adjustKeyChange(-1));
+  el.keyChangeUp.addEventListener("click", () => adjustKeyChange(1));
+  el.keyChangeTable.addEventListener("click", handleKeyChangeTableClick);
   el.audioFileInput.addEventListener("change", importAudioFiles);
   el.audioLibraryTab.addEventListener("click", () => setAudioMode("library"));
   el.audioPlaylistTab.addEventListener("click", () => setAudioMode("playlist"));
@@ -6178,6 +6194,22 @@ const PIANO_CHORDS = {
   ninth: { intervals: [0, 2, 4, 7, 10], use: "The 9th expands a dominant 7th with extra color, especially in blues, funk, and jazz." }
 };
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const KEY_CHANGE_NAMES = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+const KEY_SIGNATURES = [
+  "No sharps or flats",
+  "5 flats: B♭, E♭, A♭, D♭, G♭",
+  "2 sharps: F♯, C♯",
+  "3 flats: B♭, E♭, A♭",
+  "4 sharps: F♯, C♯, G♯, D♯",
+  "1 flat: B♭",
+  "6 flats: B♭, E♭, A♭, D♭, G♭, C♭",
+  "1 sharp: F♯",
+  "4 flats: B♭, E♭, A♭, D♭",
+  "3 sharps: F♯, C♯, G♯",
+  "2 flats: B♭, E♭",
+  "5 sharps: F♯, C♯, G♯, D♯, A♯"
+];
+const keyboardKeyChange = { steps: 0 };
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
 const PIANO_SHAPES = new Set(["trail", "garden", "twinkle", "circle", "zigzag", "rainbow"]);
 const TWINKLE_MELODY = [
@@ -6464,19 +6496,21 @@ function applyPianoShape() {
   if (!el.pianoNoteArc) return;
   const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "trail";
   el.pianoNoteArc.dataset.shape = shape;
+  if (shape === "garden") ensureGardenFill();
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button, buttonIndex) => {
-    const shapeLimit = shape === "twinkle" ? 10 : ["circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity;
+    const shapeLimit = ["circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity;
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
     button.classList.toggle("piano-shape-hidden", buttonIndex >= shapeLimit);
     button.textContent = shape === "twinkle" ? "★" : button.dataset.object;
   });
 
-  const includeWide = shape === "garden" || shape === "trail"
+  const includeWide = shape === "garden" || shape === "trail" || shape === "twinkle"
     || window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches;
   const buttons = allButtons
     .filter((button) => !button.classList.contains("piano-shape-hidden"))
+    .filter((button) => shape === "garden" || !button.classList.contains("garden-extra"))
     .filter((button) => includeWide || !button.classList.contains("piano-wide-note"))
     .sort((a, b) => pianoNoteMidi(a.dataset.note) - pianoNoteMidi(b.dataset.note));
   const count = buttons.length;
@@ -6489,6 +6523,33 @@ function applyPianoShape() {
   el.pianoSoundStatus.textContent = shape === "twinkle"
     ? "Tap any star to play Twinkle, Twinkle"
     : PIANO_SOUND_LABELS[state.piano.sound];
+}
+
+function ensureGardenFill() {
+  const width = el.pianoNoteArc?.clientWidth || 680;
+  const height = el.pianoNoteArc?.clientHeight || 360;
+  const buttonSize = window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches ? 48 : 42;
+  const step = buttonSize - 2;
+  const columns = Math.ceil((width - buttonSize) / step) + 1;
+  const rows = Math.ceil((height - buttonSize) / step) + 1;
+  const targetCount = columns * rows;
+  const baseButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note:not(.garden-extra)"));
+  let extras = Array.from(el.pianoNoteArc.querySelectorAll(".garden-extra"));
+  while (baseButtons.length + extras.length < targetCount) {
+    const source = baseButtons[extras.length % baseButtons.length];
+    const clone = source.cloneNode(true);
+    clone.classList.remove("piano-wide-note", "piano-shape-hidden", "is-playing");
+    clone.classList.add("garden-extra");
+    clone.removeAttribute("style");
+    clone.addEventListener("pointerdown", handlePianoPointerDown);
+    clone.addEventListener("pointermove", handlePianoPointerMove);
+    clone.addEventListener("pointerup", handlePianoPointerUp);
+    clone.addEventListener("pointercancel", handlePianoPointerUp);
+    clone.addEventListener("lostpointercapture", handlePianoPointerUp);
+    el.pianoNoteArc.appendChild(clone);
+    extras.push(clone);
+  }
+  while (baseButtons.length + extras.length > targetCount && extras.length) extras.pop().remove();
 }
 
 function pianoShapePoint(shape, index, count) {
@@ -6532,21 +6593,28 @@ function pianoShapePoint(shape, index, count) {
   if (shape === "garden") {
     const width = el.pianoNoteArc?.clientWidth || 680;
     const height = el.pianoNoteArc?.clientHeight || 360;
-    const columns = width < 430 ? 5 : width < 620 ? 6 : 8;
+    const buttonSize = window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches ? 48 : 42;
+    const step = buttonSize - 2;
+    const columns = Math.ceil((width - buttonSize) / step) + 1;
     const rows = Math.ceil(count / columns);
     const row = Math.floor(index / columns);
     const column = index % columns;
-    const rowCount = Math.min(columns, count - row * columns);
-    const visualColumn = row % 2 ? rowCount - 1 - column : column;
-    const centeredColumn = visualColumn + (columns - rowCount) / 2;
-    const horizontalMargin = width < 430 ? 10 : 7;
-    const minY = 20;
-    const maxY = Math.max(minY, height - 62);
+    const visualColumn = row % 2 ? columns - 1 - column : column;
     return {
-      x: rowCount > 1
-        ? horizontalMargin + (centeredColumn / (columns - 1)) * (100 - horizontalMargin * 2)
-        : 50,
-      y: rows > 1 ? minY + (row / (rows - 1)) * (maxY - minY) : height / 2 - 21
+      x: ((buttonSize / 2 + (visualColumn / Math.max(1, columns - 1)) * (width - buttonSize)) / width) * 100,
+      y: rows > 1 ? (row / (rows - 1)) * (height - buttonSize) : height / 2 - buttonSize / 2
+    };
+  }
+  if (shape === "twinkle") {
+    const width = el.pianoNoteArc?.clientWidth || 680;
+    const height = el.pianoNoteArc?.clientHeight || 360;
+    const columns = width < 430 ? 5 : 6;
+    const rows = Math.ceil(count / columns);
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    return {
+      x: ((column + 0.5) / columns) * 100,
+      y: rows > 1 ? 12 + (row / (rows - 1)) * (height - 70) : height / 2 - 23
     };
   }
   if (shape === "circle") {
@@ -6716,6 +6784,68 @@ function renderPianoChordGuide() {
     <span><strong>${PIANO_NOTE_NAMES[fifth]}</strong>V Â· Leads home</span>
     <span><strong>${PIANO_NOTE_NAMES[relativeMinor]}m</strong>vi Â· Softer</span>
   `;
+}
+
+function showKeyboardGuide(guide) {
+  const showKeyChanges = guide === "key";
+  el.pianoChordGuide.hidden = showKeyChanges;
+  el.keyChangeGuide.hidden = !showKeyChanges;
+  el.chordGuideTab.classList.toggle("selected", !showKeyChanges);
+  el.keyChangeTab.classList.toggle("selected", showKeyChanges);
+  el.chordGuideTab.setAttribute("aria-selected", String(!showKeyChanges));
+  el.keyChangeTab.setAttribute("aria-selected", String(showKeyChanges));
+  if (showKeyChanges) renderKeyChangeGuide();
+}
+
+function adjustKeyChange(delta) {
+  keyboardKeyChange.steps = Math.max(-6, Math.min(6, keyboardKeyChange.steps + delta));
+  renderKeyChangeGuide();
+}
+
+function keyChangePitch(root, steps) {
+  return (root + steps + 120) % 12;
+}
+
+function formatKeyChangeSteps(steps) {
+  if (steps > 0) return `+${steps}`;
+  if (steps < 0) return `−${Math.abs(steps)}`;
+  return "0";
+}
+
+function renderKeyChangeGuide() {
+  if (!el.keyChangeRoot || !el.keyChangeResult || !el.keyChangeTable) return;
+  const root = Number(el.keyChangeRoot.value) || 0;
+  const steps = keyboardKeyChange.steps;
+  const result = keyChangePitch(root, steps);
+  el.keyChangeSteps.textContent = formatKeyChangeSteps(steps);
+  el.keyChangeDown.disabled = steps <= -6;
+  el.keyChangeUp.disabled = steps >= 6;
+  const direction = steps === 0
+    ? "The music remains in its original key."
+    : `Move every note ${Math.abs(steps)} semitone${Math.abs(steps) === 1 ? "" : "s"} ${steps > 0 ? "higher" : "lower"}.`;
+  el.keyChangeResult.innerHTML = `
+    <strong>${KEY_CHANGE_NAMES[root]} <span aria-hidden="true">→</span> ${KEY_CHANGE_NAMES[result]}</strong>
+    <span>${direction}</span>
+    <span>${KEY_SIGNATURES[result]}</span>
+  `;
+  el.keyChangeTable.innerHTML = Array.from({ length: 13 }, (_, index) => index - 6).map((rowSteps) => {
+    const rowResult = keyChangePitch(root, rowSteps);
+    const active = rowSteps === steps;
+    return `
+      <button type="button" data-key-change-step="${rowSteps}" class="${active ? "selected" : ""}" aria-pressed="${active}">
+        <span>${formatKeyChangeSteps(rowSteps)}</span>
+        <strong>${KEY_CHANGE_NAMES[rowResult]}</strong>
+        <span>${KEY_SIGNATURES[rowResult]}</span>
+      </button>
+    `;
+  }).join("");
+}
+
+function handleKeyChangeTableClick(event) {
+  const row = event.target.closest("[data-key-change-step]");
+  if (!row) return;
+  keyboardKeyChange.steps = Number(row.dataset.keyChangeStep);
+  renderKeyChangeGuide();
 }
 
 async function playPianoGuideChord() {
