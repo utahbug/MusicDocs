@@ -1258,10 +1258,18 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .fun-activity-grid button.selected { background: linear-gradient(145deg, color-mix(in srgb, #237C7A 15%, var(--surface)), color-mix(in srgb, #3667A8 18%, var(--surface))); border-color: #2F7892; box-shadow: 0 0 0 3px color-mix(in srgb, #2F9E91 25%, transparent), 0 4px 12px rgba(29, 71, 103, 0.2); }
 .activity-picture { background: linear-gradient(145deg, #DDF5FF, #87CDEB); border: 1px solid rgba(47, 126, 151, 0.42); border-radius: 12px; display: block; height: 45px; overflow: hidden; position: relative; width: 48px; }
 .activity-trail-picture { background: linear-gradient(145deg, #C8E7FF, #6473C8 62%, #38447F); }
-.activity-trail-picture b { filter: drop-shadow(0 2px 2px rgba(30,39,84,0.3)); font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; font-size: 1.9rem; font-weight: 400; left: 7px; position: absolute; top: 8px; transform: rotate(-13deg); }
-.activity-trail-picture i { color: #FFFFFF; font-family: Georgia, serif; font-style: normal; position: absolute; text-shadow: 0 2px 3px rgba(27,35,83,0.42); }
-.activity-trail-picture i:nth-of-type(1) { font-size: 0.92rem; right: 8px; top: 5px; transform: rotate(12deg); }
-.activity-trail-picture i:nth-of-type(2) { bottom: 4px; font-size: 1rem; right: 3px; transform: rotate(-9deg); }
+.activity-trail-picture i { background: linear-gradient(#FFFFFF, #DCE8F4); border: 1px solid rgba(32,52,102,0.7); border-radius: 2px 2px 4px 4px; bottom: var(--wave-key-y); box-shadow: 0 2px 3px rgba(25,35,76,0.25); height: 23px; left: var(--wave-key-x); position: absolute; transform: rotate(var(--wave-key-rotate)); width: 7px; }
+.activity-trail-picture i:nth-child(1) { --wave-key-rotate: -17deg; --wave-key-x: 1px; --wave-key-y: 4px; }
+.activity-trail-picture i:nth-child(2) { --wave-key-rotate: -11deg; --wave-key-x: 7px; --wave-key-y: 8px; }
+.activity-trail-picture i:nth-child(3) { --wave-key-rotate: -5deg; --wave-key-x: 14px; --wave-key-y: 12px; }
+.activity-trail-picture i:nth-child(4) { --wave-key-rotate: 2deg; --wave-key-x: 21px; --wave-key-y: 14px; }
+.activity-trail-picture i:nth-child(5) { --wave-key-rotate: 8deg; --wave-key-x: 28px; --wave-key-y: 11px; }
+.activity-trail-picture i:nth-child(6) { --wave-key-rotate: 13deg; --wave-key-x: 35px; --wave-key-y: 7px; }
+.activity-trail-picture i:nth-child(7) { --wave-key-rotate: 18deg; --wave-key-x: 41px; --wave-key-y: 3px; }
+.activity-trail-picture i:nth-child(2)::after,
+.activity-trail-picture i:nth-child(3)::after,
+.activity-trail-picture i:nth-child(5)::after,
+.activity-trail-picture i:nth-child(6)::after { background: #243149; border-radius: 0 0 2px 2px; content: ""; height: 13px; position: absolute; right: -3px; top: -1px; width: 4px; z-index: 2; }
 .activity-sound-picture { align-items: center; background: linear-gradient(145deg, #E2F5D8, #9DD6B3); display: flex; justify-content: center; }
 .activity-sound-picture svg { height: 43px; overflow: visible; width: 47px; }
 .activity-sound-picture .sound-music-clef { fill: #205B75; font-family: "Segoe UI Symbol", "Noto Music", serif; font-size: 39px; font-weight: 500; }
