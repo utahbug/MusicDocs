@@ -6991,9 +6991,9 @@ function renderPianoScaleGuide() {
   if (!el.scaleRoot || !el.scaleType || !el.scaleResult) return;
   const root = Number(el.scaleRoot.value) || 0;
   const scale = PIANO_SCALES[el.scaleType.value] || PIANO_SCALES.major;
-  const pitchClasses = new Set(scale.intervals.map((interval) => (root + interval) % 12));
+  const scaleMidis = new Set(scale.intervals.map((interval) => 60 + root + interval));
   document.querySelectorAll(".keyboard-key").forEach((button) => {
-    button.classList.toggle("chord-highlight", pitchClasses.has(Number(button.dataset.midi) % 12));
+    button.classList.toggle("chord-highlight", scaleMidis.has(Number(button.dataset.midi)));
     button.classList.remove("game-preview");
   });
   const notes = scale.intervals.map((interval) => PIANO_NOTE_NAMES[(root + interval) % 12]);
@@ -7016,17 +7016,14 @@ async function playPianoScale() {
   midis.forEach((midi, index) => {
     window.setTimeout(() => {
       const button = document.querySelector(`.keyboard-key[data-midi="${midi}"]`);
-      button?.classList.add("game-preview");
+      button?.classList.add("chord-highlight", "game-preview");
       const frequency = 440 * (2 ** ((midi + state.piano.transpose - 69) / 12));
       const voice = createPianoVoice(context, frequency, state.piano.sound);
       window.setTimeout(() => {
         releasePianoVoice(voice, true);
         button?.classList.remove("game-preview");
-      }, 360);
-      if (index === midis.length - 1) {
-        window.setTimeout(renderPianoScaleGuide, 390);
-      }
-    }, index * 220);
+      }, 460);
+    }, index * 560);
   });
 }
 
