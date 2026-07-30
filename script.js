@@ -6763,7 +6763,7 @@ function pianoShapePoint(shape, index, count) {
     const wave = Math.min(1, Math.floor(index / itemsPerWave));
     const position = index % itemsPerWave;
     const waveProgress = position / (itemsPerWave - 1);
-    const verticalPadding = 78;
+    const verticalPadding = 96;
     const waveGap = height - verticalPadding * 2;
     const waveStart = wave === 1 ? 11 : 7;
     return {
