@@ -6364,12 +6364,13 @@ function pianoShapePoint(shape, index, count) {
     const column = index % columns;
     const rowCount = Math.min(columns, count - row * columns);
     const visualColumn = row % 2 ? rowCount - 1 - column : column;
+    const centeredColumn = visualColumn + (columns - rowCount) / 2;
     const horizontalMargin = width < 430 ? 10 : 7;
     const minY = 20;
     const maxY = Math.max(minY, height - 62);
     return {
       x: rowCount > 1
-        ? horizontalMargin + (visualColumn / (rowCount - 1)) * (100 - horizontalMargin * 2)
+        ? horizontalMargin + (centeredColumn / (columns - 1)) * (100 - horizontalMargin * 2)
         : 50,
       y: rows > 1 ? minY + (row / (rows - 1)) * (maxY - minY) : height / 2 - 21
     };

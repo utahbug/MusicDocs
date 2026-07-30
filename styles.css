@@ -1201,8 +1201,8 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-sound-controls { align-items: end; display: grid; gap: 12px; grid-template-columns: minmax(150px, 1fr) minmax(130px, 1fr); margin: 14px auto 0; max-width: 680px; }
 .piano-header { order: 1; }
 .piano-sound-controls { order: 2; width: 100%; }
-.piano-shape-control { order: 3; }
-.piano-note-arc { order: 4; width: 100%; }
+.piano-note-arc { order: 3; width: 100%; }
+.piano-shape-control { order: 4; }
 .piano-prototype-note { order: 5; }
 .piano-explore-tabs { order: 5; }
 .piano-games, .piano-chord-guide { order: 6; width: 100%; }
