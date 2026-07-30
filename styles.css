@@ -1427,6 +1427,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .piano-chord-controls button { grid-column: 1 / -1; }
   .piano-chord-family { gap: 4px; padding: 7px 4px; }
   .piano-chord-family span { font-size: 0.68rem; }
+  .piano-note-arc[data-shape="trail"] .piano-play-object { font-size: 1.2rem; height: 36px; width: 36px; }
 }
 .keyboard-view { max-width: 900px; }
 .keyboard-panel { background: linear-gradient(150deg, color-mix(in srgb, #237C7A 7%, var(--surface)), color-mix(in srgb, #3667A8 8%, var(--surface))); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; }
@@ -1472,7 +1473,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .key-change-summary strong span { color: var(--muted); padding-inline: 6px; }
 .key-change-summary > span { color: var(--muted); font-size: 0.86rem; }
 .key-change-summary .key-change-memory { color: var(--accent-strong); font-weight: 700; margin-top: 5px; }
-.key-signature-staff { background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid color-mix(in srgb, var(--line) 75%, transparent); border-radius: 9px; height: 94px; width: 100%; }
+.key-signature-staff { background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid color-mix(in srgb, var(--line) 75%, transparent); border-radius: 9px; color: var(--text); height: 94px; width: 100%; }
 .key-signature-staff .staff-lines line { stroke: var(--text); stroke-width: 1.2; }
 .key-signature-staff text { fill: var(--text); }
 .key-signature-staff .staff-clef { font-family: "Noto Music", "Segoe UI Symbol", serif; font-size: 50px; }

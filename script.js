@@ -6216,6 +6216,11 @@ const KEY_SIGNATURE_POSITIONS = {
 const keyboardKeyChange = { steps: 0 };
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
 const PIANO_SHAPES = new Set(["trail", "garden", "twinkle", "circle", "zigzag", "rainbow"]);
+const PIANO_WAVE_NOTES = [
+  ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"],
+  ["A3", "B3", "C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"],
+  ["G3", "A3", "B3", "C4", "D4", "E4", "F sharp 4", "G4", "A4", "B4"]
+];
 const TWINKLE_MELODY = [
   "C4", "C4", "G4", "G4", "A4", "A4", "G4",
   "F4", "F4", "E4", "E4", "D4", "D4", "C4",
@@ -6522,6 +6527,12 @@ function applyPianoShape() {
     const point = pianoShapePoint(shape, index, count);
     button.style.left = `${point.x}%`;
     button.style.bottom = `${point.y}px`;
+    if (shape === "trail") {
+      const wave = Math.min(2, Math.floor(index / 10));
+      button.dataset.trailNote = PIANO_WAVE_NOTES[wave][index % 10];
+    } else {
+      delete button.dataset.trailNote;
+    }
   });
   renderSidetrackActivity(shape);
   el.pianoSoundStatus.textContent = shape === "twinkle"
@@ -6560,38 +6571,15 @@ function pianoShapePoint(shape, index, count) {
   const progress = count > 1 ? index / (count - 1) : 0.5;
   if (shape === "trail") {
     const height = el.pianoNoteArc?.clientHeight || 360;
-    const upperCount = 10;
-    const rightTurnCount = 5;
-    const lowerCount = 10;
-    const upperY = height - 68;
-    const lowerY = 28;
-    if (index < upperCount) {
-      const upperProgress = upperCount > 1 ? index / (upperCount - 1) : 0.5;
-      return {
-        x: 6 + upperProgress * 82,
-        y: upperY + Math.sin(upperProgress * Math.PI * 2) * 18
-      };
-    }
-    if (index < upperCount + rightTurnCount) {
-      const turnProgress = (index - upperCount + 1) / (rightTurnCount + 1);
-      return {
-        x: 88 + Math.sin(turnProgress * Math.PI) * 6,
-        y: upperY + (lowerY - upperY) * turnProgress
-      };
-    }
-    if (index < upperCount + rightTurnCount + lowerCount) {
-      const lowerIndex = index - upperCount - rightTurnCount;
-      const lowerProgress = lowerCount > 1 ? lowerIndex / (lowerCount - 1) : 0.5;
-      return {
-        x: 88 - lowerProgress * 82,
-        y: lowerY + Math.sin(lowerProgress * Math.PI * 2) * 18
-      };
-    }
-    const leftTurnCount = Math.max(1, count - upperCount - rightTurnCount - lowerCount);
-    const leftProgress = (index - upperCount - rightTurnCount - lowerCount + 1) / (leftTurnCount + 1);
+    const itemsPerWave = 10;
+    const wave = Math.min(2, Math.floor(index / itemsPerWave));
+    const position = index % itemsPerWave;
+    const waveProgress = position / (itemsPerWave - 1);
+    const verticalPadding = 38;
+    const waveGap = (height - verticalPadding * 2) / 2;
     return {
-      x: 6 - Math.sin(leftProgress * Math.PI) * 4,
-      y: lowerY + (upperY - lowerY) * leftProgress
+      x: 7 + waveProgress * 86,
+      y: height - verticalPadding - wave * waveGap + Math.sin(waveProgress * Math.PI * 2) * 24
     };
   }
   if (shape === "garden") {
@@ -6834,9 +6822,11 @@ function renderKeySignatureStaff(keyIndex) {
   return `
     <svg class="key-signature-staff" viewBox="0 0 230 76" role="img" aria-label="${KEY_CHANGE_NAMES[keyIndex]} major key signature: ${signature.label}">
       <g class="staff-lines">
-        <line x1="12" y1="20" x2="218" y2="20"></line><line x1="12" y1="30" x2="218" y2="30"></line>
-        <line x1="12" y1="40" x2="218" y2="40"></line><line x1="12" y1="50" x2="218" y2="50"></line>
-        <line x1="12" y1="60" x2="218" y2="60"></line>
+        <line x1="12" y1="20" x2="218" y2="20" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="12" y1="30" x2="218" y2="30" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="12" y1="40" x2="218" y2="40" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="12" y1="50" x2="218" y2="50" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="12" y1="60" x2="218" y2="60" stroke="currentColor" stroke-width="1.5"></line>
       </g>
       <text class="staff-clef" x="18" y="61">𝄞</text>
       ${marks}
@@ -7125,6 +7115,9 @@ async function playPianoNoteForPointer(pointerId, button) {
   if (!context) return;
   if (state.piano.pointerTokens.get(pointerId) !== token) return;
   let note = button.dataset.note || button.getAttribute("aria-label");
+  if (button.classList.contains("piano-note") && state.piano.shape === "trail" && button.dataset.trailNote) {
+    note = button.dataset.trailNote;
+  }
   if (button.classList.contains("piano-note") && state.piano.shape === "twinkle") {
     note = TWINKLE_MELODY[state.piano.twinkleIndex % TWINKLE_MELODY.length];
     state.piano.twinkleIndex = (state.piano.twinkleIndex + 1) % TWINKLE_MELODY.length;
