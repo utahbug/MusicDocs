@@ -412,9 +412,17 @@
             <div class="piano-shape-control">
               <span>Activity</span>
               <div class="fun-activity-grid" role="group" aria-label="Choose an activity">
-                <button type="button" data-piano-shape="trail">
-                  <span class="activity-picture activity-trail-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-                  <span>Wave</span>
+                <button type="button" data-piano-shape="circle">
+                  <span class="activity-picture activity-keyboard-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                  <span>Keyboard</span>
+                </button>
+                <button type="button" data-piano-shape="zigzag">
+                  <span class="activity-picture activity-puzzle-picture" aria-hidden="true">&#x1F9E9;</span>
+                  <span>Piano puzzle</span>
+                </button>
+                <button type="button" data-piano-shape="rainbow">
+                  <span class="activity-picture activity-air-picture" aria-hidden="true">&#x266B;</span>
+                  <span>Pop notes</span>
                 </button>
                 <button type="button" data-piano-shape="garden">
                   <span class="activity-picture activity-sound-picture" aria-hidden="true">
@@ -430,26 +438,18 @@
                   <span class="activity-picture activity-star-picture" aria-hidden="true">★</span>
                   <span>Twinkle Stars</span>
                 </button>
-                <button type="button" data-piano-shape="circle">
-                  <span class="activity-picture activity-keyboard-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-                  <span>Keyboard</span>
-                </button>
-                <button type="button" data-piano-shape="zigzag">
-                  <span class="activity-picture activity-puzzle-picture" aria-hidden="true">&#x1F9E9;</span>
-                  <span>Piano puzzle</span>
-                </button>
-                <button type="button" data-piano-shape="rainbow">
-                  <span class="activity-picture activity-air-picture" aria-hidden="true">&#x266B;</span>
-                  <span>Pop notes</span>
+                <button type="button" data-piano-shape="trail">
+                  <span class="activity-picture activity-trail-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                  <span>Wave</span>
                 </button>
               </div>
               <select id="pianoShape" class="sr-only" aria-label="Fun Stuff activity">
-                <option value="trail" selected>Wave</option>
-                <option value="garden">Just sound</option>
-                <option value="twinkle">Twinkle Stars</option>
                 <option value="circle">Keyboard</option>
                 <option value="zigzag">Piano puzzle</option>
                 <option value="rainbow">Pop notes</option>
+                <option value="garden">Just sound</option>
+                <option value="twinkle">Twinkle Stars</option>
+                <option value="trail" selected>Wave</option>
               </select>
             </div>
             <div class="piano-note-arc" aria-label="Playable sound objects">
