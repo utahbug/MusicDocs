@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-40">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-41">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-41" defer></script>
+    <script src="script.js?v=musicdocs-42" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -169,7 +169,7 @@
           <div class="lists-follow-note">
             <p><strong>Follow</strong> allows continuous playing through a list.</p>
             <ul>
-              <li>When <strong>On</strong>, tapping the next-page zone on a PDF's last page opens the next PDF. After the final PDF, the list returns to the first when repeat is enabled.</li>
+              <li>When <strong>On</strong>, tapping the next-page zone on a PDF's last page opens the next PDF.</li>
               <li>When <strong>Off</strong>, tapping that zone keeps the current PDF open.</li>
               <li class="follow-note-item">Cards and links are skipped.</li>
             </ul>
@@ -182,6 +182,7 @@
           </div>
           <div id="cardsContent" class="cards-grid"></div>
           <button id="cardAddButton" class="top-add-button label-add-button card-label-add-button bottom-card-add-button" type="button" aria-label="Add card" title="Add card">Add Card +</button>
+          <div class="cards-purpose-note">Cards let you add your own easy-to-read content, such as lyrics, notes, pasted text, or an image. Type or paste text, or attach an optional file.</div>
         </section>
 
         <section id="linksSection" class="view" data-view="links" aria-label="Links">
@@ -480,8 +481,8 @@
               <div id="realKeyboard" class="real-keyboard" aria-label="Playable two-octave keyboard"></div>
             </div>
             <section id="pianoChordGuide" class="keyboard-chord-guide" aria-labelledby="keyboardChordHeading">
-              <h3 id="keyboardChordHeading">Chord Guide</h3>
-              <div class="piano-chord-controls">
+              <div class="piano-chord-controls keyboard-chord-controls">
+                <h3 id="keyboardChordHeading">Chord Guide</h3>
                 <label><span>Root</span>
                   <select id="pianoChordRoot" aria-label="Chord root">
                     <option value="0">C</option><option value="1">C♯ / D♭</option><option value="2">D</option><option value="3">D♯ / E♭</option>
@@ -509,6 +510,10 @@
               </div>
               <div id="pianoChordFamily" class="piano-chord-family"></div>
             </section>
+            <button class="fun-keyboard-link keyboard-fun-link" type="button" data-menu-section="piano">
+              <svg class="mini-frog-icon" viewBox="0 0 48 36" aria-hidden="true"><circle cx="14" cy="9" r="6"/><circle cx="34" cy="9" r="6"/><circle cx="14" cy="9" r="2"/><circle cx="34" cy="9" r="2"/><path d="M7 20c3-8 10-11 17-11s14 3 17 11c2 7-5 13-17 13S5 27 7 20Z"/><path d="M17 23c4 3 10 3 14 0"/></svg>
+              Open Fun Stuff
+            </button>
           </div>
         </section>
 
@@ -581,7 +586,6 @@
         <button id="pdfTapLeft" class="pdf-tap-zone pdf-tap-left" type="button" aria-label="Previous page; top-left jumps to first page"></button>
         <button id="pdfTapRight" class="pdf-tap-zone pdf-tap-right" type="button" aria-label="Next page; top-right jumps to last page"></button>
         <div id="pdfPageNotice" class="pdf-page-notice hidden" aria-live="polite"></div>
-        <div id="pdfPageMarker" class="pdf-page-marker hidden" aria-hidden="true"></div>
         <div id="pdfZoneTips" class="pdf-zone-tips" aria-hidden="true">
           <div class="pdf-zone-tip pdf-zone-tip-first"><strong>Jump to page 1</strong><span class="pdf-zone-indicator pdf-zone-jump-indicator" aria-hidden="true">|&larr;</span></div>
           <div class="pdf-zone-tip pdf-zone-tip-last"><strong>Jump to last page</strong><span class="pdf-zone-indicator pdf-zone-jump-indicator" aria-hidden="true">&rarr;|</span></div>
@@ -596,6 +600,7 @@
       <div id="pdfSettingsLayer" class="pdf-settings-layer hidden" role="dialog" aria-modal="true" aria-labelledby="pdfSettingsTitle">
         <div class="pdf-settings-panel">
           <header><h2 id="pdfSettingsTitle">PDF Settings</h2><button id="pdfSettingsCloseButton" type="button" aria-label="Close settings">&times;</button></header>
+          <div class="pdf-settings-content">
           <section class="pdf-settings-group">
             <h3>Tap Zones</h3>
             <button id="pdfShowTapZonesButton" class="secondary-button" type="button">Show guide now</button>
@@ -606,7 +611,7 @@
             <label><span>Visibility</span><select id="pdfNumberingMode">
               <option value="off">Off</option>
               <option value="document">Document pages</option>
-              <option value="song">Song pages</option>
+              <option value="song">Designate song pages</option>
             </select></label>
             <div id="pdfSongNumberingFields" class="pdf-song-numbering-fields hidden">
               <button id="pdfSongStartButton" class="secondary-button" type="button">Start song numbering on this page</button>
@@ -617,19 +622,20 @@
           <section class="pdf-settings-group">
             <h3>Follow</h3>
             <label class="pdf-setting-toggle"><input id="pdfRepeatListEnabled" type="checkbox"> <span>Repeat list at end</span></label>
-            <p class="pdf-setting-help">When Follow is on, the final PDF returns to the first PDF.</p>
+            <p class="pdf-setting-help">When Follow is on, the final PDF returns to the first PDF. Follow is only available for songs that are part of a list.</p>
           </section>
           <section class="pdf-settings-group">
             <h3>Metronome</h3>
             <label class="pdf-setting-toggle"><input id="pdfMetronomeEnabled" type="checkbox"> <span>Show in footer</span></label>
             <label id="pdfSettingsTempoRow" class="hidden"><span>Tempo (BPM)</span><input id="pdfSettingsTempoInput" type="number" min="40" max="220" step="1" inputmode="numeric" value="90"></label>
           </section>
+          </div>
+          <footer class="pdf-settings-footer"><button id="pdfSettingsApplyButton" class="primary-button" type="button">Apply</button></footer>
         </div>
       </div>
       <footer class="pdf-action-bar" aria-label="PDF viewer actions">
         <button id="pdfHomeButton" class="pdf-action-button pdf-home-action" type="button" aria-label="Return to app" title="Return to app"><svg class="pdf-home-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.6 10.7 12 2.9l9.4 7.8a1.5 1.5 0 0 1-1.9 2.3l-.5-.4v7.1a1.3 1.3 0 0 1-1.3 1.3h-3.9v-5.8h-3.6V21H6.3A1.3 1.3 0 0 1 5 19.7v-7.1l-.5.4a1.5 1.5 0 1 1-1.9-2.3Z"/></svg><small>Home</small></button>
         <button id="pdfTipsButton" class="pdf-action-button pdf-settings-action" type="button" aria-label="Open PDF settings" title="PDF settings" aria-expanded="false"><span class="pdf-settings-glyph" aria-hidden="true">&#9881;</span><small>Settings</small></button>
-        <button id="pdfFollowButton" class="pdf-follow-button hidden" type="button" aria-pressed="false">Follow: Off</button>
         <div class="pdf-tempo-box hidden" aria-label="Metronome tempo">
           <label for="pdfTempoInput"><span>BPM</span><input id="pdfTempoInput" type="number" min="40" max="220" step="1" inputmode="numeric" value="90" aria-label="Metronome tempo"></label>
           <span class="pdf-tempo-steppers" aria-label="Adjust metronome tempo">
@@ -638,6 +644,8 @@
           </span>
           <button id="pdfMetronomeButton" class="pdf-tempo-toggle" type="button" aria-label="Start metronome" title="Start metronome"><span aria-hidden="true">&#9654;</span></button>
         </div>
+        <button id="pdfFollowButton" class="pdf-follow-button hidden" type="button" aria-pressed="false">Follow: Off</button>
+        <div id="pdfPageMarker" class="pdf-page-marker hidden" aria-hidden="true"></div>
       </footer>
     </section>
 
