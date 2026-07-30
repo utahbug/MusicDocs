@@ -6478,7 +6478,7 @@ function spawnSidetrackAirNote() {
   ];
   const note = document.createElement("button");
   note.type = "button";
-  note.className = "sidetrack-flying-note";
+  note.className = `sidetrack-flying-note balloon-tone-${sidetrackAirGame.created % 6}`;
   const balloon = sequence[sidetrackAirGame.created % sequence.length];
   if (balloon.icon) {
     note.innerHTML = `<svg aria-hidden="true"><use href="#${balloon.icon}"></use></svg>`;
