@@ -362,6 +362,9 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 .list-play-through-button.is-active { background: linear-gradient(105deg, #238B62, #276AB3); border-color: #176B4A; box-shadow: 0 0 0 3px color-mix(in srgb, #2FB878 22%, transparent); }
 .lists-follow-note { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font-size: 0.82rem; line-height: 1.4; margin: 18px 0px 6px; padding: 10px 12px; }
 .lists-follow-note strong { color: var(--accent-strong); }
+.lists-follow-note p { margin: 0 0 6px; }
+.lists-follow-note ul { margin: 0; padding-left: 20px; }
+.lists-follow-note li + li { margin-top: 4px; }
 
 .inline-list-row { align-items: stretch; border-bottom: 1px solid var(--line); display: grid; gap: 4px; grid-template-columns: 34px minmax(0px, 1fr) 36px 38px; min-width: 0px; }
 

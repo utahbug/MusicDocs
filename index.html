@@ -28,7 +28,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-33">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-34">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
     <script src="script.js?v=musicdocs-40" defer></script>
@@ -166,7 +166,14 @@
           <div id="listContent" class="quick-list"></div>
           <button id="listItemAddButton" class="top-add-button list-item-add-button" type="button" aria-label="Add file to this list" title="Add file to this list">+</button>
           <div id="listPickerPanel" class="editor-panel hidden"></div>
-          <p class="lists-follow-note"><strong>Follow:</strong> When On, tapping Next on the last page opens the next PDF in this list. Cards and links are skipped. Off keeps you at the end of the current PDF.</p>
+          <div class="lists-follow-note">
+            <p><strong>Follow</strong> allows continuous playing through a list.</p>
+            <ul>
+              <li>When <strong>On</strong>, tapping the next-page zone on a PDF's last page opens the next PDF in the list.</li>
+              <li>When <strong>Off</strong>, tapping that zone keeps the current PDF open.</li>
+              <li><strong>Note:</strong> Cards, links, and section breaks are skipped.</li>
+            </ul>
+          </div>
         </section>
 
         <section id="cardsSection" class="view" data-view="cards" aria-label="Cards">
