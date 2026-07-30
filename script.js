@@ -6219,7 +6219,7 @@ const PIANO_SHAPES = new Set(["trail", "garden", "twinkle", "circle", "zigzag", 
 const PIANO_WAVE_NOTES = [
   ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"],
   ["A3", "B3", "C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"],
-  ["G3", "A3", "B3", "C4", "D4", "E4", "F sharp 4", "G4", "A4", "B4"]
+  ["C4", "D sharp 4", "F4", "F sharp 4", "G4", "A sharp 4", "C5", "D sharp 5", "F5", "F sharp 5"]
 ];
 const TWINKLE_MELODY = [
   "C4", "C4", "G4", "G4", "A4", "A4", "G4",
@@ -6637,11 +6637,12 @@ function pianoShapePoint(shape, index, count) {
     const wave = Math.min(2, Math.floor(index / itemsPerWave));
     const position = index % itemsPerWave;
     const waveProgress = position / (itemsPerWave - 1);
-    const verticalPadding = 38;
+    const verticalPadding = 68;
     const waveGap = (height - verticalPadding * 2) / 2;
+    const waveStart = wave === 1 ? 11 : 7;
     return {
-      x: 7 + waveProgress * 86,
-      y: height - verticalPadding - wave * waveGap + Math.sin(waveProgress * Math.PI * 2) * 24
+      x: waveStart + waveProgress * 82,
+      y: height - verticalPadding - wave * waveGap + Math.sin(waveProgress * Math.PI * 2) * 18
     };
   }
   if (shape === "garden") {
