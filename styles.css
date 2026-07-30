@@ -1264,8 +1264,11 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .activity-trail-picture i:nth-child(4) { left: 30px; top: 16px; }
 .activity-trail-picture i:nth-child(5) { left: 38px; top: 28px; }
 .activity-sound-picture { align-items: center; background: linear-gradient(145deg, #E2F5D8, #9DD6B3); display: flex; justify-content: center; }
-.activity-sound-picture .broken-note-mark { color: #285D70; font-family: Georgia, "Segoe UI Symbol", serif; font-size: 2.35rem; font-weight: 800; line-height: 1; transform: rotate(-9deg) translate(-2px, 1px); }
-.activity-sound-picture i { background: #E06B4F; clip-path: polygon(0 38%, 37% 38%, 48% 0, 61% 100%, 72% 60%, 100% 60%, 100% 72%, 77% 72%, 60% 100%, 47% 30%, 41% 52%, 0 52%); height: 22px; position: absolute; transform: rotate(-18deg); width: 30px; }
+.activity-sound-picture svg { height: 43px; overflow: visible; width: 43px; }
+.activity-sound-picture .sound-person-head { fill: #F5C7A4; stroke: #285D70; stroke-width: 2; }
+.activity-sound-picture .sound-person-hair { fill: #36536A; }
+.activity-sound-picture .sound-person-face { fill: none; stroke: #285D70; stroke-linecap: round; stroke-width: 2.3; }
+.activity-sound-picture .sound-person-hands { fill: none; stroke: #C87458; stroke-linecap: round; stroke-linejoin: round; stroke-width: 5; }
 .activity-star-picture { align-items: center; background: linear-gradient(145deg, #FFF7B8, #F1B84B); color: #765000; display: flex; font-size: 2rem; justify-content: center; text-shadow: 0 1px 0 #FFFFFF; }
 .activity-circle-picture, .activity-zigzag-picture { background: linear-gradient(145deg, #E8E2FF, #A89BE8); }
 .activity-circle-picture i, .activity-zigzag-picture i { background: #4B3E8C; border-radius: 50%; height: 7px; position: absolute; width: 7px; }
