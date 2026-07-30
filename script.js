@@ -1313,6 +1313,10 @@ function syncStarterLists(lists) {
   starterLists.forEach((starter) => {
     const starterEntries = (starter.entries || []).filter((entry) => state.itemsById.has(entry.itemId));
     const existing = listById.get(starter.id);
+    if (existing?.title === "Holiday" && starter.title === "Events") {
+      existing.title = "Events";
+      listsChanged = true;
+    }
     if (applied.has(starter.id) && existing) return;
 
     if (existing) {
