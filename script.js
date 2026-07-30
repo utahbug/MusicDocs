@@ -6402,9 +6402,12 @@ function spawnSidetrackAirNote() {
   note.type = "button";
   note.className = "sidetrack-flying-note";
   note.textContent = sequence[sidetrackAirGame.created % sequence.length];
-  note.style.setProperty("--air-y", `${8 + Math.random() * 76}%`);
-  note.style.setProperty("--air-duration", `${5.5 + Math.random() * 3}s`);
-  note.style.setProperty("--air-delay", `${-Math.random() * 3}s`);
+  note.style.setProperty("--air-x", `${8 + Math.random() * 78}%`);
+  note.style.setProperty("--air-y", `${10 + Math.random() * 66}%`);
+  note.style.setProperty("--air-drift-x", `${-38 + Math.random() * 76}px`);
+  note.style.setProperty("--air-drift-y", `${-42 + Math.random() * 84}px`);
+  note.style.setProperty("--air-duration", `${11 + Math.random() * 7}s`);
+  note.style.setProperty("--air-delay", `${-Math.random() * 8}s`);
   note.setAttribute("aria-label", "Pop moving music note");
   note.addEventListener("click", () => {
     if (!sidetrackAirGame.active || note.classList.contains("popped")) return;

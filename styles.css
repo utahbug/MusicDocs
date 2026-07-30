@@ -1380,13 +1380,14 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .sidetrack-puzzle-piece { background: linear-gradient(#FFFFFF, #DFEAF2); border: 1px solid #7890A1; border-radius: 5px; color: #173F72; font-size: 1rem; font-weight: 850; height: 92px; position: relative; touch-action: none; transition: box-shadow 100ms ease; width: clamp(32px, 10vw, 54px); z-index: 6; }
 .sidetrack-puzzle-piece.dragging { box-shadow: 0 10px 22px rgba(23,63,114,0.3); z-index: 12; }
 .sidetrack-puzzle-slot .sidetrack-puzzle-piece { background: transparent; border: 0; height: 100%; width: 100%; z-index: 2; }
-.sidetrack-air { display: grid; grid-template-rows: auto 1fr auto; padding: 12px; }
-.sidetrack-air > p { color: var(--accent-strong); font-weight: 850; margin: 0; text-align: center; }
-.sidetrack-air-field { overflow: hidden; position: relative; }
-.sidetrack-flying-note { animation: sidetrack-note-fly var(--air-duration) linear var(--air-delay) infinite; background: linear-gradient(145deg, #FFF7B8, #F1B84B); border: 2px solid #D49A25; border-radius: 50%; color: #68470D; font-size: 1.5rem; height: 48px; left: -60px; padding: 0; position: absolute; top: var(--air-y); width: 48px; }
+.sidetrack-air { background: linear-gradient(#BFE8FF 0%, #E9F8FF 72%, #F5FBFF 100%); display: grid; grid-template-rows: auto 1fr auto; padding: 12px; }
+.sidetrack-air > p { color: #24577A; font-weight: 850; margin: 0; text-align: center; text-shadow: 0 1px 0 rgba(255,255,255,0.8); }
+.sidetrack-air-field { background-image: radial-gradient(ellipse at 14% 22%, rgba(255,255,255,0.92) 0 25px, transparent 27px), radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.82) 0 34px, transparent 36px), radial-gradient(ellipse at 74% 36%, rgba(255,255,255,0.86) 0 30px, transparent 32px), radial-gradient(ellipse at 82% 34%, rgba(255,255,255,0.78) 0 38px, transparent 40px); overflow: hidden; position: relative; }
+.sidetrack-flying-note { animation: sidetrack-note-float var(--air-duration) ease-in-out var(--air-delay) infinite alternate; background: linear-gradient(145deg, #FFF7B8, #F1B84B); border: 2px solid #D49A25; border-radius: 50%; box-shadow: 0 5px 10px rgba(77,112,137,0.2); color: #68470D; font-size: 1.7rem; height: 56px; left: var(--air-x); padding: 0; position: absolute; top: var(--air-y); width: 56px; }
+.sidetrack-flying-note::after { border-left: 1px solid rgba(104,71,13,0.42); bottom: -12px; content: ""; height: 12px; left: 50%; position: absolute; }
 .sidetrack-flying-note.popped { animation-play-state: paused; opacity: 0; transform: scale(1.6); transition: opacity 180ms ease, transform 180ms ease; }
 .sidetrack-air > button { justify-self: center; min-height: 40px; padding: 7px 16px; }
-@keyframes sidetrack-note-fly { from { left: -60px; transform: rotate(-8deg); } to { left: calc(100% + 12px); transform: rotate(12deg); } }
+@keyframes sidetrack-note-float { from { transform: translate(calc(var(--air-drift-x) * -0.45), calc(var(--air-drift-y) * -0.45)) rotate(-5deg); } to { transform: translate(var(--air-drift-x), var(--air-drift-y)) rotate(6deg); } }
 .piano-effect-pads { display: none; }
 .piano-effect-pad { align-items: center; border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line)); border-radius: 12px; box-shadow: 0 3px 9px rgba(26, 66, 99, 0.16); color: var(--text); flex-direction: column; font-weight: 800; gap: 1px; height: 52px; justify-content: center; padding: 3px 5px; position: relative; width: 62px; }
 .piano-effect-pad svg { fill: none; height: 24px; pointer-events: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; width: 24px; }
