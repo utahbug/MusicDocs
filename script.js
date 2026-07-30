@@ -6520,7 +6520,10 @@ function setPianoMoreSounds(expanded) {
   if (!el.pianoMoreSounds || !el.pianoMoreSoundsButton) return;
   el.pianoMoreSounds.hidden = !expanded;
   el.pianoMoreSoundsButton.setAttribute("aria-expanded", String(expanded));
-  el.pianoMoreSoundsButton.firstChild.textContent = expanded ? "Fewer sounds" : "More sounds";
+  const label = expanded ? "Fewer sounds" : "More sounds";
+  el.pianoMoreSoundsButton.setAttribute("aria-label", label);
+  el.pianoMoreSoundsButton.setAttribute("title", label);
+  el.pianoMoreSoundsButton.querySelector("[data-more-sounds-label]").textContent = label;
 }
 
 async function selectVisualPianoSound(value) {

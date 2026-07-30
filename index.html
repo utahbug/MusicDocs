@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-67">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-68">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-67" defer></script>
+    <script src="script.js?v=musicdocs-68" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -347,7 +347,11 @@
               <div class="fun-sound-picker">
                 <div class="fun-sound-heading">
                   <span>Sound</span>
-                  <button id="pianoMoreSoundsButton" class="plain-button fun-more-sounds" type="button" aria-expanded="false" aria-controls="pianoMoreSounds">More sounds</button>
+                  <button id="pianoMoreSoundsButton" class="plain-button fun-more-sounds" type="button" aria-label="More sounds" title="More sounds" aria-expanded="false" aria-controls="pianoMoreSounds">
+                    <span class="more-sounds-notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♬</i></span>
+                    <span class="sr-only" data-more-sounds-label>More sounds</span>
+                    <span class="more-sounds-chevron" aria-hidden="true">⌄</span>
+                  </button>
                 </div>
                 <svg class="sound-icon-sprite" aria-hidden="true">
                   <symbol id="sound-icon-keys" viewBox="0 0 48 48"><rect x="5" y="10" width="38" height="28" rx="4"/><path d="M12 11v26m8-26v26m8-26v26m8-26v26M9 10v15h6V10m8 0v15h6V10m8 0v15h5"/></symbol>
@@ -414,7 +418,10 @@
                 <span id="pianoSustainHint" class="piano-sustain-hint" hidden><span aria-hidden="true">↔</span> Hold notes for full sound</span>
               </div>
               <label class="piano-volume-control">
-                <span>Volume</span>
+                <span class="piano-volume-icon">
+                  <svg viewBox="0 0 28 24" aria-hidden="true"><path d="M3 9h4l6-5v16l-6-5H3z"></path><path d="M17 8c2 2 2 6 0 8M20.5 5c4 4 4 10 0 14"></path></svg>
+                  <span class="sr-only">Volume</span>
+                </span>
                 <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun Stuff volume">
               </label>
             </div>
