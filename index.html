@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="styles.css?v=musicdocs-45">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-45" defer></script>
+    <script src="script.js?v=musicdocs-46" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -167,9 +167,9 @@
           <button id="listItemAddButton" class="top-add-button list-item-add-button" type="button" aria-label="Add file to this list" title="Add file to this list">+</button>
           <div id="listPickerPanel" class="editor-panel hidden"></div>
           <div class="lists-follow-note">
-            <p><strong>Follow</strong> allows continuous playing through a list.</p>
+            <p><strong>Next Song</strong> allows continuous playing through the PDFs in a list.</p>
             <ul>
-              <li>When <strong>On</strong>, tapping the next-page zone on a PDF's last page opens the next PDF.</li>
+              <li>When <strong>On</strong>, tapping the next-page zone on a PDF's last page opens the next PDF. After the final PDF, the list starts again at the first.</li>
               <li>When <strong>Off</strong>, tapping that zone keeps the current PDF open.</li>
               <li class="follow-note-item">Cards and links are skipped.</li>
             </ul>
@@ -622,9 +622,9 @@
             </div>
           </section>
           <section class="pdf-settings-group">
-            <h3>Follow</h3>
-            <label class="pdf-setting-toggle"><input id="pdfRepeatListEnabled" type="checkbox"> <span>Repeat list at end</span></label>
-            <p class="pdf-setting-help">When Follow is on, the final PDF returns to the first PDF. Follow is only available for songs that are accessed from a list.</p>
+            <h3>Next Song</h3>
+            <label class="pdf-setting-toggle"><input id="pdfRepeatListEnabled" type="checkbox"> <span>Default to On when opening a list</span></label>
+            <p class="pdf-setting-help">When On, the next-page zone after a PDF's final page opens the next PDF. After the final PDF, the list starts over. Next Song is only available for songs accessed from a list.</p>
           </section>
           <section class="pdf-settings-group">
             <h3>Metronome</h3>
@@ -646,7 +646,7 @@
           </span>
           <button id="pdfMetronomeButton" class="pdf-tempo-toggle" type="button" aria-label="Start metronome" title="Start metronome"><span aria-hidden="true">&#9654;</span></button>
         </div>
-        <button id="pdfFollowButton" class="pdf-follow-button hidden" type="button" aria-pressed="false">Follow: Off</button>
+        <button id="pdfFollowButton" class="pdf-follow-button hidden" type="button" aria-pressed="false">Next Song: Off</button>
         <div id="pdfPageMarker" class="pdf-page-marker hidden" aria-hidden="true"></div>
       </footer>
     </section>
@@ -904,7 +904,7 @@
               <div class="help-topic-content">
                 <ul>
                   <li>Organize files, cards, and links into custom groups.</li>
-                  <li>Tap <strong>Follow: Off</strong> to turn Follow on, then choose any PDF as the starting song. On a PDFÃ¢â‚¬â„¢s final page, use the lower-right Follow button to confirm or change what happens next. The final song also offers <strong>Repeat list</strong>.</li>
+                  <li><strong>Next Song</strong> defaults to On when a list opens. Choose any PDF as the starting song. On its final page, the next-page zone opens the next PDF; after the final PDF, the list starts over. Turn Next Song Off to stay on the current PDF.</li>
                 </ul>
               </div>
             </details>
