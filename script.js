@@ -6476,7 +6476,7 @@ function buildJazzPuzzle() {
     <div class="jazz-puzzle-tray" aria-label="Puzzle pieces">
       ${pieces.map((index) => `<button class="jazz-puzzle-piece" type="button" data-jazz-index="${index}" aria-label="Jazz puzzle piece ${index + 1}"></button>`).join("")}
     </div>
-    <p class="jazz-puzzle-status" aria-live="polite">Drag each piece into the picture</p>`;
+    <p class="jazz-puzzle-status" aria-live="polite">Piece 1 of 9</p>`;
   el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-piece").forEach((piece) => {
     const index = Number(piece.dataset.jazzIndex);
     piece.style.setProperty("--piece-column", String(index % 3));
@@ -6529,7 +6529,7 @@ function endJazzPuzzleDrag(event) {
     piece.disabled = true;
     const remaining = el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-tray .jazz-puzzle-piece").length;
     const status = el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-status");
-    status.textContent = remaining ? `${remaining} piece${remaining === 1 ? "" : "s"} left` : "Jazz ensemble complete!";
+    status.textContent = remaining ? `Piece ${10 - remaining} of 9` : "Jazz ensemble complete!";
     el.sidetrackJazzPuzzle.classList.toggle("complete", remaining === 0);
   }
   sidetrackJazzDrag = null;

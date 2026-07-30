@@ -1442,6 +1442,21 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .jazz-puzzle-tray { grid-template-columns: repeat(5, minmax(0, 1fr)); min-height: 84px; }
   .jazz-puzzle-piece { min-height: 34px; }
 }
+.piano-note-arc[data-shape="trail"] { height: 500px; }
+.jazz-puzzle-board { width: min(72vw, 280px); }
+.jazz-puzzle-tray { grid-template-columns: repeat(3, minmax(0, 1fr)); justify-self: center; max-width: 300px; min-height: 0; width: 100%; }
+.jazz-puzzle-piece { min-height: 0; }
+@media (max-width: 480px) {
+  .jazz-puzzle-board { width: min(76vw, 280px); }
+  .jazz-puzzle-tray { grid-template-columns: repeat(3, minmax(0, 1fr)); min-height: 0; }
+  .jazz-puzzle-piece { min-height: 0; }
+}
+.piano-note-arc[data-shape="trail"] { height: 440px; }
+.jazz-puzzle-tray { grid-template-columns: minmax(130px, 170px); max-width: 170px; min-height: 112px; }
+.jazz-puzzle-tray .jazz-puzzle-piece:not(:first-child) { display: none; }
+@media (max-width: 480px) {
+  .jazz-puzzle-tray { grid-template-columns: minmax(125px, 46vw); max-width: 170px; min-height: 106px; }
+}
 .sidetrack-keyboard { align-items: stretch; display: flex; justify-content: center; padding: 38px 22px 28px; }
 .sidetrack-key { border: 1px solid #7890A1; border-radius: 0 0 7px 7px; flex: 1; max-width: 58px; min-width: 0; position: relative; touch-action: none; }
 .sidetrack-key.is-white { background: linear-gradient(#FFFFFF, #E9F0F5); color: #173F72; height: 250px; z-index: 1; }
