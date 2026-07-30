@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-34">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-35">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-40" defer></script>
+    <script src="script.js?v=musicdocs-41" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -169,7 +169,7 @@
           <div class="lists-follow-note">
             <p><strong>Follow</strong> allows continuous playing through a list.</p>
             <ul>
-              <li>When <strong>On</strong>, tapping the next-page zone on a PDF's last page opens the next PDF in the list.</li>
+              <li>When <strong>On</strong>, tapping the next-page zone on a PDF's last page opens the next PDF. After the final PDF, the list returns to the first when repeat is enabled.</li>
               <li>When <strong>Off</strong>, tapping that zone keeps the current PDF open.</li>
               <li><strong>Note:</strong> Cards, links, and section breaks are skipped.</li>
             </ul>
@@ -580,8 +580,6 @@
         <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
         <button id="pdfTapLeft" class="pdf-tap-zone pdf-tap-left" type="button" aria-label="Previous page; top-left jumps to first page"></button>
         <button id="pdfTapRight" class="pdf-tap-zone pdf-tap-right" type="button" aria-label="Next page; top-right jumps to last page"></button>
-        <button id="pdfRestartListButton" class="pdf-restart-list-button hidden" type="button">Repeat list</button>
-        <button id="pdfFollowButton" class="pdf-follow-button hidden" type="button" aria-pressed="false">Follow: Off</button>
         <div id="pdfPageNotice" class="pdf-page-notice hidden" aria-live="polite"></div>
         <div id="pdfPageMarker" class="pdf-page-marker hidden" aria-hidden="true"></div>
         <div id="pdfZoneTips" class="pdf-zone-tips" aria-hidden="true">
@@ -617,6 +615,11 @@
             </div>
           </section>
           <section class="pdf-settings-group">
+            <h3>Follow</h3>
+            <label class="pdf-setting-toggle"><input id="pdfRepeatListEnabled" type="checkbox"> <span>Repeat list at end</span></label>
+            <p class="pdf-setting-help">When Follow is on, the final PDF returns to the first PDF.</p>
+          </section>
+          <section class="pdf-settings-group">
             <h3>Metronome</h3>
             <label class="pdf-setting-toggle"><input id="pdfMetronomeEnabled" type="checkbox"> <span>Show in footer</span></label>
             <label id="pdfSettingsTempoRow" class="hidden"><span>Tempo (BPM)</span><input id="pdfSettingsTempoInput" type="number" min="40" max="220" step="1" inputmode="numeric" value="90"></label>
@@ -626,6 +629,7 @@
       <footer class="pdf-action-bar" aria-label="PDF viewer actions">
         <button id="pdfHomeButton" class="pdf-action-button pdf-home-action" type="button" aria-label="Return to app" title="Return to app"><svg class="pdf-home-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.6 10.7 12 2.9l9.4 7.8a1.5 1.5 0 0 1-1.9 2.3l-.5-.4v7.1a1.3 1.3 0 0 1-1.3 1.3h-3.9v-5.8h-3.6V21H6.3A1.3 1.3 0 0 1 5 19.7v-7.1l-.5.4a1.5 1.5 0 1 1-1.9-2.3Z"/></svg><small>Home</small></button>
         <button id="pdfTipsButton" class="pdf-action-button pdf-settings-action" type="button" aria-label="Open PDF settings" title="PDF settings" aria-expanded="false"><span class="pdf-settings-glyph" aria-hidden="true">&#9881;</span><small>Settings</small></button>
+        <button id="pdfFollowButton" class="pdf-follow-button hidden" type="button" aria-pressed="false">Follow: Off</button>
         <div class="pdf-tempo-box hidden" aria-label="Metronome tempo">
           <label for="pdfTempoInput"><span>BPM</span><input id="pdfTempoInput" type="number" min="40" max="220" step="1" inputmode="numeric" value="90" aria-label="Metronome tempo"></label>
           <span class="pdf-tempo-steppers" aria-label="Adjust metronome tempo">
