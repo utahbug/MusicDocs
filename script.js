@@ -7114,9 +7114,14 @@ async function playPianoGuideChord() {
   if (!context) return;
   const voices = unique.map((button) => {
     button.classList.add("game-preview");
-    return createPianoVoice(context, pianoNoteFrequency(button.getAttribute("aria-label")) * (2 ** (state.piano.transpose / 12)), state.piano.sound);
+    return createPianoVoice(
+      context,
+      pianoNoteFrequency(button.getAttribute("aria-label")) * (2 ** (state.piano.transpose / 12)),
+      state.piano.sound,
+      { sustainChord: true }
+    );
   });
-  await waitPianoGame(950);
+  await waitPianoGame(1400);
   unique.forEach((button) => button.classList.remove("game-preview"));
   voices.forEach((voice) => releasePianoVoice(voice, true));
 }
@@ -7415,7 +7420,13 @@ function releasePianoVoice(voice, force = false) {
   if (!context) return;
   const now = context.currentTime;
   voice.gains.forEach((gain) => {
-    gain.gain.cancelScheduledValues(now);
+    if (typeof gain.gain.cancelAndHoldAtTime === "function") {
+      gain.gain.cancelAndHoldAtTime(now);
+    } else {
+      const currentLevel = Math.max(0.0001, gain.gain.value);
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setValueAtTime(currentLevel, now);
+    }
     gain.gain.setTargetAtTime(0.0001, now, voice.release || 0.08);
   });
   voice.sources.forEach((source) => {
@@ -7423,8 +7434,9 @@ function releasePianoVoice(voice, force = false) {
   });
 }
 
-function createPianoVoice(context, frequency, sound) {
+function createPianoVoice(context, frequency, sound, options = {}) {
   const now = context.currentTime;
+  const sustainChord = Boolean(options.sustainChord);
   const voice = {
     sources: [],
     gains: [],
@@ -7477,12 +7489,12 @@ function createPianoVoice(context, frequency, sound) {
   };
 
   if (sound === "grand-piano") {
-    addTone(1, "triangle", 0.36, 0.003, 1.35, 0.0001, -3, 1.6);
-    addTone(1, "sine", 0.2, 0.002, 1.05, 0.0001, 3, 1.3);
-    addTone(2, "sine", 0.11, 0.001, 0.5, 0.0001, -4, 0.7);
+    addTone(1, "triangle", 0.36, 0.003, sustainChord ? 2.4 : 1.35, sustainChord ? 0.035 : 0.0001, -3, sustainChord ? 3.1 : 1.6);
+    addTone(1, "sine", 0.2, 0.002, sustainChord ? 2.1 : 1.05, sustainChord ? 0.025 : 0.0001, 3, sustainChord ? 2.8 : 1.3);
+    addTone(2, "sine", 0.11, 0.001, sustainChord ? 1.25 : 0.5, sustainChord ? 0.008 : 0.0001, -4, sustainChord ? 1.8 : 0.7);
     addTone(3, "sine", 0.04, 0.001, 0.24, 0.0001, 5, 0.4);
     addNoise(0.035, 0.035, 4200);
-    voice.release = 0.055;
+    voice.release = sustainChord ? 0.24 : 0.055;
   } else if (sound === "electric-piano") {
     addTone(1, "sine", 0.31, 0.004, 2.1, 0.0001, -7, 2.5);
     addTone(1, "sine", 0.22, 0.004, 1.8, 0.0001, 7, 2.2);
@@ -7491,19 +7503,19 @@ function createPianoVoice(context, frequency, sound) {
     addTone(7.96, "sine", 0.025, 0.001, 0.22, 0.0001, 0, 0.4);
     voice.release = 0.11;
   } else if (sound === "acoustic-guitar") {
-    addTone(1, "sawtooth", 0.16, 0.002, 0.42, 0.0001, -5, 0.65);
-    addTone(1, "triangle", 0.24, 0.002, 0.95, 0.0001, 4, 1.15);
-    addTone(2, "triangle", 0.12, 0.001, 0.34, 0.0001, -2, 0.5);
+    addTone(1, "sawtooth", 0.16, 0.002, sustainChord ? 1.15 : 0.42, sustainChord ? 0.012 : 0.0001, -5, sustainChord ? 1.8 : 0.65);
+    addTone(1, "triangle", 0.24, 0.002, sustainChord ? 1.9 : 0.95, sustainChord ? 0.025 : 0.0001, 4, sustainChord ? 2.5 : 1.15);
+    addTone(2, "triangle", 0.12, 0.001, sustainChord ? 0.85 : 0.34, sustainChord ? 0.006 : 0.0001, -2, sustainChord ? 1.4 : 0.5);
     addTone(4, "sine", 0.045, 0.001, 0.2, 0.0001, 3, 0.32);
     addNoise(0.075, 0.055, 5600);
-    voice.release = 0.045;
+    voice.release = sustainChord ? 0.2 : 0.045;
   } else if (sound === "classical-guitar") {
-    addTone(1, "triangle", 0.31, 0.003, 1.25, 0.0001, -2, 1.5);
-    addTone(1, "sine", 0.16, 0.002, 0.9, 0.0001, 2, 1.15);
-    addTone(2, "sine", 0.075, 0.002, 0.48, 0.0001, 0, 0.7);
+    addTone(1, "triangle", 0.31, 0.003, sustainChord ? 2.15 : 1.25, sustainChord ? 0.03 : 0.0001, -2, sustainChord ? 2.8 : 1.5);
+    addTone(1, "sine", 0.16, 0.002, sustainChord ? 1.75 : 0.9, sustainChord ? 0.018 : 0.0001, 2, sustainChord ? 2.4 : 1.15);
+    addTone(2, "sine", 0.075, 0.002, sustainChord ? 1.0 : 0.48, sustainChord ? 0.005 : 0.0001, 0, sustainChord ? 1.6 : 0.7);
     addTone(3, "sine", 0.028, 0.002, 0.28, 0.0001, 0, 0.45);
     addNoise(0.025, 0.04, 3000);
-    voice.release = 0.075;
+    voice.release = sustainChord ? 0.24 : 0.075;
   } else if (sound === "marimba") {
     addTone(1, "sine", 0.42, 0.003, 1.15, 0.0001, 0, 1.4);
     addTone(4, "sine", 0.075, 0.002, 0.42, 0.0001, 0, 0.6);
