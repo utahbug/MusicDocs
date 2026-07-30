@@ -2945,6 +2945,9 @@ function showSection(sectionName) {
   }
 
   updateNavPlacement(sectionName);
+  if (sectionName === "piano") {
+    window.requestAnimationFrame(() => applyPianoShape());
+  }
 }
 
 async function loadAudioLibrary() {
@@ -6627,6 +6630,9 @@ function applyPianoShape() {
     if (!button.dataset.objectLabel) button.dataset.objectLabel = button.getAttribute("aria-label") || "Sound object";
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
+    button.style.removeProperty("right");
+    button.style.removeProperty("top");
+    button.style.removeProperty("transform");
     button.classList.toggle("piano-shape-hidden", buttonIndex >= shapeLimit);
     if (shape === "twinkle") {
       button.textContent = "★";
@@ -6683,7 +6689,7 @@ function ensureGardenFill() {
   const columns = Math.ceil((width - buttonSize) / step) + 1;
   const rows = Math.ceil((height - buttonSize) / step) + 1;
   const targetCount = columns * rows;
-  const baseButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note:not(.garden-extra)"));
+  const baseButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note:not(.garden-extra):not(.twinkle-extra)"));
   let extras = Array.from(el.pianoNoteArc.querySelectorAll(".garden-extra"));
   while (baseButtons.length + extras.length < targetCount) {
     const source = baseButtons[extras.length % baseButtons.length];
