@@ -1204,7 +1204,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-games:not([open]), .piano-chord-guide:not([open]) { display: none; }
 .piano-games-standalone { border-radius: 12px; margin-top: 4px; padding-top: 0; }
 .piano-games-standalone summary { color: var(--accent-strong); cursor: pointer; display: block; font-size: 1rem; font-weight: 850; padding: 10px 2px 8px; }
-.fun-keyboard-link { align-items: center; background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft)); border: 1px solid var(--line); border-radius: 999px; color: var(--accent-strong); display: flex; font-size: 0.84rem; font-weight: 800; gap: 8px; margin: 11px auto 0; min-height: 40px; padding: 7px 14px; }
+.fun-keyboard-link { align-items: center; background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft)); border: 1px solid var(--line); border-radius: 999px; color: var(--accent-strong); display: flex; font-size: 0.84rem; font-weight: 800; gap: 8px; margin: 11px 0 0; min-height: 40px; padding: 7px 14px; }
 .fun-keyboard-link:hover, .fun-keyboard-link:focus-visible { background: var(--accent-soft); border-color: var(--accent); }
 .mini-keyboard-icon { align-items: stretch; background: #FFFFFF; border: 1px solid #456277; border-radius: 3px; display: flex; height: 19px; overflow: hidden; position: relative; width: 31px; }
 .mini-keyboard-icon i { border-right: 1px solid #8EA3B1; flex: 1; }
