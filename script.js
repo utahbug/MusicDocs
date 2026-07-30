@@ -1112,8 +1112,16 @@ async function loadLibrary() {
     ...BUILT_IN_LINKS,
     ...importedItems
   ].filter((item) => item?.id && !deletedItemIds().has(item.id));
-  state.data.items = applyLocalItemEdits(baseItems);
+  state.data.items = normalizeBuiltInLyricCardTitles(applyLocalItemEdits(baseItems));
   state.itemsById = new Map(state.data.items.map((item) => [item.id, item]));
+}
+
+function normalizeBuiltInLyricCardTitles(items) {
+  return (items || []).map((item) => {
+    if (!item?.lyricsCard || !String(item.id || "").startsWith("lyrics-card-")) return item;
+    const title = normalizeVisibleText(item.title).replace(/\s+-\s+Lyrics$/i, "").trim();
+    return title && title !== item.title ? { ...item, title } : item;
+  });
 }
 
 function mergeDefaultStarterData(libraryData) {
@@ -2206,7 +2214,11 @@ async function addCardImageFromForm(itemId, fields) {
 }
 
 function buildEditableFieldsFromForm(type, fallbackTitle = "Untitled Item") {
-  const title = el.importTitleField.value.trim() || fallbackTitle;
+  const enteredTitle = el.importTitleField.value.trim();
+  if (type === "card" && !enteredTitle) {
+    throw new Error("Enter a title before saving the card.");
+  }
+  const title = enteredTitle || fallbackTitle;
   const fields = {
     title,
     category: el.importCategory.value.trim(),
@@ -2307,7 +2319,11 @@ function getImportedItems() {
 }
 
 function cleanupImportedItemDuplicates() {
-  const imported = getImportedItems();
+  const savedImported = getImportedItems();
+  const imported = savedImported.filter((item) => !isEmptyUntitledCard(item));
+  if (imported.length !== savedImported.length) {
+    writeJson(STORAGE_KEYS.importedItems, imported);
+  }
   const seen = new Map();
   const builtInByTitleType = new Map();
   const duplicateMap = new Map();
@@ -2347,6 +2363,23 @@ function cleanupImportedItemDuplicates() {
   writeJson(STORAGE_KEYS.importedItems, cleaned);
   remapDuplicateItemReferences(duplicateMap);
   return cleaned;
+}
+
+function isEmptyUntitledCard(item) {
+  if (item?.type !== "card" || normalize(item.title) !== "untitled card") return false;
+  const cardText = item.cardHtml ? htmlToPlainText(item.cardHtml) : "";
+  const content = Array.isArray(item.content) ? item.content.join(" ") : item.content;
+  return ![
+    cardText,
+    content,
+    item.lyricsText,
+    item.body,
+    item.notes,
+    item.imageFileId,
+    item.imageData,
+    item.imageUrl,
+    item.imageFileName
+  ].some((value) => normalizeVisibleText(value));
 }
 
 function findDuplicateImportedItem(item, imported = getImportedItems()) {
