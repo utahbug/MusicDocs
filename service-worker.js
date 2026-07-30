@@ -1,10 +1,10 @@
-const CACHE_NAME = "musicdocs-shell-v133";
+const CACHE_NAME = "musicdocs-shell-v134";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=musicdocs-88",
+  "./styles.css?v=musicdocs-89",
   "./lyrics-cards.js?v=musicdocs-2",
-  "./script.js?v=musicdocs-85",
+  "./script.js?v=musicdocs-86",
   "./library.json",
   "./manifest.json",
   "./favicon.ico",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./assets/apple-touch-icon.png",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
+  "./assets/jazz-ensemble-puzzle.webp",
   "./assets/AtkinsonHyperlegible-Regular.woff2",
   "./assets/AtkinsonHyperlegible-Italic.woff2",
   "./assets/AtkinsonHyperlegible-Bold.woff2",

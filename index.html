@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-88">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-89">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-85" defer></script>
+    <script src="script.js?v=musicdocs-86" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -490,8 +490,7 @@
               <button class="piano-note piano-play-object piano-wide-note" data-note="D sharp 6" data-object="&#x1F41D;" type="button" aria-label="Bee">&#x1F41D;</button>
               <button class="piano-note piano-play-object piano-wide-note" data-note="E6" data-object="&#x1F319;" type="button" aria-label="Moon">&#x1F319;</button>
               <button class="piano-note piano-play-object piano-wide-note" data-note="F6" data-object="&#x26BD;" type="button" aria-label="Soccer ball">&#x26BD;</button>
-              <svg class="jazzy-ribbon jazzy-ribbon-upper" data-jazzy-phase="0" viewBox="0 0 1000 220" aria-hidden="true"></svg>
-              <svg class="jazzy-ribbon jazzy-ribbon-lower" data-jazzy-phase="3.14159" viewBox="0 0 1000 220" aria-hidden="true"></svg>
+              <div id="sidetrackJazzPuzzle" class="sidetrack-special jazz-puzzle" hidden></div>
               <div id="sidetrackKeyboard" class="sidetrack-special sidetrack-keyboard" hidden></div>
               <div id="sidetrackPuzzle" class="sidetrack-special sidetrack-puzzle" hidden></div>
               <div id="sidetrackAir" class="sidetrack-special sidetrack-air" hidden>
@@ -718,12 +717,12 @@
             <h3>Page numbering</h3>
             <label><span>Visibility</span><select id="pdfNumberingMode">
               <option value="off">Off</option>
-              <option value="document">Document pages</option>
-              <option value="song">Designate song pages</option>
+              <option value="document">On</option>
+              <option value="song">On, but designate page 1</option>
             </select></label>
             <div id="pdfSongNumberingFields" class="pdf-song-numbering-fields hidden">
-              <button id="pdfSongStartButton" class="secondary-button" type="button">Start song numbering on this page</button>
-              <label><span>Number of song pages</span><input id="pdfSongPageCount" type="number" min="1" max="999" inputmode="numeric" value="1"></label>
+              <button id="pdfSongStartButton" class="secondary-button" type="button">Use current page as page 1</button>
+              <label><span>Number of pages</span><input id="pdfSongPageCount" type="number" min="1" max="999" inputmode="numeric" value="1"></label>
               <p id="pdfSongNumberingStatus"></p>
             </div>
           </section>

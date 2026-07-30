@@ -436,6 +436,7 @@ function collectElements() {
   el.pianoShape = document.getElementById("pianoShape");
   el.pianoShapeButtons = Array.from(document.querySelectorAll("[data-piano-shape]"));
   el.pianoNoteArc = document.querySelector(".piano-note-arc");
+  el.sidetrackJazzPuzzle = document.getElementById("sidetrackJazzPuzzle");
   el.sidetrackKeyboard = document.getElementById("sidetrackKeyboard");
   el.sidetrackPuzzle = document.getElementById("sidetrackPuzzle");
   el.sidetrackAir = document.getElementById("sidetrackAir");
@@ -5283,8 +5284,8 @@ function syncPdfViewerSettings() {
     : getCurrentPdfSongNumbering();
   el.pdfSongPageCount.value = String(custom?.pageCount || 1);
   el.pdfSongNumberingStatus.textContent = custom
-    ? `Song page 1 starts on document page ${custom.startPage}.`
-    : "Go to the first page of the song, then choose “Start song numbering on this page.”";
+    ? `Page 1 is set to PDF page ${custom.startPage}.`
+    : "Go to the page that should be page 1, then choose “Use current page as page 1.”";
   renderPdfPageNumbering(false);
 }
 
@@ -6437,6 +6438,7 @@ const SIDETRACK_NOTES = [
 ];
 const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20, lastPhrase: -1 };
 let sidetrackPuzzleDrag = null;
+let sidetrackJazzDrag = null;
 
 function initializeSidetrackActivities() {
   if (!el.sidetrackKeyboard || el.sidetrackKeyboard.childElementCount) return;
@@ -6456,7 +6458,88 @@ function initializeSidetrackActivities() {
     el.sidetrackKeyboard.appendChild(key);
   });
   buildSidetrackPuzzle();
+  buildJazzPuzzle();
   el.sidetrackAirRestart?.addEventListener("click", resetSidetrackAirGame);
+}
+
+function buildJazzPuzzle() {
+  if (!el.sidetrackJazzPuzzle) return;
+  const pieces = Array.from({ length: 9 }, (_, index) => index).sort(() => Math.random() - 0.5);
+  el.sidetrackJazzPuzzle.innerHTML = `
+    <div class="jazz-puzzle-heading">
+      <strong>Build the jazz ensemble</strong>
+      <button class="jazz-puzzle-reset" type="button" aria-label="Shuffle and start over" title="Start over">↻</button>
+    </div>
+    <div class="jazz-puzzle-board" aria-label="Jazz ensemble puzzle board">
+      ${Array.from({ length: 9 }, (_, index) => `<span class="jazz-puzzle-slot" data-jazz-index="${index}"></span>`).join("")}
+    </div>
+    <div class="jazz-puzzle-tray" aria-label="Puzzle pieces">
+      ${pieces.map((index) => `<button class="jazz-puzzle-piece" type="button" data-jazz-index="${index}" aria-label="Jazz puzzle piece ${index + 1}"></button>`).join("")}
+    </div>
+    <p class="jazz-puzzle-status" aria-live="polite">Drag each piece into the picture</p>`;
+  el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-piece").forEach((piece) => {
+    const index = Number(piece.dataset.jazzIndex);
+    piece.style.setProperty("--piece-column", String(index % 3));
+    piece.style.setProperty("--piece-row", String(Math.floor(index / 3)));
+    piece.addEventListener("pointerdown", startJazzPuzzleDrag);
+    piece.addEventListener("pointermove", moveJazzPuzzleDrag);
+    piece.addEventListener("pointerup", endJazzPuzzleDrag);
+    piece.addEventListener("pointercancel", cancelJazzPuzzleDrag);
+  });
+  el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-reset")?.addEventListener("click", resetJazzPuzzle);
+}
+
+function resetJazzPuzzle() {
+  if (sidetrackJazzDrag?.piece) {
+    sidetrackJazzDrag.piece.classList.remove("dragging");
+    sidetrackJazzDrag.piece.style.transform = "";
+  }
+  sidetrackJazzDrag = null;
+  buildJazzPuzzle();
+}
+
+function startJazzPuzzleDrag(event) {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  event.preventDefault();
+  const piece = event.currentTarget;
+  try { piece.setPointerCapture(event.pointerId); } catch (_error) {}
+  sidetrackJazzDrag = { piece, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY };
+  piece.classList.add("dragging");
+}
+
+function moveJazzPuzzleDrag(event) {
+  if (!sidetrackJazzDrag || sidetrackJazzDrag.pointerId !== event.pointerId) return;
+  event.preventDefault();
+  const { piece, startX, startY } = sidetrackJazzDrag;
+  piece.style.transform = `translate(${event.clientX - startX}px, ${event.clientY - startY}px) scale(1.05)`;
+}
+
+function endJazzPuzzleDrag(event) {
+  if (!sidetrackJazzDrag || sidetrackJazzDrag.pointerId !== event.pointerId) return;
+  event.preventDefault();
+  const { piece } = sidetrackJazzDrag;
+  piece.style.visibility = "hidden";
+  const slot = document.elementFromPoint(event.clientX, event.clientY)?.closest(".jazz-puzzle-slot");
+  piece.style.visibility = "";
+  piece.classList.remove("dragging");
+  piece.style.transform = "";
+  if (slot && !slot.classList.contains("filled") && slot.dataset.jazzIndex === piece.dataset.jazzIndex) {
+    slot.appendChild(piece);
+    slot.classList.add("filled");
+    piece.disabled = true;
+    const remaining = el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-tray .jazz-puzzle-piece").length;
+    const status = el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-status");
+    status.textContent = remaining ? `${remaining} piece${remaining === 1 ? "" : "s"} left` : "Jazz ensemble complete!";
+    el.sidetrackJazzPuzzle.classList.toggle("complete", remaining === 0);
+  }
+  sidetrackJazzDrag = null;
+}
+
+function cancelJazzPuzzleDrag(event) {
+  if (!sidetrackJazzDrag || sidetrackJazzDrag.pointerId !== event.pointerId) return;
+  sidetrackJazzDrag.piece.classList.remove("dragging");
+  sidetrackJazzDrag.piece.style.transform = "";
+  sidetrackJazzDrag = null;
 }
 
 function buildSidetrackPuzzle() {
@@ -6543,6 +6626,7 @@ function cancelSidetrackPuzzleDrag(event) {
 
 function renderSidetrackActivity(shape) {
   if (!el.sidetrackKeyboard) return;
+  el.sidetrackJazzPuzzle.hidden = shape !== "trail";
   el.sidetrackKeyboard.hidden = shape !== "circle";
   el.sidetrackPuzzle.hidden = shape !== "zigzag";
   el.sidetrackAir.hidden = shape !== "rainbow";
@@ -6703,7 +6787,7 @@ function applyPianoShape() {
   if (shape === "twinkle") ensureTwinkleFill();
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button, buttonIndex) => {
-    const shapeLimit = shape === "trail" ? 20 : (["circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity);
+    const shapeLimit = ["trail", "circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity;
     if (!button.dataset.objectLabel) button.dataset.objectLabel = button.getAttribute("aria-label") || "Sound object";
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
