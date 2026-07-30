@@ -1290,10 +1290,10 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   50% { filter: brightness(1.2); }
 }
 .piano-note-arc { background: linear-gradient(155deg, color-mix(in srgb, #78BCEF 10%, var(--surface)), color-mix(in srgb, #69C7B1 9%, var(--surface))); border: 1px solid color-mix(in srgb, var(--line) 76%, #78BCEF); border-radius: 16px; height: 230px; margin: 8px auto 0px; max-width: 680px; overflow: hidden; overscroll-behavior: contain; position: relative; touch-action: none; transition: background 180ms ease, height 180ms ease; user-select: none; -webkit-touch-callout: none; -webkit-user-select: none; }
-.piano-note-arc[data-shape="trail"] { background-image: linear-gradient(155deg, color-mix(in srgb, #78BCEF 11%, var(--surface)), color-mix(in srgb, #69C7B1 10%, var(--surface))); }
+.piano-note-arc[data-shape="trail"] { background-image: linear-gradient(155deg, color-mix(in srgb, #78BCEF 11%, var(--surface)), color-mix(in srgb, #69C7B1 10%, var(--surface))); height: 360px; }
 .piano-note-arc[data-shape="garden"], .piano-note-arc[data-shape="twinkle"] { height: 360px; }
 .piano-note-arc[data-shape="garden"] { background-image: radial-gradient(circle at 18% 22%, rgba(255,255,255,0.62) 0 3px, transparent 4px), radial-gradient(circle at 78% 72%, rgba(255,255,255,0.52) 0 4px, transparent 5px), linear-gradient(155deg, color-mix(in srgb, #B9E8C6 18%, var(--surface)), color-mix(in srgb, #82C7F2 14%, var(--surface))); }
-.piano-note-arc[data-shape="twinkle"] { background-image: radial-gradient(circle, rgba(255,255,255,0.88) 0 1px, transparent 2px), linear-gradient(160deg, #173F72, #594B91); background-position: 7px 9px, 0 0; background-size: 37px 37px, auto; }
+.piano-note-arc[data-shape="twinkle"] { background-image: radial-gradient(circle at 20% 22%, rgba(241,184,75,0.14) 0 3px, transparent 4px), radial-gradient(circle at 80% 72%, rgba(105,199,177,0.14) 0 4px, transparent 5px), linear-gradient(155deg, color-mix(in srgb, #FFF7D6 18%, var(--surface)), color-mix(in srgb, #F4E6B8 12%, var(--surface))); }
 .piano-note { align-items: center; border-radius: 50%; display: inline-flex; font-family: "Atkinson Hyperlegible", system-ui, sans-serif; font-weight: 850; justify-content: center; left: var(--px); position: absolute; touch-action: none; transform: translateX(-50%); transition: left 240ms ease, bottom 240ms ease, transform 120ms ease, box-shadow 120ms ease, filter 120ms ease; user-select: none; -webkit-user-select: none; }
 .piano-play-object { background: linear-gradient(145deg, #FFFFFF, #DDEEF7); border: 2px solid rgba(47, 126, 151, 0.48); bottom: var(--py); box-shadow: 0 5px 12px rgba(25, 66, 101, 0.22); font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; font-size: 1.45rem; height: 42px; line-height: 1; padding: 0; width: 42px; z-index: 2; }
 .piano-note-arc[data-shape="twinkle"] .piano-play-object { background: linear-gradient(145deg, #FFF7B8, #F1B84B); border-color: #FFF1A1; color: #6D4A00; font-family: system-ui, sans-serif; font-size: 1.65rem; text-shadow: 0 1px 0 #FFFFFF; }
@@ -1310,6 +1310,10 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-note:active { filter: brightness(0.9); transform: translateX(-50%) translateY(1px) scale(0.96); }
 .piano-note.is-playing { box-shadow: 0 0 0 5px color-mix(in srgb, #2F9E91 42%, transparent), 0 7px 17px rgba(25, 66, 101, 0.32); filter: brightness(1.08); transform: translateX(-50%) translateY(-3px) scale(1.06); }
 .piano-wide-note { display: none; }
+.piano-note-arc[data-shape="garden"] .piano-wide-note,
+.piano-note-arc[data-shape="trail"] .piano-wide-note { display: inline-flex; }
+.piano-note-arc[data-shape="twinkle"] .piano-wide-note { display: none; }
+.piano-note.piano-shape-hidden { display: none !important; }
 .piano-effect-pads { display: none; }
 .piano-effect-pad { align-items: center; border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line)); border-radius: 12px; box-shadow: 0 3px 9px rgba(26, 66, 99, 0.16); color: var(--text); flex-direction: column; font-weight: 800; gap: 1px; height: 52px; justify-content: center; padding: 3px 5px; position: relative; width: 62px; }
 .piano-effect-pad svg { fill: none; height: 24px; pointer-events: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; width: 24px; }

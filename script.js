@@ -6290,14 +6290,17 @@ function applyPianoShape() {
   const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "trail";
   el.pianoNoteArc.dataset.shape = shape;
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
-  allButtons.forEach((button) => {
+  allButtons.forEach((button, buttonIndex) => {
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
+    button.classList.toggle("piano-shape-hidden", shape === "twinkle" && buttonIndex >= 10);
     button.textContent = shape === "twinkle" ? "★" : button.dataset.object;
   });
 
-  const includeWide = window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches;
+  const includeWide = shape === "garden" || shape === "trail"
+    || window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches;
   const buttons = allButtons
+    .filter((button) => !button.classList.contains("piano-shape-hidden"))
     .filter((button) => includeWide || !button.classList.contains("piano-wide-note"))
     .sort((a, b) => pianoNoteMidi(a.dataset.note) - pianoNoteMidi(b.dataset.note));
   const count = buttons.length;
@@ -6314,16 +6317,76 @@ function applyPianoShape() {
 function pianoShapePoint(shape, index, count) {
   const progress = count > 1 ? index / (count - 1) : 0.5;
   if (shape === "trail") {
-    return { x: 7 + progress * 86, y: 94 + Math.sin(progress * Math.PI * 2) * 56 };
+    const width = el.pianoNoteArc?.clientWidth || 680;
+    const height = el.pianoNoteArc?.clientHeight || 360;
+    const columns = width < 430 ? 8 : width < 620 ? 10 : 15;
+    const rows = Math.ceil(count / columns);
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    const rowCount = Math.min(columns, count - row * columns);
+    const visualColumn = row % 2 ? rowCount - 1 - column : column;
+    const horizontalMargin = width < 430 ? 8 : 6;
+    const rowProgress = rowCount > 1 ? visualColumn / (rowCount - 1) : 0.5;
+    const minY = 28;
+    const maxY = Math.max(minY, height - 66);
+    const rowY = rows > 1 ? maxY - (row / (rows - 1)) * (maxY - minY) : height / 2;
+    return {
+      x: rowCount > 1
+        ? horizontalMargin + rowProgress * (100 - horizontalMargin * 2)
+        : 50,
+      y: rowY + Math.sin(rowProgress * Math.PI * 2) * 18
+    };
   }
-  const columns = count > 16 ? 6 : 4;
-  const row = Math.floor(index / columns);
-  const column = index % columns;
-  const rowCount = Math.min(columns, count - row * columns);
-  const visualColumn = row % 2 ? rowCount - 1 - column : column;
+  if (shape === "garden") {
+    const width = el.pianoNoteArc?.clientWidth || 680;
+    const height = el.pianoNoteArc?.clientHeight || 360;
+    const columns = width < 430 ? 5 : width < 620 ? 6 : 8;
+    const rows = Math.ceil(count / columns);
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    const rowCount = Math.min(columns, count - row * columns);
+    const visualColumn = row % 2 ? rowCount - 1 - column : column;
+    const horizontalMargin = width < 430 ? 10 : 7;
+    const minY = 20;
+    const maxY = Math.max(minY, height - 62);
+    return {
+      x: rowCount > 1
+        ? horizontalMargin + (visualColumn / (rowCount - 1)) * (100 - horizontalMargin * 2)
+        : 50,
+      y: rows > 1 ? minY + (row / (rows - 1)) * (maxY - minY) : height / 2 - 21
+    };
+  }
+  const width = el.pianoNoteArc?.clientWidth || 680;
+  const height = el.pianoNoteArc?.clientHeight || 360;
+  const outerX = width * 0.42;
+  const innerX = outerX * 0.42;
+  const outerY = Math.min(140, height * 0.39);
+  const innerY = outerY * 0.42;
+  const vertices = Array.from({ length: 10 }, (_, vertexIndex) => {
+    const angle = -Math.PI / 2 + vertexIndex * Math.PI / 5;
+    const radiusX = vertexIndex % 2 ? innerX : outerX;
+    const radiusY = vertexIndex % 2 ? innerY : outerY;
+    return {
+      x: width / 2 + Math.cos(angle) * radiusX,
+      y: height / 2 - Math.sin(angle) * radiusY - 21
+    };
+  });
+  const segmentLengths = vertices.map((vertex, vertexIndex) => {
+    const next = vertices[(vertexIndex + 1) % vertices.length];
+    return Math.hypot(next.x - vertex.x, next.y - vertex.y);
+  });
+  const perimeter = segmentLengths.reduce((total, length) => total + length, 0);
+  let distance = count > 1 ? (index / count) * perimeter : 0;
+  let segment = 0;
+  while (distance > segmentLengths[segment] && segment < vertices.length - 1) {
+    distance -= segmentLengths[segment];
+    segment += 1;
+  }
+  const nextSegment = (segment + 1) % vertices.length;
+  const segmentProgress = segmentLengths[segment] ? distance / segmentLengths[segment] : 0;
   return {
-    x: rowCount > 1 ? 10 + (visualColumn / (rowCount - 1)) * 80 : 50,
-    y: 35 + row * 82
+    x: ((vertices[segment].x + (vertices[nextSegment].x - vertices[segment].x) * segmentProgress) / width) * 100,
+    y: vertices[segment].y + (vertices[nextSegment].y - vertices[segment].y) * segmentProgress
   };
 }
 
