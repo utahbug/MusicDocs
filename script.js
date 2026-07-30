@@ -6250,21 +6250,17 @@ const PIANO_GARDEN_OBJECTS = [
   ["🦉", "Owl"], ["🐸", "Frog"], ["🎶", "Music notes"]
 ];
 const PIANO_WAVE_NOTES = [
-  ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"],
-  ["A3", "B3", "C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"],
-  ["C4", "D sharp 4", "F4", "F sharp 4", "G4", "A sharp 4", "C5", "D sharp 5", "F5", "F sharp 5"]
+  ["C4", "D sharp 4", "F4", "F sharp 4", "G4", "A sharp 4", "C5", "D sharp 5", "F5", "G5"],
+  ["F3", "G sharp 3", "A sharp 3", "B3", "C4", "D sharp 4", "F4", "G sharp 4", "A sharp 4", "C5"]
 ];
 const PIANO_WAVE_OBJECTS = [
   ["\u{1F3B9}", "Keyboard"], ["\u{1F3B8}", "Guitar"], ["\u{1F3BB}", "Violin"],
   ["\u{1F3B7}", "Saxophone"], ["\u{1F3BA}", "Trumpet"], ["\u{1F941}", "Drum"],
   ["\u{1F3A4}", "Microphone"], ["\u{1F3B5}", "Music note"], ["\u{1F3B6}", "Music notes"],
-  ["\u{1F3BC}", "Music"], ["\u{1FA87}", "Maracas"], ["\u{1FA98}", "Long drum"],
-  ["\u{1FA95}", "Banjo"], ["\u{1FA97}", "Accordion"], ["\u{1F3B9}", "Keyboard"],
-  ["\u{1F3B8}", "Guitar"], ["\u{1F3B7}", "Saxophone"], ["\u{1F941}", "Drum"],
-  ["\u{1F3B5}", "Music note"], ["\u{1F3B6}", "Music notes"], ["\u{1F436}", "Dog"],
-  ["\u{1F431}", "Cat"], ["\u{1F438}", "Frog"], ["\u{1F98A}", "Fox"],
-  ["\u{1F43C}", "Panda"], ["\u{1F435}", "Monkey"], ["\u{1F981}", "Lion"],
-  ["\u{1F98B}", "Butterfly"], ["\u{1F984}", "Unicorn"], ["\u{1F31F}", "Star"]
+  ["\u{1F3BC}", "Music"], ["\u{1FA87}", "Maracas"], ["\u{1FA95}", "Banjo"],
+  ["\u{1FA97}", "Accordion"], ["\u{1F436}", "Dog"], ["\u{1F431}", "Cat"],
+  ["\u{1F438}", "Frog"], ["\u{1F98A}", "Fox"], ["\u{1F98B}", "Butterfly"],
+  ["\u{1F984}", "Unicorn"], ["\u{1F31F}", "Star"]
 ];
 const TWINKLE_MELODY = [
   "C4", "C4", "G4", "G4", "A4", "A4", "G4",
@@ -6649,7 +6645,7 @@ function applyPianoShape() {
   if (shape === "twinkle") ensureTwinkleFill();
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button, buttonIndex) => {
-    const shapeLimit = ["circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity;
+    const shapeLimit = shape === "trail" ? 20 : (["circle", "zigzag", "rainbow"].includes(shape) ? 0 : Infinity);
     if (!button.dataset.objectLabel) button.dataset.objectLabel = button.getAttribute("aria-label") || "Sound object";
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
@@ -6764,15 +6760,15 @@ function pianoShapePoint(shape, index, count) {
   if (shape === "trail") {
     const height = el.pianoNoteArc?.clientHeight || 360;
     const itemsPerWave = 10;
-    const wave = Math.min(2, Math.floor(index / itemsPerWave));
+    const wave = Math.min(1, Math.floor(index / itemsPerWave));
     const position = index % itemsPerWave;
     const waveProgress = position / (itemsPerWave - 1);
-    const verticalPadding = 68;
-    const waveGap = (height - verticalPadding * 2) / 2;
+    const verticalPadding = 78;
+    const waveGap = height - verticalPadding * 2;
     const waveStart = wave === 1 ? 11 : 7;
     return {
       x: waveStart + waveProgress * 82,
-      y: height - verticalPadding - wave * waveGap + Math.sin(waveProgress * Math.PI * 2) * 18
+      y: height - verticalPadding - wave * waveGap + Math.sin(waveProgress * Math.PI * 2) * 30
     };
   }
   if (shape === "garden") {
