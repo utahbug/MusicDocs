@@ -6278,7 +6278,7 @@ function handlePianoShapeChange() {
 const SIDETRACK_NOTES = [
   ["C4", "C"], ["C sharp 4", "C#"], ["D4", "D"], ["D sharp 4", "D#"],
   ["E4", "E"], ["F4", "F"], ["F sharp 4", "F#"], ["G4", "G"],
-  ["G sharp 4", "G#"], ["A4", "A"], ["A sharp 4", "A#"], ["B4", "B"]
+  ["G sharp 4", "G#"], ["A4", "A"], ["A sharp 4", "A#"], ["B4", "B"], ["C5", "C"]
 ];
 const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20 };
 let sidetrackPuzzleDrag = null;
