@@ -674,6 +674,12 @@ body.dark-background .tag, body.dark-background .type-pill { background: #193E50
 
 .modal-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-modal); height: min(50dvh, calc(100dvh - 32px)); max-height: calc(100dvh - 32px); max-width: min(760px, calc(100vw - 32px)); min-height: min(360px, calc(100dvh - 32px)); min-width: min(420px, calc(100vw - 32px)); overflow: auto; resize: both; width: clamp(420px, 50vw, 760px); }
 
+.modal[data-item-type="card"] { padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+
+.modal[data-item-type="card"] .modal-panel { height: auto; max-height: calc(100dvh - 16px); min-height: 0px; }
+
+.modal[data-item-type="card"] .import-form { padding-bottom: 2px; }
+
 .import-form { display: grid; gap: 10px; min-width: 0px; padding: 12px; }
 
 .modal-heading { align-items: center; background: linear-gradient(105deg, color-mix(in srgb, var(--accent) 15%, var(--surface)), color-mix(in srgb, #7256B5 11%, var(--surface)) 62%, color-mix(in srgb, #2C8B88 9%, var(--surface))); border-bottom: 1px solid color-mix(in srgb, var(--accent) 36%, var(--line)); cursor: move; display: grid; gap: 8px; grid-template-columns: auto minmax(0px, 1fr) auto; margin: -12px -12px 2px; min-width: 0px; padding: 8px 10px 10px; position: sticky; top: 0px; user-select: none; width: calc(100% + 24px); z-index: 2; }
@@ -710,7 +716,9 @@ body.dark-background .modal-heading .form-close-button:hover, body.dark-backgrou
 
 .form-grid { display: grid; gap: 8px; grid-template-columns: 1fr; }
 
-.form-status { color: var(--muted); font-weight: 700; margin-bottom: 0px; min-height: 1.4em; }
+.form-status { color: var(--muted); font-weight: 700; margin: 0px; min-height: 1.4em; }
+
+.form-status:empty { display: none; }
 
 .form-status.error { color: var(--danger); }
 
