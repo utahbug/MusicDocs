@@ -264,6 +264,7 @@ const state = {
   piano: {
     sound: "grand-piano",
     volume: 0.58,
+    transpose: 0,
     shape: "trail",
     audioContext: null,
     masterGain: null,
@@ -446,6 +447,10 @@ function collectElements() {
   el.pianoSustainHint = document.getElementById("pianoSustainHint");
   el.keyboardSound = document.getElementById("keyboardSound");
   el.keyboardVolume = document.getElementById("keyboardVolume");
+  el.keyboardTransposeDown = document.getElementById("keyboardTransposeDown");
+  el.keyboardTransposeReset = document.getElementById("keyboardTransposeReset");
+  el.keyboardTransposeUp = document.getElementById("keyboardTransposeUp");
+  el.keyboardTransposeValue = document.getElementById("keyboardTransposeValue");
   el.keyboardSoundStatus = document.getElementById("keyboardSoundStatus");
   el.keyboardSustainHint = document.getElementById("keyboardSustainHint");
   el.realKeyboard = document.getElementById("realKeyboard");
@@ -473,6 +478,7 @@ function collectElements() {
   el.pianoChordPlayButton = document.getElementById("pianoChordPlayButton");
   el.pianoChordUse = document.getElementById("pianoChordUse");
   el.pianoChordNotes = document.getElementById("pianoChordNotes");
+  el.pianoChordPartners = document.getElementById("pianoChordPartners");
   el.pianoChordFamily = document.getElementById("pianoChordFamily");
   el.chordGuideTab = document.getElementById("chordGuideTab");
   el.keyChangeTab = document.getElementById("keyChangeTab");
@@ -483,6 +489,12 @@ function collectElements() {
   el.keyChangeSteps = document.getElementById("keyChangeSteps");
   el.keyChangeResult = document.getElementById("keyChangeResult");
   el.keyChangeTable = document.getElementById("keyChangeTable");
+  el.scaleGuideTab = document.getElementById("scaleGuideTab");
+  el.scaleGuide = document.getElementById("scaleGuide");
+  el.scaleRoot = document.getElementById("scaleRoot");
+  el.scaleType = document.getElementById("scaleType");
+  el.scalePlayButton = document.getElementById("scalePlayButton");
+  el.scaleResult = document.getElementById("scaleResult");
 
   el.detailContent = document.getElementById("detailContent");
 
@@ -718,15 +730,22 @@ function wireEvents() {
   el.pianoEffectPads.forEach((button) => button.addEventListener("click", () => playPianoEffect(button.dataset.pianoEffect, button)));
   el.keyboardSound.addEventListener("change", handlePianoSoundChange);
   el.keyboardVolume.addEventListener("input", handlePianoVolumeChange);
+  el.keyboardTransposeDown.addEventListener("click", () => adjustKeyboardTranspose(-1));
+  el.keyboardTransposeReset.addEventListener("click", () => setKeyboardTranspose(0));
+  el.keyboardTransposeUp.addEventListener("click", () => adjustKeyboardTranspose(1));
   el.pianoChordRoot.addEventListener("change", renderPianoChordGuide);
   el.pianoChordType.addEventListener("change", renderPianoChordGuide);
   el.pianoChordPlayButton.addEventListener("click", playPianoGuideChord);
   el.chordGuideTab.addEventListener("click", () => showKeyboardGuide("chord"));
   el.keyChangeTab.addEventListener("click", () => showKeyboardGuide("key"));
+  el.scaleGuideTab.addEventListener("click", () => showKeyboardGuide("scale"));
   el.keyChangeRoot.addEventListener("change", renderKeyChangeGuide);
   el.keyChangeDown.addEventListener("click", () => adjustKeyChange(-1));
   el.keyChangeUp.addEventListener("click", () => adjustKeyChange(1));
   el.keyChangeTable.addEventListener("click", handleKeyChangeTableClick);
+  el.scaleRoot.addEventListener("change", renderPianoScaleGuide);
+  el.scaleType.addEventListener("change", renderPianoScaleGuide);
+  el.scalePlayButton.addEventListener("click", playPianoScale);
   el.audioFileInput.addEventListener("change", importAudioFiles);
   el.audioLibraryTab.addEventListener("click", () => setAudioMode("library"));
   el.audioPlaylistTab.addEventListener("click", () => setAudioMode("playlist"));
@@ -6193,6 +6212,14 @@ const PIANO_CHORDS = {
   sixth: { intervals: [0, 4, 7, 9], use: "The 6th adds warmth without the stronger pull of a 7th; useful in country, jazz, and older popular music." },
   ninth: { intervals: [0, 2, 4, 7, 10], use: "The 9th expands a dominant 7th with extra color, especially in blues, funk, and jazz." }
 };
+const PIANO_SCALES = {
+  major: { intervals: [0, 2, 4, 5, 7, 9, 11, 12], label: "Major", use: "Bright and familiar; common in hymns, folk music, and popular songs." },
+  naturalMinor: { intervals: [0, 2, 3, 5, 7, 8, 10, 12], label: "Natural minor", use: "Reflective or dramatic; the basic minor-scale pattern." },
+  majorPentatonic: { intervals: [0, 2, 4, 7, 9, 12], label: "Major pentatonic", use: "Open and friendly; useful in folk, country, and simple improvisation." },
+  minorPentatonic: { intervals: [0, 3, 5, 7, 10, 12], label: "Minor pentatonic", use: "Flexible and expressive; widely used in rock, blues, and improvisation." },
+  blues: { intervals: [0, 3, 5, 6, 7, 10, 12], label: "Blues", use: "Adds the distinctive blue note between the fourth and fifth." },
+  chromatic: { intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], label: "Chromatic", use: "Uses every neighboring note; helpful for fingering, warmups, and hearing half steps." }
+};
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 const KEY_CHANGE_NAMES = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 const KEY_SIGNATURES = [
@@ -6291,12 +6318,15 @@ function loadPianoSettings() {
   else if (saved.shape) state.piano.shape = "trail";
   const savedVolume = Number(saved.volume);
   if (Number.isFinite(savedVolume)) state.piano.volume = clamp(savedVolume, 0, 1);
+  const savedTranspose = Number(saved.transpose);
+  if (Number.isFinite(savedTranspose)) state.piano.transpose = clamp(Math.round(savedTranspose), -6, 6);
 }
 
 function savePianoSettings() {
   writeJson(STORAGE_KEYS.piano, {
     sound: state.piano.sound,
     volume: state.piano.volume,
+    transpose: state.piano.transpose,
     shape: state.piano.shape
   });
 }
@@ -6321,7 +6351,13 @@ function renderPiano() {
   el.pianoSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
   if (el.keyboardSound) el.keyboardSound.value = state.piano.sound;
   if (el.keyboardVolume) el.keyboardVolume.value = String(Math.round(state.piano.volume * 100));
-  if (el.keyboardSoundStatus) el.keyboardSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
+  if (el.keyboardTransposeValue) el.keyboardTransposeValue.value = state.piano.transpose > 0 ? `+${state.piano.transpose}` : String(state.piano.transpose);
+  if (el.keyboardTransposeDown) el.keyboardTransposeDown.disabled = state.piano.transpose <= -6;
+  if (el.keyboardTransposeUp) el.keyboardTransposeUp.disabled = state.piano.transpose >= 6;
+  if (el.keyboardSoundStatus) {
+    const soundingC = PIANO_NOTE_NAMES[(state.piano.transpose + 120) % 12];
+    el.keyboardSoundStatus.textContent = `${PIANO_SOUND_LABELS[state.piano.sound]} · Transpose ${state.piano.transpose > 0 ? `+${state.piano.transpose}` : state.piano.transpose} · C sounds ${soundingC}`;
+  }
   if (el.keyboardSustainHint) el.keyboardSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
   if (state.piano.masterGain && state.piano.audioContext) {
     state.piano.masterGain.gain.setTargetAtTime(state.piano.volume, state.piano.audioContext.currentTime, 0.015);
@@ -6916,6 +6952,10 @@ function renderPianoChordGuide() {
   const fourth = (root + 5) % 12;
   const fifth = (root + 7) % 12;
   const relativeMinor = (root + 9) % 12;
+  el.pianoChordPartners.innerHTML = `
+    <strong>Often works in ${PIANO_NOTE_NAMES[root]} major</strong>
+    <span>${PIANO_NOTE_NAMES[root]} · ${PIANO_NOTE_NAMES[fourth]} · ${PIANO_NOTE_NAMES[fifth]} · ${PIANO_NOTE_NAMES[relativeMinor]}m</span>
+  `;
   el.pianoChordFamily.innerHTML = `
     <span><strong>${PIANO_NOTE_NAMES[root]}</strong>I Â· Home</span>
     <span><strong>${PIANO_NOTE_NAMES[fourth]}</strong>IV Â· Away</span>
@@ -6926,13 +6966,68 @@ function renderPianoChordGuide() {
 
 function showKeyboardGuide(guide) {
   const showKeyChanges = guide === "key";
-  el.pianoChordGuide.hidden = showKeyChanges;
+  const showScales = guide === "scale";
+  const showChords = !showKeyChanges && !showScales;
+  el.pianoChordGuide.hidden = !showChords;
   el.keyChangeGuide.hidden = !showKeyChanges;
-  el.chordGuideTab.classList.toggle("selected", !showKeyChanges);
+  el.scaleGuide.hidden = !showScales;
+  el.chordGuideTab.classList.toggle("selected", showChords);
   el.keyChangeTab.classList.toggle("selected", showKeyChanges);
-  el.chordGuideTab.setAttribute("aria-selected", String(!showKeyChanges));
+  el.scaleGuideTab.classList.toggle("selected", showScales);
+  el.chordGuideTab.setAttribute("aria-selected", String(showChords));
   el.keyChangeTab.setAttribute("aria-selected", String(showKeyChanges));
+  el.scaleGuideTab.setAttribute("aria-selected", String(showScales));
+  if (showChords) renderPianoChordGuide();
   if (showKeyChanges) renderKeyChangeGuide();
+  if (showScales) renderPianoScaleGuide();
+  if (showKeyChanges) {
+    document.querySelectorAll(".keyboard-key").forEach((button) => {
+      button.classList.remove("chord-highlight", "game-preview");
+    });
+  }
+}
+
+function renderPianoScaleGuide() {
+  if (!el.scaleRoot || !el.scaleType || !el.scaleResult) return;
+  const root = Number(el.scaleRoot.value) || 0;
+  const scale = PIANO_SCALES[el.scaleType.value] || PIANO_SCALES.major;
+  const pitchClasses = new Set(scale.intervals.map((interval) => (root + interval) % 12));
+  document.querySelectorAll(".keyboard-key").forEach((button) => {
+    button.classList.toggle("chord-highlight", pitchClasses.has(Number(button.dataset.midi) % 12));
+    button.classList.remove("game-preview");
+  });
+  const notes = scale.intervals.map((interval) => PIANO_NOTE_NAMES[(root + interval) % 12]);
+  el.scaleResult.innerHTML = `
+    <strong>${PIANO_NOTE_NAMES[root]} ${scale.label}</strong>
+    <span>${notes.join(" · ")}</span>
+    <small>${scale.use}</small>
+  `;
+}
+
+async function playPianoScale() {
+  const context = await getPianoAudioContext();
+  if (!context) return;
+  const root = Number(el.scaleRoot.value) || 0;
+  const scale = PIANO_SCALES[el.scaleType.value] || PIANO_SCALES.major;
+  const midis = scale.intervals.map((interval) => 60 + root + interval);
+  document.querySelectorAll(".keyboard-key").forEach((button) => {
+    button.classList.remove("chord-highlight", "game-preview");
+  });
+  midis.forEach((midi, index) => {
+    window.setTimeout(() => {
+      const button = document.querySelector(`.keyboard-key[data-midi="${midi}"]`);
+      button?.classList.add("game-preview");
+      const frequency = 440 * (2 ** ((midi + state.piano.transpose - 69) / 12));
+      const voice = createPianoVoice(context, frequency, state.piano.sound);
+      window.setTimeout(() => {
+        releasePianoVoice(voice, true);
+        button?.classList.remove("game-preview");
+      }, 360);
+      if (index === midis.length - 1) {
+        window.setTimeout(renderPianoScaleGuide, 390);
+      }
+    }, index * 220);
+  });
 }
 
 function adjustKeyChange(delta) {
@@ -7022,7 +7117,7 @@ async function playPianoGuideChord() {
   if (!context) return;
   const voices = unique.map((button) => {
     button.classList.add("game-preview");
-    return createPianoVoice(context, pianoNoteFrequency(button.getAttribute("aria-label")), state.piano.sound);
+    return createPianoVoice(context, pianoNoteFrequency(button.getAttribute("aria-label")) * (2 ** (state.piano.transpose / 12)), state.piano.sound);
   });
   await waitPianoGame(950);
   unique.forEach((button) => button.classList.remove("game-preview"));
@@ -7203,6 +7298,17 @@ function handlePianoVolumeChange(event) {
   renderPiano();
 }
 
+function setKeyboardTranspose(value) {
+  state.piano.transpose = clamp(Math.round(Number(value) || 0), -6, 6);
+  stopAllPianoVoices();
+  savePianoSettings();
+  renderPiano();
+}
+
+function adjustKeyboardTranspose(delta) {
+  setKeyboardTranspose(state.piano.transpose + delta);
+}
+
 async function getPianoAudioContext() {
   const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextCtor) {
@@ -7266,7 +7372,8 @@ async function playPianoNoteForPointer(pointerId, button) {
       : "Twinkle complete — tap a star to play again";
   }
   const frequency = pianoNoteFrequency(note);
-  const voice = createPianoVoice(context, frequency, state.piano.sound);
+  const transpose = button.classList.contains("keyboard-key") ? state.piano.transpose : 0;
+  const voice = createPianoVoice(context, frequency * (2 ** (transpose / 12)), state.piano.sound);
   voice.button = button;
   state.piano.voices.set(pointerId, voice);
   button.classList.add("is-playing");

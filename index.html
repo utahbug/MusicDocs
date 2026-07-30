@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-73">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-74">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-71" defer></script>
+    <script src="script.js?v=musicdocs-72" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -528,6 +528,14 @@
                 <span>Volume</span>
                 <input id="keyboardVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Keyboard volume">
               </label>
+              <div class="keyboard-transpose-control">
+                <span>Transpose</span>
+                <div>
+                  <button id="keyboardTransposeDown" type="button" aria-label="Transpose down one semitone">&minus;</button>
+                  <button id="keyboardTransposeReset" type="button" aria-label="Reset transposition"><output id="keyboardTransposeValue">0</output></button>
+                  <button id="keyboardTransposeUp" type="button" aria-label="Transpose up one semitone">+</button>
+                </div>
+              </div>
             </div>
             <p id="keyboardSoundStatus" class="keyboard-sound-status" aria-live="polite">Grand piano</p>
             <div class="keyboard-scroll" aria-label="Scrollable piano keyboard">
@@ -536,6 +544,7 @@
             <div class="keyboard-guide-tabs" role="tablist" aria-label="Keyboard guides">
               <button id="chordGuideTab" class="selected" type="button" role="tab" aria-selected="true" aria-controls="pianoChordGuide">Chord Guide</button>
               <button id="keyChangeTab" type="button" role="tab" aria-selected="false" aria-controls="keyChangeGuide">Key Changes</button>
+              <button id="scaleGuideTab" type="button" role="tab" aria-selected="false" aria-controls="scaleGuide">Scales</button>
             </div>
             <section id="pianoChordGuide" class="keyboard-chord-guide" aria-labelledby="keyboardChordHeading">
               <div class="piano-chord-controls keyboard-chord-controls">
@@ -558,11 +567,18 @@
                 </label>
                 <button id="pianoChordPlayButton" class="primary-button" type="button">Play chord</button>
               </div>
-              <div id="pianoChordNotes" class="piano-chord-notes" aria-live="polite"></div>
+              <div class="chord-answer-grid">
+                <div id="pianoChordNotes" class="piano-chord-notes" aria-live="polite"></div>
+                <div id="pianoChordPartners" class="piano-chord-partners" aria-live="polite"></div>
+              </div>
               <details class="chord-tips">
                 <summary>Chord tips</summary>
                 <div class="chord-tips-content">
               <p id="pianoChordUse" class="piano-chord-use"></p>
+              <section class="chord-choice-tip">
+                <h4>Choosing chords</h4>
+                <p>The circle of fourths and the circle of fifths show the same chord relationships in opposite directions. Moving by a fifth often creates a strong pull back “home,” which is easy to hear in hymn endings. Moving by a fourth often feels like moving outward to another familiar chord and is common in pop, folk, and country. Both movements appear in many styles, so you do not need to memorize a circle—the recommendations above provide a practical starting point.</p>
+              </section>
               <div class="piano-genre-guide">
                 <p><strong>Blues:</strong> Dominant 7ths with I–IV–V.</p>
                 <p><strong>Country:</strong> Major I–IV–V, V7, minor vi, and suspended chords.</p>
@@ -590,6 +606,30 @@
               <p class="key-change-hint">One semitone equals one half step.</p>
               <div id="keyChangeResult" class="key-change-result" aria-live="polite"></div>
               <div id="keyChangeTable" class="key-change-table" aria-label="Keys from six semitones down through six semitones up"></div>
+            </section>
+            <section id="scaleGuide" class="keyboard-scale-guide" aria-labelledby="scaleGuideHeading" hidden>
+              <div class="scale-guide-controls">
+                <h3 id="scaleGuideHeading">Scales</h3>
+                <label><span>Root</span>
+                  <select id="scaleRoot" aria-label="Scale root">
+                    <option value="0">C</option><option value="1">C&#x266F; / D&#x266D;</option><option value="2">D</option><option value="3">D&#x266F; / E&#x266D;</option>
+                    <option value="4">E</option><option value="5">F</option><option value="6">F&#x266F; / G&#x266D;</option><option value="7">G</option>
+                    <option value="8">G&#x266F; / A&#x266D;</option><option value="9">A</option><option value="10">A&#x266F; / B&#x266D;</option><option value="11">B</option>
+                  </select>
+                </label>
+                <label><span>Type</span>
+                  <select id="scaleType" aria-label="Scale type">
+                    <option value="major">Major</option>
+                    <option value="naturalMinor">Natural minor</option>
+                    <option value="majorPentatonic">Major pentatonic</option>
+                    <option value="minorPentatonic">Minor pentatonic</option>
+                    <option value="blues">Blues</option>
+                    <option value="chromatic">Chromatic</option>
+                  </select>
+                </label>
+                <button id="scalePlayButton" class="primary-button" type="button">Play scale</button>
+              </div>
+              <div id="scaleResult" class="scale-result" aria-live="polite"></div>
             </section>
           </div>
         </section>
