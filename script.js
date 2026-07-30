@@ -6254,6 +6254,18 @@ const PIANO_WAVE_NOTES = [
   ["A3", "B3", "C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"],
   ["C4", "D sharp 4", "F4", "F sharp 4", "G4", "A sharp 4", "C5", "D sharp 5", "F5", "F sharp 5"]
 ];
+const PIANO_WAVE_OBJECTS = [
+  ["\u{1F3B9}", "Keyboard"], ["\u{1F3B8}", "Guitar"], ["\u{1F3BB}", "Violin"],
+  ["\u{1F3B7}", "Saxophone"], ["\u{1F3BA}", "Trumpet"], ["\u{1F941}", "Drum"],
+  ["\u{1F3A4}", "Microphone"], ["\u{1F3B5}", "Music note"], ["\u{1F3B6}", "Music notes"],
+  ["\u{1F3BC}", "Music"], ["\u{1FA87}", "Maracas"], ["\u{1FA98}", "Long drum"],
+  ["\u{1FA95}", "Banjo"], ["\u{1FA97}", "Accordion"], ["\u{1F3B9}", "Keyboard"],
+  ["\u{1F3B8}", "Guitar"], ["\u{1F3B7}", "Saxophone"], ["\u{1F941}", "Drum"],
+  ["\u{1F3B5}", "Music note"], ["\u{1F3B6}", "Music notes"], ["\u{1F436}", "Dog"],
+  ["\u{1F431}", "Cat"], ["\u{1F438}", "Frog"], ["\u{1F98A}", "Fox"],
+  ["\u{1F43C}", "Panda"], ["\u{1F435}", "Monkey"], ["\u{1F981}", "Lion"],
+  ["\u{1F98B}", "Butterfly"], ["\u{1F984}", "Unicorn"], ["\u{1F31F}", "Star"]
+];
 const TWINKLE_MELODY = [
   "C4", "C4", "G4", "G4", "A4", "A4", "G4",
   "F4", "F4", "E4", "E4", "D4", "D4", "C4",
@@ -6637,6 +6649,10 @@ function applyPianoShape() {
     if (shape === "twinkle") {
       button.textContent = "★";
       button.setAttribute("aria-label", "Play the next Twinkle note");
+    } else if (shape === "trail") {
+      const [symbol, label] = PIANO_WAVE_OBJECTS[buttonIndex % PIANO_WAVE_OBJECTS.length];
+      button.textContent = symbol;
+      button.setAttribute("aria-label", label);
     } else if (shape !== "garden") {
       button.textContent = button.dataset.object;
       button.setAttribute("aria-label", button.dataset.objectLabel);
