@@ -28,7 +28,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-45">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-46">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
     <script src="script.js?v=musicdocs-47" defer></script>
@@ -624,7 +624,13 @@
           <section class="pdf-settings-group">
             <h3>Next Song</h3>
             <label class="pdf-setting-toggle"><input id="pdfRepeatListEnabled" type="checkbox"> <span>Default to On when opening a list</span></label>
-            <p class="pdf-setting-help">When On, the next-page zone after a PDF's final page opens the next PDF. After the final PDF, the list starts over. Next Song is only available for songs accessed from a list.</p>
+            <div class="pdf-setting-help">
+              <p>Next Song allows continuous playing through the PDFs in a list.</p>
+              <ul>
+                <li>When On, tapping the next-page zone on a PDF's last page opens the next PDF. After the final PDF, the list starts again at the first.</li>
+                <li>When Off, tapping that zone keeps the current PDF open.</li>
+              </ul>
+            </div>
           </section>
           <section class="pdf-settings-group">
             <h3>Metronome</h3>
