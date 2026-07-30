@@ -444,7 +444,6 @@ function collectElements() {
   el.sidetrackAirRestart = document.getElementById("sidetrackAirRestart");
   el.pianoEffectPads = Array.from(document.querySelectorAll("[data-piano-effect]"));
   el.pianoSoundStatus = document.getElementById("pianoSoundStatus");
-  el.pianoSustainHint = document.getElementById("pianoSustainHint");
   el.keyboardSound = document.getElementById("keyboardSound");
   el.keyboardVolume = document.getElementById("keyboardVolume");
   el.keyboardTransposeDown = document.getElementById("keyboardTransposeDown");
@@ -452,7 +451,6 @@ function collectElements() {
   el.keyboardTransposeUp = document.getElementById("keyboardTransposeUp");
   el.keyboardTransposeValue = document.getElementById("keyboardTransposeValue");
   el.keyboardSoundStatus = document.getElementById("keyboardSoundStatus");
-  el.keyboardSustainHint = document.getElementById("keyboardSustainHint");
   el.realKeyboard = document.getElementById("realKeyboard");
   el.audioFileInput = document.getElementById("audioFileInput");
   el.audioLibraryTab = document.getElementById("audioLibraryTab");
@@ -6181,12 +6179,6 @@ function detectPitch(buffer, sampleRate) {
 const PIANO_SOUND_LABELS = {
   "grand-piano": "Grand piano",
   "electric-piano": "Electric piano",
-  "acoustic-guitar": "Acoustic guitar",
-  "classical-guitar": "Classical guitar",
-  marimba: "Marimba",
-  clarinet: "Clarinet",
-  flute: "Flute",
-  violin: "Violin",
   "church-bell": "Church bell",
   "toy-piano": "Toy piano",
   "water-drop": "Water drop",
@@ -6276,7 +6268,7 @@ const SIDETRACK_POP_PHRASES = [
   { notes: ["F5", "A5"], sound: "chirp" },
   { notes: ["E5", "G sharp 5", "B5"], sound: "bell" }
 ];
-const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "acoustic-guitar", "classical-guitar", "marimba", "church-bell", "water-drop", "spaceship"]);
+const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "church-bell", "water-drop", "spaceship"]);
 
 function setupKeyboardUi() {
   if (!el.realKeyboard || !el.keyboardSound || !el.pianoSound) return;
@@ -6348,7 +6340,6 @@ function renderPiano() {
     button.setAttribute("aria-pressed", String(selected));
   });
   el.pianoSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
-  el.pianoSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
   if (el.keyboardSound) el.keyboardSound.value = state.piano.sound;
   if (el.keyboardVolume) el.keyboardVolume.value = String(Math.round(state.piano.volume * 100));
   if (el.keyboardTransposeValue) el.keyboardTransposeValue.value = state.piano.transpose > 0 ? `+${state.piano.transpose}` : String(state.piano.transpose);
@@ -6358,7 +6349,6 @@ function renderPiano() {
     const soundingC = PIANO_NOTE_NAMES[(state.piano.transpose + 120) % 12];
     el.keyboardSoundStatus.textContent = `${PIANO_SOUND_LABELS[state.piano.sound]} · Transpose ${state.piano.transpose > 0 ? `+${state.piano.transpose}` : state.piano.transpose} · C sounds ${soundingC}`;
   }
-  if (el.keyboardSustainHint) el.keyboardSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
   if (state.piano.masterGain && state.piano.audioContext) {
     state.piano.masterGain.gain.setTargetAtTime(state.piano.volume, state.piano.audioContext.currentTime, 0.015);
   }

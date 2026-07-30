@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="styles.css?v=musicdocs-74">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-74" defer></script>
+    <script src="script.js?v=musicdocs-75" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -381,13 +381,7 @@
                 </div>
                 <div id="pianoMoreSounds" class="fun-sound-grid fun-sound-grid-more" role="group" aria-label="More sounds" hidden>
                   <button type="button" data-piano-sound="electric-piano"><span class="sound-picture tone-blue"><svg><use href="#sound-icon-electric"/></svg></span><span>Electric</span></button>
-                  <button type="button" data-piano-sound="acoustic-guitar"><span class="sound-picture tone-gold"><svg><use href="#sound-icon-guitar"/></svg></span><span>Acoustic guitar</span></button>
-                  <button type="button" data-piano-sound="classical-guitar"><span class="sound-picture tone-walnut"><svg><use href="#sound-icon-guitar"/></svg></span><span>Classical guitar</span></button>
-                  <button type="button" data-piano-sound="marimba"><span class="sound-picture tone-coral"><svg><use href="#sound-icon-marimba"/></svg></span><span>Marimba</span></button>
                   <button type="button" data-piano-sound="church-bell"><span class="sound-picture tone-violet"><svg><use href="#sound-icon-church-bell"/></svg></span><span>Church bell</span></button>
-                  <button type="button" data-piano-sound="clarinet"><span class="sound-picture tone-walnut"><svg><use href="#sound-icon-clarinet"/></svg></span><span>Clarinet</span></button>
-                  <button type="button" data-piano-sound="flute"><span class="sound-picture tone-silver"><svg><use href="#sound-icon-flute"/></svg></span><span>Flute</span></button>
-                  <button type="button" data-piano-sound="violin"><span class="sound-picture tone-walnut"><svg><use href="#sound-icon-violin"/></svg></span><span>Violin</span></button>
                   <button type="button" data-piano-sound="bubbles"><span class="sound-picture tone-aqua"><svg><use href="#sound-icon-bubbles"/></svg></span><span>Bubbles</span></button>
                   <button type="button" data-piano-sound="laser"><span class="sound-picture tone-coral"><svg><use href="#sound-icon-laser"/></svg></span><span>Laser</span></button>
                   <button type="button" data-piano-sound="spaceship"><span class="sound-picture tone-green"><svg><use href="#sound-icon-rocket"/></svg></span><span>Spaceship</span></button>
@@ -396,12 +390,6 @@
                   <optgroup label="Instruments">
                     <option value="grand-piano">Grand piano</option>
                     <option value="electric-piano">Electric piano</option>
-                    <option value="acoustic-guitar">Acoustic guitar</option>
-                    <option value="classical-guitar">Classical guitar</option>
-                    <option value="marimba">Marimba</option>
-                    <option value="clarinet">Clarinet</option>
-                    <option value="flute">Flute</option>
-                    <option value="violin">Violin</option>
                     <option value="church-bell">Church bell</option>
                     <option value="toy-piano">Toy piano</option>
                   </optgroup>
@@ -415,7 +403,6 @@
                     <option value="retro-game">Retro game tone</option>
                   </optgroup>
                 </select>
-                <span id="pianoSustainHint" class="piano-sustain-hint" hidden><span aria-hidden="true">↔</span> Hold notes for full sound</span>
               </div>
               <label class="piano-volume-control">
                 <span class="piano-volume-icon">
@@ -522,7 +509,6 @@
               <label>
                 <span>Sound</span>
                 <select id="keyboardSound" aria-label="Keyboard sound"></select>
-                <span id="keyboardSustainHint" class="piano-sustain-hint" hidden><span aria-hidden="true">↔</span> Hold notes for full sound</span>
               </label>
               <label class="piano-volume-control">
                 <span>Volume</span>
