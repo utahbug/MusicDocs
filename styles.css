@@ -95,14 +95,14 @@ body.pdf-open .nav-overflow-wrap .overflow-menu { bottom: calc(58px + env(safe-a
 .nav-help-button { --tab-accent: #245A78; min-width: 40px; padding-inline: 7px; }
 .info-icon-mark { align-items: center; border: 2px solid currentcolor; border-radius: 999px; color: var(--accent-strong); display: inline-flex; font-family: Georgia, serif; font-size: 0.88rem; font-style: italic; font-weight: 800; height: 21px; justify-content: center; line-height: 1; width: 21px; }
 .nav-help-button:hover .info-icon-mark, .nav-help-button:focus-visible .info-icon-mark { color: var(--accent-strong); }
-.tuning-fork-icon { filter: drop-shadow(0.8px 1px 0.9px rgba(28, 47, 61, 0.38)); height: 24px; overflow: visible; stroke-linecap: round; stroke-linejoin: round; transform: rotate(82deg); transform-origin: 50% 50%; width: 24px; }
-.tuning-fork-shadow { fill: #344957; opacity: 0.46; transform: translate(0.65px, 0.75px); }
-.tuning-fork-main { fill: url("#tuningForkGradient"); stroke: #526777; stroke-width: 0.35; }
-.tuning-fork-highlight { fill: none; opacity: 0.72; stroke: rgba(255, 255, 255, 0.96); stroke-width: 0.65; transform: translate(-0.25px, -0.15px); }
-.header-tools-button.active .tuning-fork-icon { filter: none; }
-.header-tools-button.active .tuning-fork-shadow { fill: #183E52; opacity: 0.22; }
-.header-tools-button.active .tuning-fork-main { fill: #FFFFFF; stroke: rgba(255, 255, 255, 0.8); }
-.header-tools-button.active .tuning-fork-highlight { opacity: 0.48; }
+.music-notes-icon { filter: drop-shadow(0.8px 1px 1px rgba(28, 47, 61, 0.38)); height: 27px; overflow: visible; width: 28px; }
+.music-notes-shadow { fill: #294657; opacity: 0.42; transform: translate(0.7px, 0.8px); }
+.music-notes-main { fill: url("#musicNotesGradient"); stroke: #607886; stroke-width: 0.35; }
+.music-notes-highlight { fill: rgba(255,255,255,0.72); }
+.header-tools-button.active .music-notes-icon { filter: none; }
+.header-tools-button.active .music-notes-shadow { fill: #183E52; opacity: 0.2; }
+.header-tools-button.active .music-notes-main { fill: #FFFFFF; stroke: rgba(255, 255, 255, 0.8); }
+.header-tools-button.active .music-notes-highlight { fill: rgba(46,103,143,0.28); }
 
 .star-icon-mark { display: inline-block; font-size: 1.1rem; line-height: 1; }
 
