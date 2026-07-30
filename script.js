@@ -6571,6 +6571,25 @@ function pianoNoteMidi(label) {
   return (Number(match[2]) + 1) * 12 + noteIndex + (/sharp/i.test(label) ? 1 : 0);
 }
 
+function shuffledGardenObjects(count) {
+  const result = [];
+  let previousLabel = "";
+  while (result.length < count) {
+    const batch = PIANO_GARDEN_OBJECTS
+      .map((item) => item)
+      .sort(() => Math.random() - 0.5);
+    if (batch.length > 1 && batch[0][1] === previousLabel) {
+      const swapIndex = batch.findIndex((item) => item[1] !== previousLabel);
+      [batch[0], batch[swapIndex]] = [batch[swapIndex], batch[0]];
+    }
+    batch.slice(0, count - result.length).forEach((item) => {
+      result.push(item);
+      previousLabel = item[1];
+    });
+  }
+  return result;
+}
+
 function applyPianoShape() {
   if (!el.pianoNoteArc) return;
   const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "trail";
@@ -6587,11 +6606,7 @@ function applyPianoShape() {
     if (shape === "twinkle") {
       button.textContent = "★";
       button.setAttribute("aria-label", "Play the next Twinkle note");
-    } else if (shape === "garden") {
-      const [symbol, label] = PIANO_GARDEN_OBJECTS[buttonIndex % PIANO_GARDEN_OBJECTS.length];
-      button.textContent = symbol;
-      button.setAttribute("aria-label", label);
-    } else {
+    } else if (shape !== "garden") {
       button.textContent = button.dataset.object;
       button.setAttribute("aria-label", button.dataset.objectLabel);
     }
@@ -6612,7 +6627,13 @@ function applyPianoShape() {
       return pianoNoteMidi(a.dataset.note) - pianoNoteMidi(b.dataset.note);
     });
   const count = buttons.length;
+  const gardenObjects = shape === "garden" ? shuffledGardenObjects(count) : [];
   buttons.forEach((button, index) => {
+    if (shape === "garden") {
+      const [symbol, label] = gardenObjects[index];
+      button.textContent = symbol;
+      button.setAttribute("aria-label", label);
+    }
     const point = pianoShapePoint(shape, index, count);
     button.style.left = `${point.x}%`;
     button.style.bottom = `${point.y}px`;
@@ -6946,13 +6967,7 @@ function renderKeySignatureStaff(keyIndex) {
   ).join("");
   return `
     <svg class="key-signature-staff" viewBox="0 0 230 76" role="img" aria-label="${KEY_CHANGE_NAMES[keyIndex]} major key signature: ${signature.label}">
-      <g class="staff-lines">
-        <line x1="12" y1="20" x2="218" y2="20" stroke="currentColor" stroke-width="1.5"></line>
-        <line x1="12" y1="30" x2="218" y2="30" stroke="currentColor" stroke-width="1.5"></line>
-        <line x1="12" y1="40" x2="218" y2="40" stroke="currentColor" stroke-width="1.5"></line>
-        <line x1="12" y1="50" x2="218" y2="50" stroke="currentColor" stroke-width="1.5"></line>
-        <line x1="12" y1="60" x2="218" y2="60" stroke="currentColor" stroke-width="1.5"></line>
-      </g>
+      <path class="staff-line-path" d="M12 20H218 M12 30H218 M12 40H218 M12 50H218 M12 60H218"></path>
       <text class="staff-clef" x="18" y="61">𝄞</text>
       ${marks}
     </svg>

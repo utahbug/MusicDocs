@@ -1324,6 +1324,12 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-chord-notes { align-items: center; background: linear-gradient(105deg, color-mix(in srgb, #237C7A 10%, var(--surface)), color-mix(in srgb, #3667A8 9%, var(--surface))); border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line)); border-radius: 10px; display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0 0 10px; padding: 10px 12px; }
 .piano-chord-notes strong { color: var(--accent-strong); }
 .piano-chord-notes span { color: var(--text); font-size: 1.02rem; font-weight: 400; letter-spacing: 0.025em; }
+.chord-tips { border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); border-radius: 10px; margin: 0 0 10px; overflow: hidden; }
+.chord-tips summary { align-items: center; background: color-mix(in srgb, var(--accent-soft) 65%, var(--surface)); color: var(--accent-strong); cursor: pointer; display: flex; font-weight: 750; gap: 8px; list-style: none; min-height: 42px; padding: 8px 12px; }
+.chord-tips summary::-webkit-details-marker { display: none; }
+.chord-tips summary::before { content: "›"; font-size: 1.35rem; line-height: 1; transition: transform 140ms ease; }
+.chord-tips[open] summary::before { transform: rotate(90deg); }
+.chord-tips-content { padding: 0 10px 2px; }
 .piano-chord-family { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; gap: 6px; grid-template-columns: repeat(4, 1fr); margin-bottom: 10px; padding: 9px; }
 .piano-chord-family span { color: var(--muted); font-size: 0.76rem; text-align: center; }
 .piano-chord-family strong { color: var(--text); display: block; font-size: 1rem; }
@@ -1492,7 +1498,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .key-change-summary > span { color: var(--muted); font-size: 0.86rem; }
 .key-change-summary .key-change-memory { color: var(--accent-strong); font-weight: 700; margin-top: 5px; }
 .key-signature-staff { background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid color-mix(in srgb, var(--line) 75%, transparent); border-radius: 9px; color: var(--text); height: 94px; width: 100%; }
-.key-signature-staff .staff-lines line { stroke: var(--text); stroke-width: 1.2; }
+.key-signature-staff .staff-line-path { fill: none; stroke: color-mix(in srgb, var(--text) 72%, var(--surface)); stroke-width: 1.55; vector-effect: non-scaling-stroke; }
 .key-signature-staff text { fill: var(--text); }
 .key-signature-staff .staff-clef { font-family: "Noto Music", "Segoe UI Symbol", serif; font-size: 50px; }
 .key-signature-staff .key-signature-mark { font-family: "Noto Music", "Segoe UI Symbol", serif; font-size: 25px; font-weight: 700; }

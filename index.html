@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-71">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-72">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-69" defer></script>
+    <script src="script.js?v=musicdocs-71" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -559,6 +559,9 @@
                 <button id="pianoChordPlayButton" class="primary-button" type="button">Play chord</button>
               </div>
               <div id="pianoChordNotes" class="piano-chord-notes" aria-live="polite"></div>
+              <details class="chord-tips">
+                <summary>Chord tips</summary>
+                <div class="chord-tips-content">
               <p id="pianoChordUse" class="piano-chord-use"></p>
               <div class="piano-genre-guide">
                 <p><strong>Blues:</strong> Dominant 7ths with I–IV–V.</p>
@@ -566,6 +569,8 @@
                 <p><strong>Jazz:</strong> Major 7ths, minor 7ths, dominant 7ths, diminished passing chords, and ii–V–I.</p>
               </div>
               <div id="pianoChordFamily" class="piano-chord-family"></div>
+                </div>
+              </details>
             </section>
             <section id="keyChangeGuide" class="keyboard-key-change" aria-labelledby="keyChangeHeading" hidden>
               <div class="key-change-controls">
