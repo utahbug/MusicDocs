@@ -6196,19 +6196,23 @@ const PIANO_CHORDS = {
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 const KEY_CHANGE_NAMES = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 const KEY_SIGNATURES = [
-  "No sharps or flats",
-  "5 flats: B♭, E♭, A♭, D♭, G♭",
-  "2 sharps: F♯, C♯",
-  "3 flats: B♭, E♭, A♭",
-  "4 sharps: F♯, C♯, G♯, D♯",
-  "1 flat: B♭",
-  "6 flats: B♭, E♭, A♭, D♭, G♭, C♭",
-  "1 sharp: F♯",
-  "4 flats: B♭, E♭, A♭, D♭",
-  "3 sharps: F♯, C♯, G♯",
-  "2 flats: B♭, E♭",
-  "5 sharps: F♯, C♯, G♯, D♯, A♯"
+  { count: 0, type: "", label: "No sharps or flats" },
+  { count: 5, type: "flat", label: "5 flats: B♭, E♭, A♭, D♭, G♭" },
+  { count: 2, type: "sharp", label: "2 sharps: F♯, C♯" },
+  { count: 3, type: "flat", label: "3 flats: B♭, E♭, A♭" },
+  { count: 4, type: "sharp", label: "4 sharps: F♯, C♯, G♯, D♯" },
+  { count: 1, type: "flat", label: "1 flat: B♭" },
+  { count: 6, type: "flat", label: "6 flats: B♭, E♭, A♭, D♭, G♭, C♭" },
+  { count: 1, type: "sharp", label: "1 sharp: F♯" },
+  { count: 4, type: "flat", label: "4 flats: B♭, E♭, A♭, D♭" },
+  { count: 3, type: "sharp", label: "3 sharps: F♯, C♯, G♯" },
+  { count: 2, type: "flat", label: "2 flats: B♭, E♭" },
+  { count: 5, type: "sharp", label: "5 sharps: F♯, C♯, G♯, D♯, A♯" }
 ];
+const KEY_SIGNATURE_POSITIONS = {
+  sharp: [20, 35, 15, 30, 45, 25, 40],
+  flat: [40, 25, 45, 30, 50, 35, 55]
+};
 const keyboardKeyChange = { steps: 0 };
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
 const PIANO_SHAPES = new Set(["trail", "garden", "twinkle", "circle", "zigzag", "rainbow"]);
@@ -6812,6 +6816,34 @@ function formatKeyChangeSteps(steps) {
   return "0";
 }
 
+function keySignatureMemoryTrick(keyIndex) {
+  const signature = KEY_SIGNATURES[keyIndex];
+  if (!signature.count) return "Remember: C major has no sharps or flats.";
+  if (signature.type === "sharp") return "Remember: the key is one half step above the last sharp.";
+  if (signature.count === 1) return "Remember: F major is the one-flat exception; it has B♭.";
+  return "Remember: with flats, the second-to-last flat names the key.";
+}
+
+function renderKeySignatureStaff(keyIndex) {
+  const signature = KEY_SIGNATURES[keyIndex];
+  const positions = KEY_SIGNATURE_POSITIONS[signature.type] || [];
+  const symbol = signature.type === "sharp" ? "♯" : "♭";
+  const marks = positions.slice(0, signature.count).map((y, index) =>
+    `<text class="key-signature-mark" x="${73 + index * 19}" y="${y + 7}">${symbol}</text>`
+  ).join("");
+  return `
+    <svg class="key-signature-staff" viewBox="0 0 230 76" role="img" aria-label="${KEY_CHANGE_NAMES[keyIndex]} major key signature: ${signature.label}">
+      <g class="staff-lines">
+        <line x1="12" y1="20" x2="218" y2="20"></line><line x1="12" y1="30" x2="218" y2="30"></line>
+        <line x1="12" y1="40" x2="218" y2="40"></line><line x1="12" y1="50" x2="218" y2="50"></line>
+        <line x1="12" y1="60" x2="218" y2="60"></line>
+      </g>
+      <text class="staff-clef" x="18" y="61">𝄞</text>
+      ${marks}
+    </svg>
+  `;
+}
+
 function renderKeyChangeGuide() {
   if (!el.keyChangeRoot || !el.keyChangeResult || !el.keyChangeTable) return;
   const root = Number(el.keyChangeRoot.value) || 0;
@@ -6824,9 +6856,13 @@ function renderKeyChangeGuide() {
     ? "The music remains in its original key."
     : `Move every note ${Math.abs(steps)} semitone${Math.abs(steps) === 1 ? "" : "s"} ${steps > 0 ? "higher" : "lower"}.`;
   el.keyChangeResult.innerHTML = `
-    <strong>${KEY_CHANGE_NAMES[root]} <span aria-hidden="true">→</span> ${KEY_CHANGE_NAMES[result]}</strong>
-    <span>${direction}</span>
-    <span>${KEY_SIGNATURES[result]}</span>
+    <div class="key-change-summary">
+      <strong>${KEY_CHANGE_NAMES[root]} <span aria-hidden="true">→</span> ${KEY_CHANGE_NAMES[result]}</strong>
+      <span>${direction}</span>
+      <span>${KEY_SIGNATURES[result].label}</span>
+      <span class="key-change-memory">${keySignatureMemoryTrick(result)}</span>
+    </div>
+    ${renderKeySignatureStaff(result)}
   `;
   el.keyChangeTable.innerHTML = Array.from({ length: 13 }, (_, index) => index - 6).map((rowSteps) => {
     const rowResult = keyChangePitch(root, rowSteps);
@@ -6835,7 +6871,7 @@ function renderKeyChangeGuide() {
       <button type="button" data-key-change-step="${rowSteps}" class="${active ? "selected" : ""}" aria-pressed="${active}">
         <span>${formatKeyChangeSteps(rowSteps)}</span>
         <strong>${KEY_CHANGE_NAMES[rowResult]}</strong>
-        <span>${KEY_SIGNATURES[rowResult]}</span>
+        <span>${KEY_SIGNATURES[rowResult].label}</span>
       </button>
     `;
   }).join("");
