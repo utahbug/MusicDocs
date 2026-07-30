@@ -365,7 +365,7 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 .lists-follow-note p { margin: 0 0 6px; }
 .lists-follow-note ul { margin: 0; padding-left: 20px; }
 .lists-follow-note li + li { margin-top: 4px; }
-.lists-follow-note .follow-note-item { list-style: none; position: relative; }
+.lists-follow-note .follow-note-item { list-style: none; margin-left: 9px; position: relative; }
 .lists-follow-note .follow-note-item::before { background: linear-gradient(135deg, #FFE48D 0 76%, #E8B84F 77% 100%); border: 1px solid #D6A43B; border-radius: 2px 2px 4px 2px; box-shadow: -2px 2px 0 color-mix(in srgb, #D99A2B 65%, transparent); content: ""; height: 14px; left: -20px; position: absolute; top: 0.22em; transform: rotate(-4deg); width: 15px; }
 .lists-follow-note .follow-note-item::after { background: #E85A43; border-radius: 999px; box-shadow: 0 1px 2px rgba(80, 42, 24, 0.28); content: ""; height: 5px; left: -10px; position: absolute; top: 0.05em; width: 5px; }
 
