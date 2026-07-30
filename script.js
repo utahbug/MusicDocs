@@ -6348,7 +6348,10 @@ function initializeSidetrackActivities() {
 function buildSidetrackPuzzle() {
   if (!el.sidetrackPuzzle) return;
   el.sidetrackPuzzle.innerHTML = `
-    <p class="sidetrack-puzzle-instruction">Drag the keys into keyboard order</p>
+    <div class="sidetrack-puzzle-heading">
+      <p class="sidetrack-puzzle-instruction">Drag the keys into keyboard order</p>
+      <button class="sidetrack-puzzle-reset" type="button" aria-label="Reset piano puzzle" title="Start over">↻</button>
+    </div>
     <div class="sidetrack-puzzle-board">${SIDETRACK_NOTES.filter(([, label]) => !label.includes("#")).map(([, label], index) => `<span class="sidetrack-puzzle-slot" data-puzzle-index="${index}"></span>`).join("")}</div>
     <div class="sidetrack-puzzle-pieces"></div>
     <p class="sidetrack-puzzle-status" aria-live="polite">Build the keyboard</p>`;
@@ -6368,6 +6371,16 @@ function buildSidetrackPuzzle() {
     piece.addEventListener("pointercancel", cancelSidetrackPuzzleDrag);
     tray.appendChild(piece);
   });
+  el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-reset").addEventListener("click", resetSidetrackPuzzle);
+}
+
+function resetSidetrackPuzzle() {
+  if (sidetrackPuzzleDrag?.piece) {
+    sidetrackPuzzleDrag.piece.classList.remove("dragging");
+    sidetrackPuzzleDrag.piece.style.transform = "";
+  }
+  sidetrackPuzzleDrag = null;
+  buildSidetrackPuzzle();
 }
 
 function startSidetrackPuzzleDrag(event) {
@@ -6394,7 +6407,9 @@ function endSidetrackPuzzleDrag(event) {
   piece.style.visibility = "";
   piece.classList.remove("dragging");
   piece.style.transform = "";
-  if (slot && slot.dataset.puzzleIndex === piece.dataset.puzzleIndex) {
+  const cCanUseEitherEnd = piece.textContent === "C" && ["0", "7"].includes(slot?.dataset.puzzleIndex);
+  if (slot && !slot.classList.contains("filled")
+      && (slot.dataset.puzzleIndex === piece.dataset.puzzleIndex || cCanUseEitherEnd)) {
     slot.appendChild(piece);
     slot.classList.add("filled");
     piece.disabled = true;
