@@ -1493,6 +1493,10 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .sidetrack-puzzle-piece { background: linear-gradient(#FFFFFF, #DFEAF2); border: 1px solid #7890A1; border-radius: 5px; color: #173F72; font-size: 1rem; font-weight: 850; height: 92px; position: relative; touch-action: none; transition: box-shadow 100ms ease; width: clamp(32px, 10vw, 54px); z-index: 6; }
 .sidetrack-puzzle-piece.dragging { box-shadow: 0 10px 22px rgba(23,63,114,0.3); z-index: 12; }
 .sidetrack-puzzle-slot .sidetrack-puzzle-piece { background: transparent; border: 0; height: 100%; width: 100%; z-index: 2; }
+.sidetrack-puzzle-slot .key-order-playable { cursor: pointer; transition: background 100ms ease, box-shadow 100ms ease, transform 80ms ease; }
+.sidetrack-puzzle-slot .key-order-playable:hover,
+.sidetrack-puzzle-slot .key-order-playable:focus-visible { background: color-mix(in srgb, #78BCEF 16%, transparent); box-shadow: inset 0 -6px 0 color-mix(in srgb, #3667A8 18%, transparent); }
+.sidetrack-puzzle-slot .key-order-playable.is-playing { background: linear-gradient(#DDF5EF, #7CD0BA); box-shadow: inset 0 -7px 0 rgba(35,124,122,0.2); transform: translateY(2px); }
 .sidetrack-air { background: linear-gradient(#BFE8FF 0%, #E9F8FF 72%, #F5FBFF 100%); display: grid; grid-template-rows: auto 1fr auto; padding: 12px; }
 .sidetrack-air-progress { align-items: center; display: flex; gap: 4px; justify-content: center; min-height: 20px; padding: 1px 5px 5px; }
 .sidetrack-air-progress span { background: rgba(255,255,255,0.62); border: 1.5px solid #4A91C5; border-radius: 50%; height: 10px; transition: background 150ms ease, transform 150ms ease; width: 10px; }

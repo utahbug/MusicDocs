@@ -379,6 +379,7 @@ function collectElements() {
   el.listContent = document.getElementById("listContent");
   el.listItemAddButton = document.getElementById("listItemAddButton");
   el.listPickerPanel = document.getElementById("listPickerPanel");
+  el.listsFollowNote = document.getElementById("listsFollowNote");
 
   el.cardsContent = document.getElementById("cardsContent");
   el.cardTopAddButton = document.getElementById("cardTopAddButton");
@@ -3707,6 +3708,7 @@ function renderLists() {
     el.listPickerPanel.classList.add("hidden");
     el.listPickerPanel.innerHTML = "";
     el.listContent.innerHTML = `<div class="empty-state"><p>No lists yet.</p></div>`;
+    el.listsFollowNote.classList.add("hidden");
     state.expandedListIds = [];
     return;
   }
@@ -3722,6 +3724,11 @@ function renderLists() {
   }
   el.listSelect.value = active.id;
   renderListTabs(active);
+  const expandedListHasPdf = state.lists.some((list) =>
+    state.expandedListIds.includes(list.id)
+      && getResolvedListEntries(list).some((entry) => entry.item.type === "pdf")
+  );
+  el.listsFollowNote.classList.toggle("hidden", !expandedListHasPdf);
 
   el.listReorderButton.classList.add("hidden");
   el.listEditButton.innerHTML = state.listEditMode ? "&#10003;" : "&#9998;";
@@ -6682,8 +6689,26 @@ function endSidetrackPuzzleDrag(event) {
     const remaining = el.sidetrackPuzzle.querySelectorAll(".sidetrack-puzzle-pieces .sidetrack-puzzle-piece").length;
     const status = el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-status");
     status.textContent = remaining ? `${remaining} key${remaining === 1 ? "" : "s"} left` : "Keyboard complete!";
+    if (!remaining) enableCompletedKeyOrder();
   }
   sidetrackPuzzleDrag = null;
+}
+
+function enableCompletedKeyOrder() {
+  el.sidetrackPuzzle.querySelectorAll(".sidetrack-puzzle-slot .sidetrack-puzzle-piece").forEach((piece) => {
+    piece.disabled = false;
+    piece.classList.add("keyboard-key", "key-order-playable");
+    piece.removeEventListener("pointerdown", startSidetrackPuzzleDrag);
+    piece.removeEventListener("pointermove", moveSidetrackPuzzleDrag);
+    piece.removeEventListener("pointerup", endSidetrackPuzzleDrag);
+    piece.removeEventListener("pointercancel", cancelSidetrackPuzzleDrag);
+    piece.addEventListener("pointerdown", handlePianoPointerDown);
+    piece.addEventListener("pointermove", handlePianoPointerMove);
+    piece.addEventListener("pointerup", handlePianoPointerUp);
+    piece.addEventListener("pointercancel", handlePianoPointerUp);
+    piece.addEventListener("lostpointercapture", handlePianoPointerUp);
+  });
+  el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-status").textContent = "Keyboard complete — play it!";
 }
 
 function cancelSidetrackPuzzleDrag(event) {
