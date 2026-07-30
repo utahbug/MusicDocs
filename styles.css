@@ -1250,19 +1250,15 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .fun-activity-grid button:hover, .fun-activity-grid button:focus-visible { border-color: var(--accent); box-shadow: 0 3px 10px rgba(29, 71, 103, 0.17); transform: translateY(-1px); }
 .fun-activity-grid button.selected { background: linear-gradient(145deg, color-mix(in srgb, #237C7A 15%, var(--surface)), color-mix(in srgb, #3667A8 18%, var(--surface))); border-color: #2F7892; box-shadow: 0 0 0 3px color-mix(in srgb, #2F9E91 25%, transparent), 0 4px 12px rgba(29, 71, 103, 0.2); }
 .activity-picture { background: linear-gradient(145deg, #DDF5FF, #87CDEB); border: 1px solid rgba(47, 126, 151, 0.42); border-radius: 12px; display: block; height: 45px; overflow: hidden; position: relative; width: 48px; }
-.activity-trail-picture i, .activity-sound-picture i { background: #2E658C; border-radius: 50%; height: 8px; position: absolute; width: 8px; }
+.activity-trail-picture i { background: #2E658C; border-radius: 50%; height: 8px; position: absolute; width: 8px; }
 .activity-trail-picture i:nth-child(1) { left: 4px; top: 25px; }
 .activity-trail-picture i:nth-child(2) { left: 12px; top: 15px; }
 .activity-trail-picture i:nth-child(3) { left: 21px; top: 9px; }
 .activity-trail-picture i:nth-child(4) { left: 30px; top: 16px; }
 .activity-trail-picture i:nth-child(5) { left: 38px; top: 28px; }
-.activity-sound-picture { background: linear-gradient(145deg, #E2F5D8, #9DD6B3); }
-.activity-sound-picture i:nth-child(1) { left: 6px; top: 7px; }
-.activity-sound-picture i:nth-child(2) { left: 20px; top: 6px; }
-.activity-sound-picture i:nth-child(3) { left: 34px; top: 9px; }
-.activity-sound-picture i:nth-child(4) { left: 8px; top: 29px; }
-.activity-sound-picture i:nth-child(5) { left: 21px; top: 25px; }
-.activity-sound-picture i:nth-child(6) { left: 35px; top: 31px; }
+.activity-sound-picture { align-items: center; background: linear-gradient(145deg, #E2F5D8, #9DD6B3); display: flex; justify-content: center; }
+.activity-sound-picture .broken-note-mark { color: #285D70; font-family: Georgia, "Segoe UI Symbol", serif; font-size: 2.35rem; font-weight: 800; line-height: 1; transform: rotate(-9deg) translate(-2px, 1px); }
+.activity-sound-picture i { background: #E06B4F; clip-path: polygon(0 38%, 37% 38%, 48% 0, 61% 100%, 72% 60%, 100% 60%, 100% 72%, 77% 72%, 60% 100%, 47% 30%, 41% 52%, 0 52%); height: 22px; position: absolute; transform: rotate(-18deg); width: 30px; }
 .activity-star-picture { align-items: center; background: linear-gradient(145deg, #FFF7B8, #F1B84B); color: #765000; display: flex; font-size: 2rem; justify-content: center; text-shadow: 0 1px 0 #FFFFFF; }
 .activity-circle-picture, .activity-zigzag-picture { background: linear-gradient(145deg, #E8E2FF, #A89BE8); }
 .activity-circle-picture i, .activity-zigzag-picture i { background: #4B3E8C; border-radius: 50%; height: 7px; position: absolute; width: 7px; }
