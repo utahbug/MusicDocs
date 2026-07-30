@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="styles.css?v=musicdocs-45">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-46" defer></script>
+    <script src="script.js?v=musicdocs-47" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -182,7 +182,7 @@
           </div>
           <div id="cardsContent" class="cards-grid"></div>
           <button id="cardAddButton" class="top-add-button label-add-button card-label-add-button bottom-card-add-button" type="button" aria-label="Add card" title="Add card">Add Card +</button>
-          <div class="cards-purpose-note">Cards let you add your own easy-to-read content, such as lyrics, notes, pasted text, or an image.</div>
+          <div class="cards-purpose-note">Cards let you add your own easy-to-read content, such as lyrics, notes, pasted text, or an image. Cards can be added to favorites and lists.</div>
         </section>
 
         <section id="linksSection" class="view" data-view="links" aria-label="Links">
@@ -746,6 +746,16 @@
           </div>
 
           <div class="form-grid">
+            <label id="importCardSubtypeRow" class="hidden">
+              <span>Card subtype</span>
+              <select id="importCardSubtype">
+                <option value="">Choose a subtype</option>
+              </select>
+            </label>
+            <label id="importCardSubtypeCustomRow" class="hidden">
+              <span>Custom subtype</span>
+              <input id="importCardSubtypeCustom" type="text" maxlength="24" autocomplete="off">
+            </label>
             <label id="importCategoryRow">
               <span>Category / Genre</span>
               <input id="importCategory" type="text" autocomplete="off" list="categorySuggestions">
