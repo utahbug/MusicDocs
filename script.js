@@ -432,6 +432,7 @@ function collectElements() {
   el.pianoMoreSounds = document.getElementById("pianoMoreSounds");
   el.pianoVolume = document.getElementById("pianoVolume");
   el.pianoShape = document.getElementById("pianoShape");
+  el.pianoShapeButtons = Array.from(document.querySelectorAll("[data-piano-shape]"));
   el.pianoNoteArc = document.querySelector(".piano-note-arc");
   el.pianoEffectPads = Array.from(document.querySelectorAll("[data-piano-effect]"));
   el.pianoSoundStatus = document.getElementById("pianoSoundStatus");
@@ -693,6 +694,10 @@ function wireEvents() {
   el.pianoMoreSoundsButton.addEventListener("click", () => setPianoMoreSounds(el.pianoMoreSounds.hidden));
   el.pianoVolume.addEventListener("input", handlePianoVolumeChange);
   el.pianoShape.addEventListener("change", handlePianoShapeChange);
+  el.pianoShapeButtons.forEach((button) => button.addEventListener("click", () => {
+    el.pianoShape.value = button.dataset.pianoShape;
+    handlePianoShapeChange();
+  }));
   el.pianoEffectPads.forEach((button) => button.addEventListener("click", () => playPianoEffect(button.dataset.pianoEffect, button)));
   el.keyboardSound.addEventListener("change", handlePianoSoundChange);
   el.keyboardVolume.addEventListener("input", handlePianoVolumeChange);
@@ -6167,7 +6172,7 @@ const PIANO_CHORDS = {
 };
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
-const PIANO_SHAPES = new Set(["trail", "garden", "twinkle"]);
+const PIANO_SHAPES = new Set(["trail", "garden", "twinkle", "circle", "zigzag", "rainbow"]);
 const TWINKLE_MELODY = [
   "C4", "C4", "G4", "G4", "A4", "A4", "G4",
   "F4", "F4", "E4", "E4", "D4", "D4", "C4",
@@ -6239,6 +6244,11 @@ function renderPiano() {
   el.pianoMoreSoundsButton.classList.toggle("has-selection", !PIANO_FEATURED_SOUNDS.has(state.piano.sound));
   el.pianoVolume.value = String(Math.round(state.piano.volume * 100));
   el.pianoShape.value = state.piano.shape;
+  el.pianoShapeButtons.forEach((button) => {
+    const selected = button.dataset.pianoShape === state.piano.shape;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
   el.pianoSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
   el.pianoSustainHint.hidden = !["clarinet", "flute", "violin"].includes(state.piano.sound);
   if (el.keyboardSound) el.keyboardSound.value = state.piano.sound;
@@ -6255,7 +6265,7 @@ function handlePianoShapeChange() {
   state.piano.shape = PIANO_SHAPES.has(el.pianoShape.value) ? el.pianoShape.value : "trail";
   state.piano.twinkleIndex = 0;
   savePianoSettings();
-  applyPianoShape();
+  renderPiano();
 }
 
 function setPianoMoreSounds(expanded) {
@@ -6291,9 +6301,10 @@ function applyPianoShape() {
   el.pianoNoteArc.dataset.shape = shape;
   const allButtons = Array.from(el.pianoNoteArc.querySelectorAll(".piano-note"));
   allButtons.forEach((button, buttonIndex) => {
+    const shapeLimit = shape === "twinkle" ? 10 : shape === "rainbow" ? 13 : shape === "circle" ? 16 : Infinity;
     button.style.removeProperty("left");
     button.style.removeProperty("bottom");
-    button.classList.toggle("piano-shape-hidden", shape === "twinkle" && buttonIndex >= 10);
+    button.classList.toggle("piano-shape-hidden", buttonIndex >= shapeLimit);
     button.textContent = shape === "twinkle" ? "★" : button.dataset.object;
   });
 
@@ -6317,24 +6328,31 @@ function applyPianoShape() {
 function pianoShapePoint(shape, index, count) {
   const progress = count > 1 ? index / (count - 1) : 0.5;
   if (shape === "trail") {
-    const width = el.pianoNoteArc?.clientWidth || 680;
     const height = el.pianoNoteArc?.clientHeight || 360;
-    const columns = width < 430 ? 8 : width < 620 ? 10 : 15;
-    const rows = Math.ceil(count / columns);
-    const row = Math.floor(index / columns);
-    const column = index % columns;
-    const rowCount = Math.min(columns, count - row * columns);
-    const visualColumn = row % 2 ? rowCount - 1 - column : column;
-    const horizontalMargin = width < 430 ? 8 : 6;
-    const rowProgress = rowCount > 1 ? visualColumn / (rowCount - 1) : 0.5;
-    const minY = 28;
-    const maxY = Math.max(minY, height - 66);
-    const rowY = rows > 1 ? maxY - (row / (rows - 1)) * (maxY - minY) : height / 2;
+    const upperCount = Math.max(5, Math.floor((count - 4) / 2));
+    const turnCount = 4;
+    const lowerCount = count - upperCount - turnCount;
+    const upperY = height - 68;
+    const lowerY = 28;
+    if (index < upperCount) {
+      const upperProgress = upperCount > 1 ? index / (upperCount - 1) : 0.5;
+      return {
+        x: 6 + upperProgress * 82,
+        y: upperY + Math.sin(upperProgress * Math.PI * 2) * 18
+      };
+    }
+    if (index < upperCount + turnCount) {
+      const turnProgress = (index - upperCount + 1) / (turnCount + 1);
+      return {
+        x: 88 + Math.sin(turnProgress * Math.PI) * 6,
+        y: upperY + (lowerY - upperY) * turnProgress
+      };
+    }
+    const lowerIndex = index - upperCount - turnCount;
+    const lowerProgress = lowerCount > 1 ? lowerIndex / (lowerCount - 1) : 0.5;
     return {
-      x: rowCount > 1
-        ? horizontalMargin + rowProgress * (100 - horizontalMargin * 2)
-        : 50,
-      y: rowY + Math.sin(rowProgress * Math.PI * 2) * 18
+      x: 88 - lowerProgress * 82,
+      y: lowerY + Math.sin(lowerProgress * Math.PI * 2) * 18
     };
   }
   if (shape === "garden") {
@@ -6356,19 +6374,41 @@ function pianoShapePoint(shape, index, count) {
       y: rows > 1 ? minY + (row / (rows - 1)) * (maxY - minY) : height / 2 - 21
     };
   }
+  if (shape === "circle") {
+    const width = el.pianoNoteArc?.clientWidth || 680;
+    const height = el.pianoNoteArc?.clientHeight || 360;
+    const circleProgress = count > 1 ? index / count : 0;
+    const angle = -Math.PI / 2 + circleProgress * Math.PI * 2;
+    const radius = Math.min(width * 0.36, height * 0.36);
+    return { x: 50 + (Math.cos(angle) * radius / width) * 100, y: height / 2 - Math.sin(angle) * radius - 21 };
+  }
+  if (shape === "zigzag") {
+    const height = el.pianoNoteArc?.clientHeight || 360;
+    const columns = 5;
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    const rows = Math.ceil(count / columns);
+    const rowCount = Math.min(columns, count - row * columns);
+    const visualColumn = row % 2 ? rowCount - 1 - column : column;
+    return {
+      x: rowCount > 1 ? 9 + (visualColumn / (rowCount - 1)) * 82 : 50,
+      y: rows > 1 ? height - 68 - (row / (rows - 1)) * (height - 105) : height / 2
+    };
+  }
+  if (shape === "rainbow") {
+    const height = el.pianoNoteArc?.clientHeight || 360;
+    return { x: 7 + progress * 86, y: 38 + Math.sin(progress * Math.PI) * Math.min(160, height * 0.45) };
+  }
   const width = el.pianoNoteArc?.clientWidth || 680;
   const height = el.pianoNoteArc?.clientHeight || 360;
-  const outerX = width * 0.42;
-  const innerX = outerX * 0.42;
-  const outerY = Math.min(140, height * 0.39);
-  const innerY = outerY * 0.42;
+  const outerRadius = Math.min(width * 0.42, height * 0.39);
+  const innerRadius = outerRadius * 0.42;
   const vertices = Array.from({ length: 10 }, (_, vertexIndex) => {
     const angle = -Math.PI / 2 + vertexIndex * Math.PI / 5;
-    const radiusX = vertexIndex % 2 ? innerX : outerX;
-    const radiusY = vertexIndex % 2 ? innerY : outerY;
+    const radius = vertexIndex % 2 ? innerRadius : outerRadius;
     return {
-      x: width / 2 + Math.cos(angle) * radiusX,
-      y: height / 2 - Math.sin(angle) * radiusY - 21
+      x: width / 2 + Math.cos(angle) * radius,
+      y: height / 2 - Math.sin(angle) * radius - 21
     };
   });
   const segmentLengths = vertices.map((vertex, vertexIndex) => {

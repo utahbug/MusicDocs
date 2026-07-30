@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-50">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-51">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-52" defer></script>
+    <script src="script.js?v=musicdocs-53" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -419,14 +419,43 @@
                 <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun stuff volume">
               </label>
             </div>
-            <label class="piano-shape-control">
+            <div class="piano-shape-control">
               <span>Activity</span>
-              <select id="pianoShape" aria-label="Fun Stuff activity">
+              <div class="fun-activity-grid" role="group" aria-label="Choose an activity">
+                <button type="button" data-piano-shape="trail">
+                  <span class="activity-picture activity-trail-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                  <span>Sound Trail</span>
+                </button>
+                <button type="button" data-piano-shape="garden">
+                  <span class="activity-picture activity-sound-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                  <span>Just sound</span>
+                </button>
+                <button type="button" data-piano-shape="twinkle">
+                  <span class="activity-picture activity-star-picture" aria-hidden="true">★</span>
+                  <span>Twinkle Stars</span>
+                </button>
+                <button type="button" data-piano-shape="circle">
+                  <span class="activity-picture activity-circle-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                  <span>Circle</span>
+                </button>
+                <button type="button" data-piano-shape="zigzag">
+                  <span class="activity-picture activity-zigzag-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                  <span>Zigzag</span>
+                </button>
+                <button type="button" data-piano-shape="rainbow">
+                  <span class="activity-picture activity-rainbow-picture" aria-hidden="true">&#x1F308;</span>
+                  <span>Rainbow</span>
+                </button>
+              </div>
+              <select id="pianoShape" class="sr-only" aria-label="Fun Stuff activity">
                 <option value="trail" selected>Sound Trail</option>
                 <option value="garden">Just sound</option>
                 <option value="twinkle">Twinkle Stars</option>
+                <option value="circle">Circle</option>
+                <option value="zigzag">Zigzag</option>
+                <option value="rainbow">Rainbow</option>
               </select>
-            </label>
+            </div>
             <div class="piano-note-arc" aria-label="Playable sound objects">
               <button class="piano-note piano-play-object" data-note="C4" data-object="🐶" type="button" aria-label="Dog">🐶</button>
               <button class="piano-note piano-play-object" data-note="C sharp 4" data-object="🐱" type="button" aria-label="Cat">🐱</button>
