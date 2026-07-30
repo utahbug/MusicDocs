@@ -1257,12 +1257,11 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .fun-activity-grid button:hover, .fun-activity-grid button:focus-visible { border-color: var(--accent); box-shadow: 0 3px 10px rgba(29, 71, 103, 0.17); transform: translateY(-1px); }
 .fun-activity-grid button.selected { background: linear-gradient(145deg, color-mix(in srgb, #237C7A 15%, var(--surface)), color-mix(in srgb, #3667A8 18%, var(--surface))); border-color: #2F7892; box-shadow: 0 0 0 3px color-mix(in srgb, #2F9E91 25%, transparent), 0 4px 12px rgba(29, 71, 103, 0.2); }
 .activity-picture { background: linear-gradient(145deg, #DDF5FF, #87CDEB); border: 1px solid rgba(47, 126, 151, 0.42); border-radius: 12px; display: block; height: 45px; overflow: hidden; position: relative; width: 48px; }
-.activity-trail-picture i { background: #2E658C; border-radius: 50%; height: 8px; position: absolute; width: 8px; }
-.activity-trail-picture i:nth-child(1) { left: 4px; top: 25px; }
-.activity-trail-picture i:nth-child(2) { left: 12px; top: 15px; }
-.activity-trail-picture i:nth-child(3) { left: 21px; top: 9px; }
-.activity-trail-picture i:nth-child(4) { left: 30px; top: 16px; }
-.activity-trail-picture i:nth-child(5) { left: 38px; top: 28px; }
+.activity-trail-picture { background: linear-gradient(145deg, #C8E7FF, #6473C8 62%, #38447F); }
+.activity-trail-picture b { filter: drop-shadow(0 2px 2px rgba(30,39,84,0.3)); font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; font-size: 1.9rem; font-weight: 400; left: 7px; position: absolute; top: 8px; transform: rotate(-13deg); }
+.activity-trail-picture i { color: #FFFFFF; font-family: Georgia, serif; font-style: normal; position: absolute; text-shadow: 0 2px 3px rgba(27,35,83,0.42); }
+.activity-trail-picture i:nth-of-type(1) { font-size: 0.92rem; right: 8px; top: 5px; transform: rotate(12deg); }
+.activity-trail-picture i:nth-of-type(2) { bottom: 4px; font-size: 1rem; right: 3px; transform: rotate(-9deg); }
 .activity-sound-picture { align-items: center; background: linear-gradient(145deg, #E2F5D8, #9DD6B3); display: flex; justify-content: center; }
 .activity-sound-picture svg { height: 43px; overflow: visible; width: 47px; }
 .activity-sound-picture .sound-music-clef { fill: #205B75; font-family: "Segoe UI Symbol", "Noto Music", serif; font-size: 39px; font-weight: 500; }
@@ -1290,7 +1289,9 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .activity-keyboard-picture i:last-child { border-right: 1px solid #7890A1; }
 .activity-keyboard-picture i:nth-child(2)::after, .activity-keyboard-picture i:nth-child(4)::after { background: #263746; content: ""; height: 20px; position: absolute; right: -4px; top: 0; width: 7px; z-index: 1; }
 .activity-puzzle-picture { align-items: center; background: linear-gradient(145deg, #FFE1D5, #F09A76); display: flex; font-size: 1.75rem; justify-content: center; }
-.activity-air-picture { align-items: center; background: linear-gradient(145deg, #DDF8F5, #75D0C2); color: #155E58; display: flex; font-size: 2rem; justify-content: center; }
+.activity-air-picture { align-items: center; background: linear-gradient(145deg, #DDF5FF, #69B8DE 62%, #4387B4); border-radius: 52% 48% 50% 50% / 45% 45% 55% 55%; color: #174F73; display: flex; font-size: 1.9rem; height: 40px; justify-content: center; margin-bottom: 5px; overflow: visible; width: 43px; }
+.activity-air-picture::after { border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #4387B4; bottom: -5px; content: ""; left: calc(50% - 5px); position: absolute; }
+.activity-air-picture::before { border-left: 1.5px solid #5684A2; border-radius: 0 0 0 70%; bottom: -12px; content: ""; height: 8px; left: 51%; opacity: 0.72; position: absolute; transform: rotate(8deg); width: 5px; }
 .piano-explore-tabs { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; margin: 2px auto 0; max-width: 680px; width: 100%; }
 .piano-explore-tabs button { background: var(--surface); border: 1px solid var(--line); border-radius: 10px 10px 0 0; color: var(--accent-strong); font-weight: 800; min-height: 44px; padding: 8px 12px; }
 .piano-explore-tabs button.active { background: linear-gradient(105deg, #237C7A, #3667A8); border-color: #2D6E91; color: #FFFFFF; }
