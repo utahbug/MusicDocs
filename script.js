@@ -6338,8 +6338,61 @@ function savePianoSettings() {
   });
 }
 
+function renderJazzyRibbons() {
+  document.querySelectorAll(".jazzy-ribbon").forEach((svg) => {
+    if (svg.dataset.rendered === "true") return;
+    const phase = Number(svg.dataset.jazzyPhase || 0);
+    const keyCount = 24;
+    const margin = 18;
+    const usableWidth = 1000 - margin * 2;
+    const halfDepth = 60;
+    const pointAt = (index) => {
+      const x = margin + (usableWidth * index) / keyCount;
+      const theta = ((x - margin) / usableWidth) * Math.PI * 2 + phase;
+      const y = 110 + Math.sin(theta) * 29;
+      const slope = Math.cos(theta) * 29 * Math.PI * 2 / usableWidth;
+      const scale = 1 / Math.sqrt(1 + slope * slope);
+      const tangent = { x: scale, y: slope * scale };
+      const normal = { x: -slope * scale, y: scale };
+      return {
+        center: { x, y },
+        tangent,
+        normal,
+        top: { x: x - normal.x * halfDepth, y: y - normal.y * halfDepth },
+        bottom: { x: x + normal.x * halfDepth, y: y + normal.y * halfDepth }
+      };
+    };
+    const points = Array.from({ length: keyCount + 1 }, (_, index) => pointAt(index));
+    const whiteKeys = Array.from({ length: keyCount }, (_, index) => {
+      const left = points[index];
+      const right = points[index + 1];
+      const fillClass = index % 2 ? "jazzy-white-key alternate" : "jazzy-white-key";
+      return `<polygon class="${fillClass}" points="${left.top.x},${left.top.y} ${right.top.x},${right.top.y} ${right.bottom.x},${right.bottom.y} ${left.bottom.x},${left.bottom.y}"/>`;
+    }).join("");
+    const blackAfter = new Set([0, 1, 3, 4, 5]);
+    const blackKeys = Array.from({ length: keyCount - 1 }, (_, offset) => offset + 1)
+      .filter((boundary) => blackAfter.has((boundary - 1) % 7))
+      .map((boundary) => {
+        const point = points[boundary];
+        const topCenter = {
+          x: point.top.x + point.normal.x * 4,
+          y: point.top.y + point.normal.y * 4
+        };
+        const bottomCenter = {
+          x: topCenter.x + point.normal.x * 72,
+          y: topCenter.y + point.normal.y * 72
+        };
+        const halfWidth = 10;
+        return `<polygon class="jazzy-black-key" points="${topCenter.x - point.tangent.x * halfWidth},${topCenter.y - point.tangent.y * halfWidth} ${topCenter.x + point.tangent.x * halfWidth},${topCenter.y + point.tangent.y * halfWidth} ${bottomCenter.x + point.tangent.x * halfWidth},${bottomCenter.y + point.tangent.y * halfWidth} ${bottomCenter.x - point.tangent.x * halfWidth},${bottomCenter.y - point.tangent.y * halfWidth}"/>`;
+      }).join("");
+    svg.innerHTML = `<g class="jazzy-white-keys">${whiteKeys}</g><g class="jazzy-black-keys">${blackKeys}</g>`;
+    svg.dataset.rendered = "true";
+  });
+}
+
 function renderPiano() {
   if (!el.pianoSound) return;
+  renderJazzyRibbons();
   el.pianoSound.value = state.piano.sound;
   el.pianoSoundButtons.forEach((button) => {
     const selected = button.dataset.pianoSound === state.piano.sound;
