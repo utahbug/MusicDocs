@@ -6179,7 +6179,6 @@ function detectPitch(buffer, sampleRate) {
 const PIANO_SOUND_LABELS = {
   "grand-piano": "Grand piano",
   "electric-piano": "Electric piano",
-  "church-bell": "Church bell",
   "toy-piano": "Toy piano",
   "water-drop": "Water drop",
   bubbles: "Bubbles",
@@ -6268,7 +6267,7 @@ const SIDETRACK_POP_PHRASES = [
   { notes: ["F5", "A5"], sound: "chirp" },
   { notes: ["E5", "G sharp 5", "B5"], sound: "bell" }
 ];
-const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "church-bell", "water-drop", "spaceship"]);
+const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "water-drop", "spaceship"]);
 
 function setupKeyboardUi() {
   if (!el.realKeyboard || !el.keyboardSound || !el.pianoSound) return;
@@ -7524,8 +7523,6 @@ function createPianoVoice(context, frequency, sound, options = {}) {
     addTone(1, "sawtooth", 0.085, 0.09, 6, 0.06, 5, 8);
     addTone(2, "sine", 0.025, 0.12, 5, 0.018, 0, 8);
     voice.release = 0.13;
-  } else if (sound === "church-bell") {
-    [[1, .2], [2, .11], [2.4, .1], [3, .055], [4.2, .035]].forEach(([ratio, level]) => addTone(ratio, "sine", level, 0.003, 4.5 / Math.sqrt(ratio), 0.0001, 0, 5));
   } else if (sound === "toy-piano") {
     addTone(1, "triangle", 0.25, 0.002, 0.8, 0.0001, 0, 1);
     addTone(2.02, "sine", 0.12, 0.002, 0.45, 0.0001, 0, 0.7);
