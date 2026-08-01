@@ -6872,10 +6872,6 @@ const KEY_SIGNATURES = [
   { count: 2, type: "flat", label: "2 flats: B♭, E♭" },
   { count: 5, type: "sharp", label: "5 sharps: F♯, C♯, G♯, D♯, A♯" }
 ];
-const KEY_SIGNATURE_POSITIONS = {
-  sharp: [20, 35, 15, 30, 45, 25, 40],
-  flat: [40, 25, 45, 30, 50, 35, 55]
-};
 const keyboardKeyChange = { steps: 0 };
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
 const PIANO_SHAPES = new Set(["circle", "zigzag", "rainbow"]);
@@ -8116,25 +8112,17 @@ function keySignatureMemoryTrick(keyIndex) {
   return "Remember: with flats, the second-to-last flat names the key.";
 }
 
-function renderKeySignatureStaff(keyIndex) {
+function renderKeySignatureDisplay(keyIndex) {
   const signature = KEY_SIGNATURES[keyIndex];
-  const positions = KEY_SIGNATURE_POSITIONS[signature.type] || [];
-  const symbol = signature.type === "sharp" ? "♯" : "♭";
-  const marks = positions.slice(0, signature.count).map((y, index) =>
-    `<text class="key-signature-mark ${signature.type}" x="${73 + index * 19}" y="${y}">${symbol}</text>`
-  ).join("");
+  const symbol = signature.type === "sharp" ? "♯" : signature.type === "flat" ? "♭" : "♮";
+  const symbols = signature.count ? symbol.repeat(signature.count) : symbol;
+  const noteNames = signature.count ? signature.label.split(": ")[1] : "No sharps or flats";
   return `
-    <svg class="key-signature-staff" viewBox="0 0 230 76" role="img" aria-label="${KEY_CHANGE_NAMES[keyIndex]} major key signature: ${signature.label}">
-      <g class="staff-lines" aria-hidden="true">
-        <line x1="12" y1="20" x2="218" y2="20"></line>
-        <line x1="12" y1="30" x2="218" y2="30"></line>
-        <line x1="12" y1="40" x2="218" y2="40"></line>
-        <line x1="12" y1="50" x2="218" y2="50"></line>
-        <line x1="12" y1="60" x2="218" y2="60"></line>
-      </g>
-      <text class="staff-clef" x="14" y="66">𝄞</text>
-      ${marks}
-    </svg>
+    <div class="key-signature-display" role="img" aria-label="Key of ${KEY_CHANGE_NAMES[keyIndex]} major: ${signature.label}">
+      <strong>Key of ${KEY_CHANGE_NAMES[keyIndex]} major</strong>
+      <span class="key-signature-symbols ${signature.type || "natural"}" aria-hidden="true">${symbols}</span>
+      <span class="key-signature-notes">${noteNames}</span>
+    </div>
   `;
 }
 
@@ -8155,7 +8143,7 @@ function renderKeyChangeGuide() {
       <span>${direction}</span>
       <span>${KEY_SIGNATURES[result].label}</span>
     </div>
-    ${renderKeySignatureStaff(result)}
+    ${renderKeySignatureDisplay(result)}
   `;
   el.keyChangeTable.innerHTML = Array.from({ length: 13 }, (_, index) => index - 6).map((rowSteps) => {
     const rowResult = keyChangePitch(root, rowSteps);
