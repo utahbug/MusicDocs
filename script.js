@@ -7074,6 +7074,17 @@ const SIDETRACK_NOTES = [
   ["E4", "E"], ["F4", "F"], ["F sharp 4", "F#"], ["G4", "G"],
   ["G sharp 4", "G#"], ["A4", "A"], ["A sharp 4", "A#"], ["B4", "B"], ["C5", "C"]
 ];
+const KEY_ORDER_SCALE = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
+const KEY_ORDER_CHORDS = {
+  C4: ["C4", "E4", "G4"],
+  D4: ["D4", "F4", "A4"],
+  E4: ["E4", "G4", "B4"],
+  F4: ["F4", "A4", "C5"],
+  G4: ["G4", "B4", "D5"],
+  A4: ["A4", "C5", "E5"],
+  B4: ["B4", "D5", "F5"],
+  C5: ["C5", "E5", "G5"]
+};
 const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20 };
 const JAZZ_PUZZLE_IMAGES = [
   "assets/jazz-ensemble-puzzle.webp",
@@ -7361,7 +7372,7 @@ function endSidetrackPuzzleDrag(event) {
     slot.appendChild(piece);
     slot.classList.add("filled");
     enablePlacedKeyOrderKey(piece);
-    playJazzPuzzleSuccess();
+    void playKeyOrderPlacementReward(piece.dataset.note);
     const remaining = el.sidetrackPuzzle.querySelectorAll(".sidetrack-puzzle-pieces .sidetrack-puzzle-piece").length;
     const status = el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-status");
     status.textContent = remaining
@@ -7377,6 +7388,25 @@ function endSidetrackPuzzleDrag(event) {
         : "Try a different space";
   }
   sidetrackPuzzleDrag = null;
+}
+
+async function playKeyOrderPlacementReward(note) {
+  const context = await getPianoAudioContext();
+  const targetIndex = KEY_ORDER_SCALE.indexOf(note);
+  if (!context || targetIndex < 0) return;
+  const scale = KEY_ORDER_SCALE.slice(0, targetIndex + 1);
+  scale.forEach((scaleNote, index) => {
+    window.setTimeout(() => {
+      const voice = createPianoVoice(context, pianoNoteFrequency(scaleNote), state.piano.sound);
+      window.setTimeout(() => releasePianoVoice(voice, true), 260);
+    }, index * 135);
+  });
+  window.setTimeout(() => {
+    (KEY_ORDER_CHORDS[note] || [note]).forEach((chordNote) => {
+      const voice = createPianoVoice(context, pianoNoteFrequency(chordNote), state.piano.sound);
+      window.setTimeout(() => releasePianoVoice(voice, true), 720);
+    });
+  }, scale.length * 135 + 110);
 }
 
 function enablePlacedKeyOrderKey(piece) {
