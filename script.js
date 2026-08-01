@@ -6912,13 +6912,9 @@ const TWINKLE_MELODY = [
   "C4", "C4", "G4", "G4", "A4", "A4", "G4",
   "F4", "F4", "E4", "E4", "D4", "D4", "C4"
 ];
-const SIDETRACK_POP_PHRASES = [
-  { notes: ["C5", "E5", "G5"], sound: "toy-piano" },
-  { notes: ["G4", "C5"], sound: "marimba" },
-  { notes: ["D5", "F sharp 5", "A5"], sound: "retro-game" },
-  { notes: ["A4", "C5", "E5"], sound: "water-drop" },
-  { notes: ["F5", "A5"], sound: "chirp" },
-  { notes: ["E5", "G sharp 5", "B5"], sound: "bell" }
+const SIDETRACK_POP_JAZZ_SCALE = [
+  "C4", "D sharp 4", "F4", "F sharp 4", "G4", "A sharp 4", "C5",
+  "A sharp 4", "G4", "F sharp 4", "F4", "D sharp 4"
 ];
 const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "water-drop", "spaceship"]);
 
@@ -7078,7 +7074,7 @@ const SIDETRACK_NOTES = [
   ["E4", "E"], ["F4", "F"], ["F sharp 4", "F#"], ["G4", "G"],
   ["G sharp 4", "G#"], ["A4", "A"], ["A sharp 4", "A#"], ["B4", "B"], ["C5", "C"]
 ];
-const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20, lastPhrase: -1 };
+const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20 };
 const JAZZ_PUZZLE_IMAGES = [
   "assets/jazz-ensemble-puzzle.webp",
   "assets/jazz-ensemble-puzzle-2.webp",
@@ -7461,20 +7457,11 @@ function resetSidetrackAirGame() {
   for (let index = 0; index < 4; index += 1) spawnSidetrackAirNote();
 }
 
-async function playSidetrackPopPhrase() {
+async function playSidetrackPopScaleNote(popIndex) {
   const context = await getPianoAudioContext();
   if (!context) return;
-  let phraseIndex = Math.floor(Math.random() * SIDETRACK_POP_PHRASES.length);
-  if (phraseIndex === sidetrackAirGame.lastPhrase) {
-    phraseIndex = (phraseIndex + 1 + Math.floor(Math.random() * (SIDETRACK_POP_PHRASES.length - 1))) % SIDETRACK_POP_PHRASES.length;
-  }
-  sidetrackAirGame.lastPhrase = phraseIndex;
-  const phrase = SIDETRACK_POP_PHRASES[phraseIndex];
-  phrase.notes.forEach((label, index) => {
-    window.setTimeout(() => {
-      createPianoVoice(context, pianoNoteFrequency(label), phrase.sound);
-    }, index * 105);
-  });
+  const label = SIDETRACK_POP_JAZZ_SCALE[popIndex % SIDETRACK_POP_JAZZ_SCALE.length];
+  createPianoVoice(context, pianoNoteFrequency(label), "electric-piano");
 }
 
 function spawnSidetrackAirNote() {
@@ -7508,7 +7495,7 @@ function spawnSidetrackAirNote() {
   note.setAttribute("aria-label", `Pop moving ${balloon.label}`);
   note.addEventListener("click", () => {
     if (!sidetrackAirGame.active || note.classList.contains("popped")) return;
-    void playSidetrackPopPhrase();
+    void playSidetrackPopScaleNote(sidetrackAirGame.popped);
     note.classList.add("popped");
     sidetrackAirGame.popped += 1;
     updateSidetrackAirStatus();
