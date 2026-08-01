@@ -12,15 +12,15 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="MusicDocs">
     <meta property="og:title" content="MusicDocs">
-    <meta property="og:description" content="Music, documents, lists, and rehearsal toolsÃ¢â‚¬â€organized for musicians.">
+    <meta property="og:description" content="Music, documents, lists, and rehearsal tools—organized for musicians.">
     <meta property="og:url" content="https://utahbug.github.io/MusicDocs/">
     <meta property="og:image" content="https://utahbug.github.io/MusicDocs/assets/musicdocs-social-card.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="MusicDocs Ã¢â‚¬â€ music, documents, lists, and rehearsal tools">
+    <meta property="og:image:alt" content="MusicDocs — music, documents, lists, and rehearsal tools">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="MusicDocs">
-    <meta name="twitter:description" content="Music, documents, lists, and rehearsal toolsÃ¢â‚¬â€organized for musicians.">
+    <meta name="twitter:description" content="Music, documents, lists, and rehearsal tools—organized for musicians.">
     <meta name="twitter:image" content="https://utahbug.github.io/MusicDocs/assets/musicdocs-social-card.png">
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="favicon.ico">
@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-91">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-92">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
-    <script src="lyrics-cards.js?v=musicdocs-1" defer></script>
-    <script src="script.js?v=musicdocs-90" defer></script>
+    <script src="lyrics-cards.js?v=musicdocs-2" defer></script>
+    <script src="script.js?v=musicdocs-91" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -71,22 +71,22 @@
               <button type="button" role="menuitem" data-menu-section="audio">Audio Library</button>
             </div>
           </div>
+          <button id="backgroundToggleButton" class="background-toggle-button" type="button" aria-label="Use black background" title="Use black background" aria-pressed="false">
+            <span aria-hidden="true"></span>
+          </button>
           <div class="overflow-wrap header-info-wrap">
             <button id="infoMenuButton" class="header-info-button" type="button" aria-label="Help and app options" title="Help and app options" aria-expanded="false" aria-controls="infoMenu">
               <span class="info-icon-mark" aria-hidden="true"></span>
             </button>
             <div id="infoMenu" class="overflow-menu info-menu hidden" role="menu" aria-label="Help and app options">
-              <button type="button" role="menuitem" data-open-help>Help</button>
-              <button type="button" role="menuitem" data-open-about>About</button>
-              <span class="menu-separator" aria-hidden="true"></span>
               <button id="exportBackupButton" type="button" role="menuitem">Export data + files</button>
               <button id="importBackupButton" type="button" role="menuitem">Import data + files</button>
+              <span class="menu-separator" aria-hidden="true"></span>
+              <button type="button" role="menuitem" data-open-help>Help</button>
+              <button type="button" role="menuitem" data-open-about>About</button>
             </div>
             <input id="backupFileInput" class="hidden" type="file" accept="application/json,.json">
           </div>
-          <button id="backgroundToggleButton" class="background-toggle-button" type="button" aria-label="Use black background" title="Use black background" aria-pressed="false">
-            <span aria-hidden="true"></span>
-          </button>
         </div>
       </header>
 
@@ -136,6 +136,7 @@
           </div>
           <div class="tab-action-row">
             <button id="libraryTopAddButton" class="top-add-button label-add-button file-add-button" type="button" aria-label="Add file" title="Add file">Add File +</button>
+            <span id="libraryFileCount" class="file-count" aria-live="polite">0 files</span>
           </div>
           <div id="libraryContent" class="stack"></div>
           <button id="libraryAddButton" class="top-add-button label-add-button file-add-button bottom-file-add-button" type="button" aria-label="Add file" title="Add file">Add File +</button>
@@ -401,17 +402,10 @@
                   </optgroup>
                 </select>
               </div>
-              <label class="piano-volume-control">
-                <span class="piano-volume-icon">
-                  <svg viewBox="0 0 28 24" aria-hidden="true"><path d="M3 9h4l6-5v16l-6-5H3z"></path><path d="M17 8c2 2 2 6 0 8M20.5 5c4 4 4 10 0 14"></path></svg>
-                  <span class="sr-only">Volume</span>
-                </span>
-                <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun Stuff volume">
-              </label>
-            </div>
-            <div class="piano-shape-control">
-              <span>Activity</span>
-              <div class="fun-activity-grid" role="group" aria-label="Choose an activity">
+              <div class="fun-control-row">
+                <div class="piano-shape-control">
+                  <span>Activity</span>
+                  <div class="fun-activity-grid" role="group" aria-label="Choose an activity">
                 <button type="button" data-piano-shape="circle">
                   <span class="activity-picture activity-keyboard-picture" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
                   <span>Keyboard</span>
@@ -431,7 +425,7 @@
                   <span class="activity-picture activity-air-picture" aria-hidden="true">&#x266B;</span>
                   <span>Pop notes</span>
                 </button>
-                <button type="button" data-piano-shape="garden">
+                <button class="hidden" type="button" data-piano-shape="garden" aria-hidden="true" tabindex="-1">
                   <span class="activity-picture activity-sound-picture" aria-hidden="true">
                     <svg viewBox="0 0 64 48">
                       <text class="sound-music-clef" x="2" y="39">&#119070;</text>
@@ -441,23 +435,29 @@
                   </span>
                   <span>Just sound</span>
                 </button>
-                <button type="button" data-piano-shape="twinkle">
+                <button class="hidden" type="button" data-piano-shape="twinkle" aria-hidden="true" tabindex="-1">
                   <span class="activity-picture activity-star-picture" aria-hidden="true">★</span>
                   <span>Twinkle Stars</span>
                 </button>
-                <button type="button" data-piano-shape="trail">
+                <button class="hidden" type="button" data-piano-shape="trail" aria-hidden="true" tabindex="-1">
                   <span class="activity-picture activity-trail-picture" aria-hidden="true"><b>&#x1F3B7;</b><i>&#x266A;</i><i>&#x266B;</i></span>
-                  <span>Jazzy</span>
+                  <span>Puzzle</span>
                 </button>
+                  </div>
+                  <select id="pianoShape" class="sr-only" aria-label="Fun Stuff activity">
+                    <option value="circle" selected>Keyboard</option>
+                    <option value="zigzag">Key Order</option>
+                    <option value="rainbow">Pop notes</option>
+                  </select>
+                </div>
+                <label class="piano-volume-control">
+                  <span class="piano-volume-icon">
+                    <svg viewBox="0 0 28 24" aria-hidden="true"><path d="M3 9h4l6-5v16l-6-5H3z"></path><path d="M17 8c2 2 2 6 0 8M20.5 5c4 4 4 10 0 14"></path></svg>
+                    <span class="sr-only">Volume</span>
+                  </span>
+                  <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun Stuff volume">
+                </label>
               </div>
-              <select id="pianoShape" class="sr-only" aria-label="Fun Stuff activity">
-                <option value="circle">Keyboard</option>
-                <option value="zigzag">Key Order</option>
-                <option value="rainbow">Pop notes</option>
-                <option value="garden">Just sound</option>
-                <option value="twinkle">Twinkle Stars</option>
-                <option value="trail" selected>Jazzy</option>
-              </select>
             </div>
             <div class="piano-note-arc" aria-label="Playable sound objects">
               <button class="piano-note piano-play-object" data-note="C4" data-object="🐶" type="button" aria-label="Dog">🐶</button>
@@ -507,16 +507,11 @@
           <div class="keyboard-panel">
             <div class="piano-header">
               <h2 id="keyboardTitle">Keyboard</h2>
-              <span>Swipe across the keys to play</span>
             </div>
             <div class="piano-sound-controls">
               <label>
                 <span>Sound</span>
                 <select id="keyboardSound" aria-label="Keyboard sound"></select>
-              </label>
-              <label class="piano-volume-control">
-                <span>Volume</span>
-                <input id="keyboardVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Keyboard volume">
               </label>
               <div class="keyboard-transpose-control">
                 <span>Transpose</span>
@@ -526,6 +521,10 @@
                   <button id="keyboardTransposeUp" type="button" aria-label="Transpose up one semitone">+</button>
                 </div>
               </div>
+              <label class="piano-volume-control keyboard-volume-control">
+                <span>Keyboard volume</span>
+                <input id="keyboardVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Keyboard volume">
+              </label>
             </div>
             <p id="keyboardSoundStatus" class="keyboard-sound-status" aria-live="polite">Grand piano</p>
             <div class="keyboard-scroll" aria-label="Scrollable piano keyboard">
@@ -560,6 +559,19 @@
               <div class="chord-answer-grid">
                 <div id="pianoChordNotes" class="piano-chord-notes" aria-live="polite"></div>
                 <div id="pianoChordPartners" class="piano-chord-partners" aria-live="polite"></div>
+              </div>
+              <div class="piano-style-guide">
+                <label for="pianoStyle"><span>I want to play…</span>
+                  <select id="pianoStyle">
+                    <option value="manual">Choose manually</option>
+                    <option value="hymn">Hymn</option>
+                    <option value="country">Country</option>
+                    <option value="blues">Blues</option>
+                    <option value="jazz">Jazz</option>
+                    <option value="pop">Pop</option>
+                  </select>
+                </label>
+                <div id="pianoStyleRecipe" class="piano-style-recipe" aria-live="polite" hidden></div>
               </div>
               <details class="chord-tips">
                 <summary>Chord tips</summary>
@@ -614,6 +626,8 @@
                     <option value="majorPentatonic">Major pentatonic</option>
                     <option value="minorPentatonic">Minor pentatonic</option>
                     <option value="blues">Blues</option>
+                    <option value="dorian">Dorian (jazz minor)</option>
+                    <option value="mixolydian">Mixolydian (dominant)</option>
                     <option value="chromatic">Chromatic</option>
                   </select>
                 </label>
@@ -679,17 +693,39 @@
 
     <section id="pdfViewer" class="pdf-viewer hidden" aria-label="PDF viewer">
       <header class="pdf-toolbar">
-        <button id="pdfTopHomeButton" class="pdf-back-button" type="button" aria-label="Return home" title="Return home"><span aria-hidden="true">&larr;</span> Home</button>
+        <div class="pdf-top-left-actions">
+          <button id="pdfPrintButton" class="pdf-back-button pdf-top-print-button" type="button" aria-label="Print the original PDF" title="Print PDF">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3M7 14h10v7H7zM18 11h1"></path></svg>
+          </button>
+          <button id="pdfAnnotateButton" class="pdf-back-button pdf-top-icon-button" type="button" aria-label="Annotate this PDF" title="Annotate PDF" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.4-1 10-10-3.4-3.4-10 10L4 20Zm9.8-13.2 3.4 3.4M14.8 5.8l1.5-1.5a1.4 1.4 0 0 1 2 0l1.4 1.4a1.4 1.4 0 0 1 0 2l-1.5 1.5"></path></svg>
+          </button>
+          <button id="pdfMobileToolsButton" class="pdf-back-button pdf-top-icon-button pdf-mobile-tools-button" type="button" aria-label="PDF viewer tools" title="PDF viewer tools" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path><circle cx="9" cy="6" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg>
+          </button>
+          <div id="pdfMobileToolsMenu" class="pdf-mobile-tools-menu hidden" role="menu" aria-label="PDF viewer tools">
+            <button id="pdfMobilePrintButton" type="button" role="menuitem"><span aria-hidden="true">&#128424;</span> Print</button>
+            <button id="pdfMobileAnnotateButton" type="button" role="menuitem"><span aria-hidden="true">&#9998;</span> Annotate</button>
+            <button id="pdfMobileThemeButton" type="button" role="menuitem"><span class="pdf-mobile-theme-swatch" aria-hidden="true"></span><span class="pdf-mobile-theme-label">Dark page</span></button>
+          </div>
+        </div>
         <div class="pdf-title-wrap">
           <h2 id="pdfTitle">PDF</h2>
           <div class="pdf-status-line">
             <p id="pdfPageStatus">Page 1 of 1</p>
           </div>
         </div>
+        <div class="pdf-top-right-actions">
+          <button id="pdfPageThemeToggleButton" class="background-toggle-button pdf-page-theme-toggle" type="button" aria-label="Use black sheet music background" title="Use black sheet music background" aria-pressed="false"><span aria-hidden="true"></span></button>
+          <button id="pdfTopTapZonesButton" class="pdf-back-button pdf-top-icon-button pdf-top-tap-zones-button" type="button" aria-label="Show tap zones" title="Tap Zones" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v3M5.7 4.7l2.1 2.1M18.3 4.7l-2.1 2.1M10.2 13V8.8a1.8 1.8 0 0 1 3.6 0v4.1l1.1-.8a1.7 1.7 0 0 1 2.4.4l1.2 1.8a3 3 0 0 1 .3 2.7l-1.1 3H10l-3.3-4.1a1.6 1.6 0 0 1 2.3-2.2l1.2.9V13Z"></path></svg>
+          </button>
+        </div>
       </header>
       <div id="pdfStage" class="pdf-stage">
         <div id="pdfLoading" class="pdf-message">Loading PDF...</div>
         <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+        <canvas id="pdfAnnotationCanvas" class="pdf-annotation-canvas" aria-label="PDF annotation drawing layer"></canvas>
         <button id="pdfTapLeft" class="pdf-tap-zone pdf-tap-left" type="button" aria-label="Previous page; top-left jumps to first page"></button>
         <button id="pdfTapRight" class="pdf-tap-zone pdf-tap-right" type="button" aria-label="Next page; top-right jumps to last page"></button>
         <div id="pdfPageNotice" class="pdf-page-notice hidden" aria-live="polite"></div>
@@ -703,23 +739,43 @@
           </div>
           <div class="pdf-zone-dismiss-tip">Tap anywhere to close this guide</div>
         </div>
+        <div id="pdfAnnotationNotice" class="pdf-annotation-notice hidden" role="status">Page turning paused while marking.</div>
+        <div id="pdfAnnotationToolbar" class="pdf-annotation-toolbar hidden" role="toolbar" aria-label="PDF annotation tools">
+          <div class="pdf-annotation-tool-group" aria-label="Drawing tool">
+            <button type="button" data-annotation-tool="pencil" aria-label="Pencil" title="Pencil" aria-pressed="true">&#9998;</button>
+            <button type="button" data-annotation-tool="highlighter" aria-label="Highlighter" title="Highlighter" aria-pressed="false">&#9644;</button>
+            <button type="button" data-annotation-tool="eraser" aria-label="Eraser" title="Eraser" aria-pressed="false">&#9003;</button>
+          </div>
+          <div class="pdf-annotation-colors" aria-label="Annotation color">
+            <button type="button" data-annotation-color="#245A9A" aria-label="Deep blue" title="Deep blue" aria-pressed="true"></button>
+            <button type="button" data-annotation-color="#C62828" aria-label="Red" title="Red" aria-pressed="false"></button>
+            <button type="button" data-annotation-color="#7A3045" aria-label="Maroon" title="Maroon" aria-pressed="false"></button>
+            <button type="button" data-annotation-color="#B67817" aria-label="Golden amber" title="Golden amber" aria-pressed="false"></button>
+          </div>
+          <div class="pdf-annotation-tool-group" aria-label="Annotation actions">
+            <button id="pdfAnnotationUndoButton" type="button" aria-label="Undo" title="Undo">&#8630;</button>
+            <button id="pdfAnnotationClearButton" type="button" aria-label="Clear annotations from this page" title="Clear page">&#128465;</button>
+            <button id="pdfAnnotationPreviousButton" type="button" aria-label="Previous page" title="Previous page">&#8249;</button>
+            <button id="pdfAnnotationNextButton" type="button" aria-label="Next page" title="Next page">&#8250;</button>
+            <button id="pdfAnnotationDoneButton" class="pdf-annotation-done" type="button">Done</button>
+          </div>
+        </div>
       </div>
       <div id="pdfSettingsLayer" class="pdf-settings-layer hidden" role="dialog" aria-modal="true" aria-labelledby="pdfSettingsTitle">
         <div class="pdf-settings-panel">
-          <header><h2 id="pdfSettingsTitle">PDF Settings</h2><button id="pdfSettingsCloseButton" type="button" aria-label="Close settings">&times;</button></header>
+          <header><h2 id="pdfSettingsTitle">PDF Viewer Settings</h2><button id="pdfSettingsCloseButton" type="button" aria-label="Close settings">&times;</button></header>
           <div class="pdf-settings-content">
           <section class="pdf-settings-group">
             <h3>Tap Zones</h3>
-            <button id="pdfShowTapZonesButton" class="secondary-button" type="button">Show guide now</button>
-            <label class="pdf-setting-toggle"><input id="pdfTipsShowOnOpen" type="checkbox"> <span>Show when opening music</span></label>
+            <label class="pdf-setting-toggle pdf-tap-zones-setting"><input id="pdfTipsShowOnOpen" type="checkbox"> <span>Show when opening music<small>Display the Tap Zones guide whenever music opens.</small></span></label>
           </section>
           <section class="pdf-settings-group">
             <h3>Page numbering</h3>
-            <label><span>Visibility</span><select id="pdfNumberingMode">
-              <option value="off">Off</option>
-              <option value="document">On</option>
-              <option value="song">On, but designate page 1</option>
-            </select></label>
+            <fieldset class="pdf-numbering-options" aria-label="Page numbering visibility">
+              <label class="pdf-numbering-option"><input type="radio" name="pdfNumberingMode" value="off"><span>Off</span></label>
+              <label class="pdf-numbering-option"><input type="radio" name="pdfNumberingMode" value="document"><span>On</span></label>
+              <label class="pdf-numbering-option"><input type="radio" name="pdfNumberingMode" value="song"><span>On, but designate page 1</span></label>
+            </fieldset>
             <div id="pdfSongNumberingFields" class="pdf-song-numbering-fields hidden">
               <button id="pdfSongStartButton" class="secondary-button" type="button">Use current page as page 1</button>
               <label><span>Number of pages</span><input id="pdfSongPageCount" type="number" min="1" max="999" inputmode="numeric" value="1"></label>
@@ -727,27 +783,27 @@
             </div>
           </section>
           <section class="pdf-settings-group">
+            <h3>Metronome</h3>
+            <label class="pdf-setting-toggle"><input id="pdfMetronomeEnabled" type="checkbox"> <span>Show in footer</span></label>
+            <label id="pdfSettingsTempoRow" class="hidden"><span>Tempo (BPM)</span><input id="pdfSettingsTempoInput" type="number" min="40" max="220" step="1" inputmode="numeric" value="90"></label>
+          </section>
+          <section class="pdf-settings-group">
             <h3>Next Song</h3>
             <label class="pdf-setting-toggle"><input id="pdfRepeatListEnabled" type="checkbox"> <span>Default to On when opening a list</span></label>
             <div class="pdf-setting-help">
               <p>Next Song allows continuous playing through the PDFs in a list.</p>
               <ul>
-                <li>When On, tapping the next-page zone on a PDF's last page opens the next PDF. After the final PDF, the list starts again at the first.</li>
+                <li>When On, tapping the next-page zone on a PDF's last page opens the next PDF.</li>
                 <li>When Off, tapping that zone keeps the current PDF open.</li>
               </ul>
             </div>
-          </section>
-          <section class="pdf-settings-group">
-            <h3>Metronome</h3>
-            <label class="pdf-setting-toggle"><input id="pdfMetronomeEnabled" type="checkbox"> <span>Show in footer</span></label>
-            <label id="pdfSettingsTempoRow" class="hidden"><span>Tempo (BPM)</span><input id="pdfSettingsTempoInput" type="number" min="40" max="220" step="1" inputmode="numeric" value="90"></label>
           </section>
           </div>
           <footer class="pdf-settings-footer"><button id="pdfSettingsApplyButton" class="primary-button" type="button">Apply</button></footer>
         </div>
       </div>
       <footer class="pdf-action-bar" aria-label="PDF viewer actions">
-        <button id="pdfHomeButton" class="pdf-action-button pdf-home-action" type="button" aria-label="Return to app" title="Return to app"><svg class="pdf-home-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.6 10.7 12 2.9l9.4 7.8a1.5 1.5 0 0 1-1.9 2.3l-.5-.4v7.1a1.3 1.3 0 0 1-1.3 1.3h-3.9v-5.8h-3.6V21H6.3A1.3 1.3 0 0 1 5 19.7v-7.1l-.5.4a1.5 1.5 0 1 1-1.9-2.3Z"/></svg><small>Home</small></button>
+        <button id="pdfHomeButton" class="pdf-action-button pdf-home-action" type="button" aria-label="Return to app" title="Return to app"><svg class="pdf-home-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.6 10.7 12 2.9l9.4 7.8a1.5 1.5 0 0 1-1.9 2.3l-.5-.4v7.1a1.3 1.3 0 0 1-1.3 1.3h-3.9v-5.8h-3.6V21H6.3A1.3 1.3 0 0 1 5 19.7v-7.1l-.5.4a1.5 1.5 0 1 1-1.9-2.3Z"/></svg></button>
         <button id="pdfTipsButton" class="pdf-action-button pdf-settings-action" type="button" aria-label="Open PDF settings" title="PDF settings" aria-expanded="false"><span class="pdf-settings-glyph" aria-hidden="true">&#9881;</span><small>Settings</small></button>
         <div class="pdf-tempo-box hidden" aria-label="Metronome tempo">
           <label for="pdfTempoInput"><span>BPM</span><input id="pdfTempoInput" type="number" min="40" max="220" step="1" inputmode="numeric" value="90" aria-label="Metronome tempo"></label>
@@ -776,7 +832,7 @@
             <button id="importCloseButton" class="icon-button form-close-button" type="button" aria-label="Cancel" title="Cancel">&times;</button>
             <h2 id="importTitle">Add item</h2>
             <div class="modal-action-buttons">
-              <button id="importDeleteButton" class="icon-button danger-icon hidden" type="button" aria-label="Delete" title="Delete">&#128465;</button>
+              <button id="importDeleteButton" class="danger-icon destructive-action-label hidden" type="button" aria-label="Delete item from app" title="Delete item from app"><span aria-hidden="true">&#128465;</span><span>Delete item</span></button>
               <button id="importSaveButton" class="icon-button primary-icon" type="submit" aria-label="Save" title="Save">&#10003;</button>
             </div>
           </div>
@@ -927,7 +983,7 @@
             <button id="listEditCloseButton" class="icon-button form-close-button" type="button" aria-label="Close" title="Close">&times;</button>
             <h2 id="listEditTitle">Edit list</h2>
             <div class="modal-action-buttons">
-              <button id="listEditDeleteButton" class="icon-button danger-icon" type="button" aria-label="Delete list" title="Delete list">&#128465;</button>
+              <button id="listEditDeleteButton" class="danger-icon destructive-action-label" type="button" aria-label="Delete this list" title="Delete this list"><span aria-hidden="true">&#128465;</span><span>Delete list</span></button>
               <button id="listEditSaveButton" class="icon-button primary-icon" type="submit" aria-label="Save" title="Save">&#10003;</button>
             </div>
           </div>
@@ -963,9 +1019,9 @@
               <label class="list-edit-sort-field">
                 <span>Sort</span>
                 <select id="listEditSort" aria-label="Sort items">
-                  <option value="type">All Ã¢â‚¬â€ Type</option>
-                  <option value="title">All Ã¢â‚¬â€ Title</option>
-                  <option value="pdf">PDF only</option>
+                  <option value="type">All — Type</option>
+                  <option value="title">All — Title</option>
+                  <option value="pdf" selected>PDF only</option>
                   <option value="card">Cards only</option>
                   <option value="link">Links only</option>
                 </select>
@@ -1001,13 +1057,13 @@
                   <div><strong>Previous</strong><span class="help-zone-icon help-turn-icon" aria-hidden="true">&#8249;</span><small>Lower left</small></div>
                   <div><strong>Next</strong><span class="help-zone-icon help-turn-icon" aria-hidden="true">&#8250;</span><small>Lower right</small></div>
                 </div>
-                <p class="help-tap-zone-note">The first guide stays until you begin. Later reminders close after three seconds. Clear Ã¢â‚¬Å“Show when opening musicÃ¢â‚¬Â if you no longer need them. Choose Tap Zones in the PDF viewer to show the guide again.</p>
-                <ul>
-                  <li>Bluetooth page-turning pedals and keyboards also work in the PDF viewer.</li>
-                  <li class="help-subitem">Next: Right Arrow, Down Arrow, Page Down, Space, or Enter.</li>
-                  <li class="help-subitem">Previous: Left Arrow, Up Arrow, or Page Up.</li>
-                  <li class="help-subitem">Jump: Home goes to page 1; End goes to the last page.</li>
-                </ul>
+                <p class="help-tap-zone-note">The first guide stays until you begin. Later reminders close after three seconds. Clear “Show when opening music” if you no longer need them. Choose Tap Zones in the PDF viewer to show the guide again.</p>
+                <div class="help-bluetooth-turning">
+                  <strong>Turning pages with Bluetooth:</strong>
+                  <p><em>Next:</em> Right Arrow, Down Arrow, Page Down, Space, or Enter.</p>
+                  <p><em>Previous:</em> Left Arrow, Up Arrow, or Page Up.</p>
+                  <p><em>Jump:</em> Home goes to page 1; End goes to the last page.</p>
+                </div>
               </div>
             </details>
 
@@ -1025,8 +1081,16 @@
               <summary>Lists</summary>
               <div class="help-topic-content">
                 <ul>
-                  <li>Organize files, cards, and links into custom groups.</li>
-                  <li><strong>Next Song</strong> defaults to On when a list opens. Choose any PDF as the starting song. On its final page, the next-page zone opens the next PDF; after the final PDF, the list starts over. Turn Next Song Off to stay on the current PDF.</li>
+                  <li>Organize songs, cards, and links into custom groups.</li>
+                  <li class="help-next-song-item"><strong>Next Song</strong>
+                    <ul>
+                      <li class="help-subitem">Defaults to On when a list opens.</li>
+                      <li class="help-subitem">Choose any PDF as the starting song.</li>
+                      <li class="help-subitem">On its final page, the next-page zone opens the next PDF.</li>
+                      <li class="help-subitem">After the final PDF, the list starts over.</li>
+                      <li class="help-subitem">Turn Next Song Off to stay on the current PDF.</li>
+                    </ul>
+                  </li>
                 </ul>
               </div>
             </details>
@@ -1034,9 +1098,10 @@
             <details class="help-topic">
               <summary>Cards</summary>
               <div class="help-topic-content">
-                <ul>
-                  <li>Add your own textÃ¢â‚¬â€such as lyricsÃ¢â‚¬â€or an image.</li>
-                </ul>
+                <div class="help-card-notes">
+                  <p>Cards let you add your own easy-to-read content, such as lyrics, notes, pasted text, or an image. Cards can be added to favorites and lists.</p>
+                  <p>Whereas sheet music is best viewed on an iPad, Cards are ideal for displaying text (e.g., lyrics).</p>
+                </div>
               </div>
             </details>
 
@@ -1077,11 +1142,12 @@
           <strong>Your work stays with you</strong>
           <p>Your personal lists, favorites, and edits remain on this device unless you export them.</p>
         </div>
-        <p class="about-version">Version 1.0</p>
+        <p class="about-version">Version 1.0 <span>Build 1.01</span></p>
         <button class="secondary-button about-update-button" type="button" data-refresh-app>Check for updates</button>
         <p class="about-disclaimer">MusicDocs is an independent tool for organizing and presenting music and documents.</p>
         <p class="about-copyright">&copy; 2026 Ken Roberts</p>
       </div>
     </div>
+    <div id="appUpdateNotice" class="app-update-notice hidden" role="status" aria-live="polite"></div>
   </body>
 </html>

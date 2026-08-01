@@ -1,37 +1,6 @@
 {
   "items": [],
   "favorites": [],
-  "quickIndexes": [
-    {
-      "id": "holiday",
-      "title": "Events",
-      "showCheckboxes": false,
-      "entries": []
-    },
-    {
-      "id": "spiritual",
-      "title": "Spiritual",
-      "showCheckboxes": false,
-      "entries": []
-    },
-    {
-      "id": "popular",
-      "title": "Popular",
-      "showCheckboxes": false,
-      "entries": []
-    },
-    {
-      "id": "fun-stuff",
-      "title": "Fun Stuff",
-      "showCheckboxes": false,
-      "entries": []
-    },
-    {
-      "id": "lead-sheets",
-      "title": "Lead sheets",
-      "showCheckboxes": false,
-      "entries": []
-    }
-  ],
+  "quickIndexes": [],
   "setlists": []
 }

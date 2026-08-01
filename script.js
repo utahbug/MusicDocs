@@ -4,6 +4,9 @@ const PDFJS_VERSION = "3.11.174";
 const PDFJS_WORKER_URL = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.js`;
 
 const APP_STORAGE_SCOPE = getAppStorageScope();
+const APP_RELEASE_VERSION = "1.0";
+const APP_BUILD_VERSION = "1.01";
+const UPDATE_CHECK_SESSION_KEY = `${APP_STORAGE_SCOPE}.updateCheck`;
 const STORAGE_KEYS = {
   deletedItems: storageKey("deletedItems"),
   favorites: storageKey("favorites"),
@@ -14,8 +17,10 @@ const STORAGE_KEYS = {
   lists: storageKey("lists"),
   listEditSort: storageKey("listEditSort"),
   cardSubtypes: storageKey("cardSubtypes"),
+  cardOrder: storageKey("cardOrder"),
   pdfPages: storageKey("pdfPages"),
   pdfNumbering: storageKey("pdfNumbering"),
+  pdfAnnotations: storageKey("pdfAnnotations"),
   quickIndexes: storageKey("quickIndexes"),
   recents: storageKey("recents"),
   settings: storageKey("settings"),
@@ -127,6 +132,7 @@ const DEFAULT_LIBRARY_DATA = {
   "setlists": []
 };
 
+
 const APP_THEME = {
   primary: "#2B5F9E",
   dark: "#214A78",
@@ -144,7 +150,7 @@ const state = {
   listEditMode: false,
   listPickerOpen: false,
   listPickerMessage: "",
-  listEditSort: normalizeListEditSort(localStorage.getItem(STORAGE_KEYS.listEditSort)),
+  listEditSort: "pdf",
   listEditView: "current",
   favoriteReorderMode: false,
   listReorderMode: false,
@@ -161,6 +167,7 @@ const state = {
   previousScrollY: 0,
   activeListId: "",
   expandedListIds: [],
+  alphabeticalListViewIds: new Set(),
   batchDeleteMode: {
     library: false,
     cards: false,
@@ -186,6 +193,13 @@ const state = {
     moved: false
   },
   listDrag: {
+    row: null,
+    container: null,
+    pointerId: null,
+    startY: 0,
+    moved: false
+  },
+  cardDrag: {
     row: null,
     container: null,
     pointerId: null,
@@ -229,6 +243,16 @@ const state = {
     tipsMode: "",
     pageNoticeTimer: null
   },
+  pdfAnnotation: {
+    active: false,
+    tool: "pencil",
+    color: "#245A9A",
+    pointerId: null,
+    currentStroke: null,
+    erasing: false,
+    undoByPage: new Map(),
+    noticeTimer: null
+  },
   metronome: {
     bpm: 90,
     beatsPerMeasure: 4,
@@ -265,7 +289,7 @@ const state = {
     sound: "grand-piano",
     volume: 0.58,
     transpose: 0,
-    shape: "trail",
+    shape: "circle",
     audioContext: null,
     masterGain: null,
     compressor: null,
@@ -323,10 +347,12 @@ async function init() {
   renderAll();
   openInitialSection();
   setupServiceWorker();
+  showPendingUpdateResult();
 }
 
 function collectElements() {
   el.appShell = document.getElementById("appShell");
+  el.appUpdateNotice = document.getElementById("appUpdateNotice");
   el.backgroundToggleButton = document.getElementById("backgroundToggleButton");
   el.homeTitleButton = document.getElementById("homeTitleButton");
   el.welcomeSection = document.getElementById("welcomeSection");
@@ -358,6 +384,7 @@ function collectElements() {
   el.librarySearch = document.getElementById("librarySearch");
   el.librarySort = document.getElementById("librarySort");
   el.libraryTopAddButton = document.getElementById("libraryTopAddButton");
+  el.libraryFileCount = document.getElementById("libraryFileCount");
   el.libraryAddButton = document.getElementById("libraryAddButton");
   el.libraryBatchEditButton = document.getElementById("libraryBatchEditButton");
   el.libraryBatchBar = document.getElementById("libraryBatchBar");
@@ -473,6 +500,8 @@ function collectElements() {
   el.audioRepeatButton = document.getElementById("audioRepeatButton");
   el.audioPlayer = document.getElementById("audioPlayer");
   el.pianoChordGuide = document.getElementById("pianoChordGuide");
+  el.pianoStyle = document.getElementById("pianoStyle");
+  el.pianoStyleRecipe = document.getElementById("pianoStyleRecipe");
   el.pianoChordRoot = document.getElementById("pianoChordRoot");
   el.pianoChordType = document.getElementById("pianoChordType");
   el.pianoChordPlayButton = document.getElementById("pianoChordPlayButton");
@@ -499,7 +528,16 @@ function collectElements() {
   el.detailContent = document.getElementById("detailContent");
 
   el.pdfViewer = document.getElementById("pdfViewer");
-  el.pdfTopHomeButton = document.getElementById("pdfTopHomeButton");
+  el.pdfToolbar = document.querySelector(".pdf-toolbar");
+  el.pdfAnnotateButton = document.getElementById("pdfAnnotateButton");
+  el.pdfMobileToolsButton = document.getElementById("pdfMobileToolsButton");
+  el.pdfMobileToolsMenu = document.getElementById("pdfMobileToolsMenu");
+  el.pdfMobilePrintButton = document.getElementById("pdfMobilePrintButton");
+  el.pdfMobileAnnotateButton = document.getElementById("pdfMobileAnnotateButton");
+  el.pdfMobileThemeButton = document.getElementById("pdfMobileThemeButton");
+  el.pdfMobileThemeLabel = el.pdfMobileThemeButton?.querySelector(".pdf-mobile-theme-label");
+  el.pdfPageThemeToggleButton = document.getElementById("pdfPageThemeToggleButton");
+  el.pdfTopTapZonesButton = document.getElementById("pdfTopTapZonesButton");
   el.pdfHomeButton = document.getElementById("pdfHomeButton");
   el.pdfTipsButton = document.getElementById("pdfTipsButton");
   el.pdfFollowButton = document.getElementById("pdfFollowButton");
@@ -516,13 +554,21 @@ function collectElements() {
   el.pdfTipsShowOnOpen = document.getElementById("pdfTipsShowOnOpen");
   el.pdfLoading = document.getElementById("pdfLoading");
   el.pdfCanvas = document.getElementById("pdfCanvas");
+  el.pdfAnnotationCanvas = document.getElementById("pdfAnnotationCanvas");
+  el.pdfAnnotationToolbar = document.getElementById("pdfAnnotationToolbar");
+  el.pdfAnnotationNotice = document.getElementById("pdfAnnotationNotice");
+  el.pdfAnnotationUndoButton = document.getElementById("pdfAnnotationUndoButton");
+  el.pdfAnnotationClearButton = document.getElementById("pdfAnnotationClearButton");
+  el.pdfAnnotationPreviousButton = document.getElementById("pdfAnnotationPreviousButton");
+  el.pdfAnnotationNextButton = document.getElementById("pdfAnnotationNextButton");
+  el.pdfAnnotationDoneButton = document.getElementById("pdfAnnotationDoneButton");
   el.pdfTapLeft = document.getElementById("pdfTapLeft");
   el.pdfTapRight = document.getElementById("pdfTapRight");
   el.pdfSettingsLayer = document.getElementById("pdfSettingsLayer");
   el.pdfSettingsCloseButton = document.getElementById("pdfSettingsCloseButton");
   el.pdfSettingsApplyButton = document.getElementById("pdfSettingsApplyButton");
-  el.pdfShowTapZonesButton = document.getElementById("pdfShowTapZonesButton");
-  el.pdfNumberingMode = document.getElementById("pdfNumberingMode");
+  el.pdfPrintButton = document.getElementById("pdfPrintButton");
+  el.pdfNumberingModeOptions = Array.from(document.querySelectorAll('input[name="pdfNumberingMode"]'));
   el.pdfRepeatListEnabled = document.getElementById("pdfRepeatListEnabled");
   el.pdfSongNumberingFields = document.getElementById("pdfSongNumberingFields");
   el.pdfSongStartButton = document.getElementById("pdfSongStartButton");
@@ -698,7 +744,6 @@ function wireEvents() {
   el.listEditForm.addEventListener("submit", saveListEditModal);
   el.listEditSort.addEventListener("change", () => {
     state.listEditSort = normalizeListEditSort(el.listEditSort.value);
-    localStorage.setItem(STORAGE_KEYS.listEditSort, state.listEditSort);
     renderListEditResults();
   });
   el.helpCloseButton.addEventListener("click", closeHelpModal);
@@ -733,7 +778,9 @@ function wireEvents() {
   el.keyboardTransposeDown.addEventListener("click", () => adjustKeyboardTranspose(-1));
   el.keyboardTransposeReset.addEventListener("click", () => setKeyboardTranspose(0));
   el.keyboardTransposeUp.addEventListener("click", () => adjustKeyboardTranspose(1));
-  el.pianoChordRoot.addEventListener("change", renderPianoChordGuide);
+  el.pianoStyle.addEventListener("change", applyPianoStyleGuide);
+  el.pianoStyleRecipe.addEventListener("click", handlePianoStyleRecipeClick);
+  el.pianoChordRoot.addEventListener("change", handlePianoChordRootChange);
   el.pianoChordType.addEventListener("change", renderPianoChordGuide);
   el.pianoChordPlayButton.addEventListener("click", playPianoGuideChord);
   el.chordGuideTab.addEventListener("click", () => showKeyboardGuide("chord"));
@@ -817,6 +864,10 @@ function wireEvents() {
   document.body.addEventListener("pointermove", handleFavoriteDragPointerMove, { passive: false });
   document.body.addEventListener("pointerup", handleFavoriteDragPointerUp);
   document.body.addEventListener("pointercancel", handleFavoriteDragPointerCancel);
+  document.body.addEventListener("pointerdown", handleCardDragPointerDown);
+  document.body.addEventListener("pointermove", handleCardDragPointerMove, { passive: false });
+  document.body.addEventListener("pointerup", handleCardDragPointerUp);
+  document.body.addEventListener("pointercancel", handleCardDragPointerCancel);
   document.body.addEventListener("pointerdown", handleListDragPointerDown);
   document.body.addEventListener("pointermove", handleListDragPointerMove, { passive: false });
   document.body.addEventListener("pointerup", handleListDragPointerUp);
@@ -830,20 +881,55 @@ function wireEvents() {
   document.body.addEventListener("pointerup", handleSwipePointerUp);
   document.body.addEventListener("pointercancel", handleSwipePointerUp);
 
-  el.pdfTopHomeButton.addEventListener("click", returnFromPdfViewer);
+  el.pdfAnnotateButton.addEventListener("click", () => setPdfAnnotationMode(!state.pdfAnnotation.active));
+  el.pdfMobileToolsButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    togglePdfMobileToolsMenu();
+  });
+  el.pdfMobileToolsMenu.addEventListener("click", (event) => event.stopPropagation());
+  el.pdfMobilePrintButton.addEventListener("click", () => {
+    closePdfMobileToolsMenu();
+    printCurrentPdf();
+  });
+  el.pdfMobileAnnotateButton.addEventListener("click", () => {
+    closePdfMobileToolsMenu();
+    setPdfAnnotationMode(!state.pdfAnnotation.active);
+  });
+  el.pdfMobileThemeButton.addEventListener("click", () => {
+    togglePdfPageTheme();
+    closePdfMobileToolsMenu();
+  });
+  document.addEventListener("click", closePdfMobileToolsMenu);
+  el.pdfPageThemeToggleButton.addEventListener("click", togglePdfPageTheme);
+  el.pdfTopTapZonesButton.addEventListener("click", () => {
+    const guideIsVisible = el.pdfViewer.classList.contains("show-tips");
+    if (guideIsVisible) {
+      dismissPdfTips();
+      return;
+    }
+    syncPdfTipsPreference();
+    setPdfTipsVisible(true, 0, "manual");
+  });
   el.pdfHomeButton.addEventListener("click", returnFromPdfViewer);
   el.pdfTipsButton.addEventListener("click", togglePdfTips);
   el.pdfSettingsCloseButton.addEventListener("click", closePdfSettings);
   el.pdfSettingsApplyButton.addEventListener("click", applyPdfSettings);
+  el.pdfPrintButton.addEventListener("click", printCurrentPdf);
+  el.pdfAnnotationToolbar.querySelectorAll("[data-annotation-tool]").forEach((button) => button.addEventListener("click", () => selectPdfAnnotationTool(button.dataset.annotationTool)));
+  el.pdfAnnotationToolbar.querySelectorAll("[data-annotation-color]").forEach((button) => button.addEventListener("click", () => selectPdfAnnotationColor(button.dataset.annotationColor)));
+  el.pdfAnnotationUndoButton.addEventListener("click", undoPdfAnnotation);
+  el.pdfAnnotationClearButton.addEventListener("click", clearPdfAnnotationsForPage);
+  el.pdfAnnotationPreviousButton.addEventListener("click", () => goToPdfPage(state.currentPdf.pageNumber - 1));
+  el.pdfAnnotationNextButton.addEventListener("click", () => goToPdfPage(state.currentPdf.pageNumber + 1));
+  el.pdfAnnotationDoneButton.addEventListener("click", () => setPdfAnnotationMode(false));
+  el.pdfAnnotationCanvas.addEventListener("pointerdown", handlePdfAnnotationPointerDown);
+  el.pdfAnnotationCanvas.addEventListener("pointermove", handlePdfAnnotationPointerMove);
+  el.pdfAnnotationCanvas.addEventListener("pointerup", finishPdfAnnotationPointer);
+  el.pdfAnnotationCanvas.addEventListener("pointercancel", finishPdfAnnotationPointer);
   el.pdfSettingsLayer.addEventListener("click", (event) => {
     if (event.target === el.pdfSettingsLayer) closePdfSettings();
   });
-  el.pdfShowTapZonesButton.addEventListener("click", () => {
-    closePdfSettings();
-    syncPdfTipsPreference();
-    setPdfTipsVisible(true, 0, "manual");
-  });
-  el.pdfNumberingMode.addEventListener("change", updatePdfSettingsDraft);
+  el.pdfNumberingModeOptions.forEach((option) => option.addEventListener("change", updatePdfSettingsDraft));
   el.pdfRepeatListEnabled.addEventListener("change", updatePdfSettingsDraft);
   el.pdfSongStartButton.addEventListener("click", setDraftPdfSongStart);
   el.pdfSongPageCount.addEventListener("change", updatePdfSettingsDraft);
@@ -952,10 +1038,24 @@ function closeAboutModal() {
   fitOpenMobileModals();
 }
 
-async function refreshAppShell() {
+async function refreshAppShell(button = null) {
   closeOverflowMenu();
   closeInfoMenu();
   closeListMoreMenu();
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Checking…";
+  }
+
+  try {
+    sessionStorage.setItem(UPDATE_CHECK_SESSION_KEY, JSON.stringify({
+      fromBuild: APP_BUILD_VERSION,
+      requestedAt: Date.now()
+    }));
+  } catch {
+    // Update checking still works when session storage is unavailable.
+  }
 
   try {
     if ("caches" in window) {
@@ -974,6 +1074,30 @@ async function refreshAppShell() {
   const url = new URL(window.location.href);
   url.searchParams.set("refresh", Date.now().toString(36));
   window.location.replace(url.toString());
+}
+
+function showPendingUpdateResult() {
+  let pending = null;
+  try {
+    pending = JSON.parse(sessionStorage.getItem(UPDATE_CHECK_SESSION_KEY) || "null");
+    sessionStorage.removeItem(UPDATE_CHECK_SESSION_KEY);
+  } catch {
+    pending = null;
+  }
+  if (!pending || Date.now() - Number(pending.requestedAt || 0) > 5 * 60 * 1000) return;
+
+  const updated = pending.fromBuild && pending.fromBuild !== APP_BUILD_VERSION;
+  showAppNotice(updated
+    ? `MusicDocs was updated to build ${APP_BUILD_VERSION}.`
+    : `MusicDocs is up to date (build ${APP_BUILD_VERSION}).`);
+}
+
+function showAppNotice(message) {
+  if (!el.appUpdateNotice) return;
+  window.clearTimeout(state.appNoticeTimer);
+  el.appUpdateNotice.textContent = message;
+  el.appUpdateNotice.classList.remove("hidden");
+  state.appNoticeTimer = window.setTimeout(() => el.appUpdateNotice.classList.add("hidden"), 5000);
 }
 
 function toggleBackgroundMode() {
@@ -1047,12 +1171,14 @@ function closeListMoreMenu() {
 function handleDocumentKeydown(event) {
   if (handlePdfPageTurnKey(event)) return;
 
-  const dragHandle = event.target.closest?.("[data-favorite-drag], [data-list-drag], [data-list-item-drag]");
+  const dragHandle = event.target.closest?.("[data-favorite-drag], [data-card-drag], [data-list-drag], [data-list-item-drag]");
   if (dragHandle && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
     event.preventDefault();
     const direction = event.key === "ArrowUp" ? "up" : "down";
     if (dragHandle.dataset.favoriteDrag) {
       moveFavoriteOrderStep(dragHandle.dataset.favoriteDrag, direction);
+    } else if (dragHandle.dataset.cardDrag) {
+      moveCardOrderStep(dragHandle.dataset.cardDrag, direction);
     } else if (dragHandle.dataset.listDrag) {
       moveListOrderStep(dragHandle.dataset.listDrag, direction);
     } else if (dragHandle.dataset.listItemDrag) {
@@ -2539,6 +2665,17 @@ function remapDuplicateItemReferences(duplicateMap) {
   });
   if (pagesChanged) writeJson(STORAGE_KEYS.pdfPages, pages);
 
+  const annotations = readJson(STORAGE_KEYS.pdfAnnotations, {});
+  let annotationsChanged = false;
+  duplicateMap.forEach((keptId, removedId) => {
+    if (annotations[removedId]) {
+      annotations[keptId] = { ...(annotations[removedId] || {}), ...(annotations[keptId] || {}) };
+      delete annotations[removedId];
+      annotationsChanged = true;
+    }
+  });
+  if (annotationsChanged) writeJson(STORAGE_KEYS.pdfAnnotations, annotations);
+
   const edits = readJson(STORAGE_KEYS.itemEdits, {});
   let editsChanged = false;
   duplicateIds.forEach((id) => {
@@ -2605,7 +2742,8 @@ async function confirmAndDeleteItem(itemId, options = {}) {
     return;
   }
 
-  const ok = window.confirm("Delete this item? This cannot be undone.");
+  const title = itemDisplayTitle(item);
+  const ok = window.confirm(`Delete "${title}" from this app?\n\nIt will also be removed from Favorites and every list on this device. This cannot be undone.`);
   if (!ok) {
     closeSwipeRows();
     return;
@@ -2666,6 +2804,9 @@ async function deleteUserItem(itemId) {
   const pdfPages = readJson(STORAGE_KEYS.pdfPages, {});
   delete pdfPages[itemId];
   writeJson(STORAGE_KEYS.pdfPages, pdfPages);
+  const pdfAnnotations = readJson(STORAGE_KEYS.pdfAnnotations, {});
+  delete pdfAnnotations[itemId];
+  writeJson(STORAGE_KEYS.pdfAnnotations, pdfAnnotations);
 
   const recents = readJson(STORAGE_KEYS.recents, []).filter((id) => id !== itemId);
   writeJson(STORAGE_KEYS.recents, recents);
@@ -3424,6 +3565,7 @@ function audioTypeLabel(track) {
 function renderLibrary() {
   const query = el.librarySearch.value;
   const fileItems = state.data.items.filter(isFileItem);
+  el.libraryFileCount.textContent = `${fileItems.length} ${fileItems.length === 1 ? "file" : "files"}`;
   const filtered = filterItems(fileItems, query);
   renderItemList(el.libraryContent, sortLibraryItems(filtered, el.librarySort.value), {
     compact: true,
@@ -3480,9 +3622,10 @@ function createItemCard(item, options = {}) {
   const deleteAction = batchMode ? "" : itemDeleteActionHtml(item);
   const title = itemDisplayTitle(item);
   const selected = batchMode && state.batchDeleteSelections[options.batchDeleteSection]?.has(item.id);
-  article.className = `${options.compact ? "item-card compact-item-card" : "item-card"}${deleteAction ? " swipe-row" : ""}${options.reorderFavorites ? " favorite-reorder-row" : ""}${batchMode ? " batch-delete-row" : ""}${selected ? " batch-selected" : ""}`;
+  article.className = `${options.compact ? "item-card compact-item-card" : "item-card"}${deleteAction ? " swipe-row" : ""}${options.reorderFavorites ? " favorite-reorder-row" : ""}${options.reorderCards ? " card-reorder-row" : ""}${batchMode ? " batch-delete-row" : ""}${selected ? " batch-selected" : ""}`;
   article.dataset.id = item.id;
   if (options.reorderFavorites) article.dataset.favoriteRow = item.id;
+  if (options.reorderCards) article.dataset.cardRow = item.id;
   if (options.compact) {
     if (batchMode) {
       article.innerHTML = batchDeleteRowHtml(item, options.batchDeleteSection, selected);
@@ -3490,7 +3633,9 @@ function createItemCard(item, options = {}) {
     }
     const reorderHandle = options.reorderFavorites
       ? dragHandleHtml("favorite", item.id, title)
-      : "";
+      : options.reorderCards
+        ? dragHandleHtml("card", item.id, title)
+        : "";
     article.innerHTML = `
       ${deleteAction}
       <div class="swipe-content item-card-content compact-item-card-content">
@@ -3508,7 +3653,7 @@ function createItemCard(item, options = {}) {
     ${deleteAction}
     <div class="swipe-content item-card-content">
       <button class="icon-button favorite-toggle ${state.favorites.has(item.id) ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(item.id)}" aria-label="Toggle favorite">
-        ${state.favorites.has(item.id) ? "ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" : "ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â "}
+        ${state.favorites.has(item.id) ? "★" : "☆"}
       </button>
       <button class="item-open" type="button" data-open="${escapeHtml(item.id)}">
         <h3>${escapeHtml(title)} <span class="type-pill">${escapeHtml(item.type)}</span></h3>
@@ -3757,6 +3902,7 @@ function renderListTabs(active) {
     const expanded = isExpanded ? "true" : "false";
     const selected = list.id === active.id ? "true" : "false";
     const title = list.title || "Untitled List";
+    const alphabeticalView = state.alphabeticalListViewIds.has(list.id);
     const reorderHandle = dragHandleHtml("list", list.id, title);
     return `
       <div class="list-tab-group${activeClass}${expandedClass}${reorderClass}" role="option" aria-selected="${selected}" data-list-row="${escapeHtml(list.id)}">
@@ -3766,6 +3912,7 @@ function renderListTabs(active) {
           <span class="list-tab-title">${escapeHtml(title)}</span>
         </button>
         ${isExpanded && itemCount ? `<span class="list-tab-count" aria-label="${itemCount} items">${itemCount}</span>` : ""}
+        <button class="list-alphabetical-toggle${alphabeticalView ? " is-active" : ""}" type="button" data-toggle-list-alphabetical="${escapeHtml(list.id)}" aria-label="${alphabeticalView ? "Restore saved order for" : "Show alphabetically"} ${escapeHtml(title)}" aria-pressed="${alphabeticalView}" title="${alphabeticalView ? "Restore saved order" : "Show A-Z"}">A-Z</button>
         <button class="icon-button list-row-edit-button" type="button" data-edit-list-row="${escapeHtml(list.id)}" aria-label="Edit ${escapeHtml(title)}" title="Edit list">&#9998;</button>
         ${reorderHandle}
         </div>
@@ -3776,7 +3923,15 @@ function renderListTabs(active) {
 }
 
 function renderInlineListItems(list) {
+  const alphabeticalView = state.alphabeticalListViewIds.has(list.id);
   const entries = getResolvedListEntries(list);
+  if (alphabeticalView) {
+    entries.sort((a, b) => itemDisplayTitle(a.item).localeCompare(
+      itemDisplayTitle(b.item),
+      undefined,
+      { numeric: true, sensitivity: "base" }
+    ));
+  }
   const pdfCount = entries.filter((entry) => entry.item.type === "pdf").length;
   const playlistArmed = state.armedPdfListId === list.id;
 
@@ -3800,7 +3955,7 @@ function renderInlineListItems(list) {
         const favorite = state.favorites.has(entry.item.id);
         const typeLabel = compactTypeLabel(entry.item);
         return `
-          <div class="inline-list-row" data-list-item-row="${escapeHtml(entry.item.id)}">
+          <div class="inline-list-row${alphabeticalView ? " alphabetical-view" : ""}" data-list-item-row="${escapeHtml(entry.item.id)}">
             <button class="icon-button favorite-toggle inline-list-favorite ${favorite ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(entry.item.id)}" aria-label="Toggle favorite for ${escapeHtml(title)}" title="Toggle favorite">
               ${favorite ? "&#9733;" : "&#9734;"}
             </button>
@@ -3809,7 +3964,7 @@ function renderInlineListItems(list) {
               <span class="type-pill compact-type">${escapeHtml(typeLabel)}</span>
             </button>
             <button class="icon-button inline-list-edit-button" type="button" data-edit-item="${escapeHtml(entry.item.id)}" data-edit-context="lists" aria-label="Edit ${escapeHtml(title)}" title="Edit item">&#9998;</button>
-            ${dragHandleHtml("list-item", entry.item.id, title)}
+            ${alphabeticalView ? "" : dragHandleHtml("list-item", entry.item.id, title)}
           </div>
         `;
       }).join("")}
@@ -4013,11 +4168,12 @@ function updateListPickerOptions(listId = state.activeListId) {
 }
 
 function renderCards() {
-  const cards = state.data.items.filter((item) => item.type === "card").sort(compareTitle);
+  const cards = getOrderedCards();
   el.cardsContent.classList.remove("cards-grid");
   renderItemList(el.cardsContent, cards, {
     compact: true,
     compactAction: "edit",
+    reorderCards: true,
     hideMeta: true,
     emptyTitle: "Turn words into a rehearsal aid",
     emptyMessage: "Add a Card for lyrics, cues, actions, or teaching notes that need to be easy to read."
@@ -4047,7 +4203,7 @@ function renderCardPreviews() {
             ${card.key ? `<p class="quick-meta">Key: ${escapeHtml(card.key)}</p>` : ""}
           </button>
           <button class="icon-button favorite-toggle ${state.favorites.has(card.id) ? "favorite-on" : ""}" type="button" data-favorite="${escapeHtml(card.id)}" aria-label="Toggle favorite">
-            ${state.favorites.has(card.id) ? "ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" : "ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â "}
+            ${state.favorites.has(card.id) ? "★" : "☆"}
           </button>
         </div>
         ${card.imageFileId ? localImageSlotHtml(card) : ""}
@@ -4232,7 +4388,7 @@ async function handleBodyClick(event) {
 
   const refreshAppButton = event.target.closest("[data-refresh-app]");
   if (refreshAppButton) {
-    await refreshAppShell();
+    await refreshAppShell(refreshAppButton);
     return;
   }
 
@@ -4421,6 +4577,12 @@ async function handleBodyClick(event) {
     return;
   }
 
+  const alphabeticalListButton = event.target.closest("[data-toggle-list-alphabetical]");
+  if (alphabeticalListButton) {
+    toggleAlphabeticalListView(alphabeticalListButton.dataset.toggleListAlphabetical);
+    return;
+  }
+
   const playListButton = event.target.closest("[data-play-pdf-list]");
   if (playListButton) {
     togglePdfListArming(playListButton.dataset.playPdfList);
@@ -4558,6 +4720,80 @@ function handleListDragPointerDown(event) {
   row.classList.add("is-dragging");
   container.classList.add("list-reorder-active");
   handle.setPointerCapture?.(event.pointerId);
+}
+
+function handleCardDragPointerDown(event) {
+  const handle = event.target.closest("[data-card-drag]");
+  if (!handle) return;
+  const row = handle.closest("[data-card-row]");
+  const container = row?.parentElement;
+  if (!row || !container) return;
+
+  event.preventDefault();
+  closeSwipeRows();
+  state.cardDrag = { row, container, pointerId: event.pointerId, startY: event.clientY, moved: false };
+  row.classList.add("is-dragging");
+  container.classList.add("cards-reorder-active");
+  handle.setPointerCapture?.(event.pointerId);
+}
+
+function handleCardDragPointerMove(event) {
+  const drag = state.cardDrag;
+  if (!drag.row || event.pointerId !== drag.pointerId) return;
+  if (Math.abs(event.clientY - drag.startY) > 4) drag.moved = true;
+  event.preventDefault();
+
+  const rows = Array.from(drag.container.querySelectorAll("[data-card-row]"))
+    .filter((row) => row !== drag.row);
+  const beforeRow = rows.find((row) => {
+    const rect = row.getBoundingClientRect();
+    return event.clientY < rect.top + rect.height / 2;
+  });
+  markDragDestination(drag.container, beforeRow || rows[rows.length - 1]);
+  if (beforeRow) drag.container.insertBefore(drag.row, beforeRow);
+  else drag.container.appendChild(drag.row);
+}
+
+function handleCardDragPointerUp(event) {
+  if (!state.cardDrag.row || event.pointerId !== state.cardDrag.pointerId) return;
+  finishCardDrag(true);
+}
+
+function handleCardDragPointerCancel(event) {
+  if (!state.cardDrag.row || event.pointerId !== state.cardDrag.pointerId) return;
+  finishCardDrag(false);
+}
+
+function finishCardDrag(saveOrder) {
+  const drag = state.cardDrag;
+  if (!drag.row || !drag.container) return;
+  const orderedIds = Array.from(drag.container.querySelectorAll("[data-card-row]"))
+    .map((row) => row.dataset.cardRow)
+    .filter(Boolean);
+  drag.row.classList.remove("is-dragging");
+  drag.container.classList.remove("cards-reorder-active");
+  clearDragDestination(drag.container);
+  const shouldSave = saveOrder && drag.moved;
+  state.cardDrag = { row: null, container: null, pointerId: null, startY: 0, moved: false };
+  if (shouldSave) {
+    saveCardOrder(orderedIds);
+    state.swipe.suppressClick = true;
+    window.setTimeout(() => { state.swipe.suppressClick = false; }, 250);
+  } else if (!saveOrder) {
+    renderCards();
+  }
+}
+
+function getOrderedCards() {
+  const cards = state.data.items.filter((item) => item.type === "card");
+  const byId = new Map(cards.map((card) => [card.id, card]));
+  const savedOrder = readJson(STORAGE_KEYS.cardOrder, []);
+  const ordered = Array.isArray(savedOrder)
+    ? savedOrder.map((id) => byId.get(id)).filter(Boolean)
+    : [];
+  const included = new Set(ordered.map((card) => card.id));
+  const remaining = cards.filter((card) => !included.has(card.id)).sort(compareTitle);
+  return [...ordered, ...remaining];
 }
 
 function handleListItemDragPointerDown(event) {
@@ -5008,7 +5244,7 @@ function cardFactsHtml(item) {
     item.capo ? `Capo: ${item.capo}` : "",
     item.startingNote ? `Starting note: ${item.startingNote}` : ""
   ].filter(Boolean);
-  return facts.length ? `<p class="quick-meta">${escapeHtml(facts.join(" ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· "))}</p>` : "";
+  return facts.length ? `<p class="quick-meta">${escapeHtml(facts.join(" · "))}</p>` : "";
 }
 
 function cardContentHtml(item, options = {}) {
@@ -5175,7 +5411,9 @@ async function renderPdfPage(pageNumber) {
     const page = await state.currentPdf.doc.getPage(pageNumber);
     const unscaled = page.getViewport({ scale: 1 });
     const stageBox = el.pdfStage.getBoundingClientRect();
-    const maxWidth = Math.max(stageBox.width - 24, 320);
+    const visibleViewportWidth = window.visualViewport?.width || document.documentElement.clientWidth || window.innerWidth;
+    const availableStageWidth = Math.min(stageBox.width, visibleViewportWidth);
+    const maxWidth = Math.max(240, availableStageWidth - 24);
     const maxHeight = Math.max(stageBox.height - 24, 320);
     const fitScale = Math.min(maxWidth / unscaled.width, maxHeight / unscaled.height);
     const viewport = page.getViewport({ scale: fitScale });
@@ -5202,6 +5440,9 @@ async function renderPdfPage(pageNumber) {
     updatePdfStatus();
     el.pdfCanvas.classList.remove("hidden");
     el.pdfLoading.classList.add("hidden");
+    alignPdfToolbarToPage();
+    syncPdfAnnotationCanvas();
+    updatePdfAnnotationControls();
   } catch (error) {
     showPdfMessage("This PDF page could not be displayed.");
   } finally {
@@ -5226,6 +5467,20 @@ function updatePdfStatus() {
   el.pdfPageStatus.textContent = [pageStatus, sequenceStatus].filter(Boolean).join(" · ");
   renderPdfPageNumbering(true);
   updatePdfSequenceControls();
+}
+
+function alignPdfToolbarToPage() {
+  if (!el.pdfToolbar || !el.pdfCanvas || el.pdfCanvas.classList.contains("hidden")) return;
+  window.requestAnimationFrame(() => {
+    const toolbarRect = el.pdfToolbar.getBoundingClientRect();
+    const canvasRect = el.pdfCanvas.getBoundingClientRect();
+    if (!toolbarRect.width || !canvasRect.width) return;
+    const left = Math.max(8, Math.round(canvasRect.left - toolbarRect.left));
+    const right = Math.max(8, Math.round(toolbarRect.right - canvasRect.right));
+    el.pdfToolbar.style.setProperty("--pdf-page-left", `${left}px`);
+    el.pdfToolbar.style.setProperty("--pdf-page-right", `${right}px`);
+    el.pdfViewer.style.setProperty("--pdf-page-right", `${right}px`);
+  });
 }
 
 function returnFromPdfViewer() {
@@ -5266,6 +5521,70 @@ function closePdfSettings() {
   el.pdfTipsButton.setAttribute("aria-expanded", "false");
 }
 
+async function printCurrentPdf() {
+  const item = state.currentPdf.item;
+  if (!item) return;
+  const isAppleTouchDevice = /iPad|iPhone|iPod/i.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (isAppleTouchDevice && navigator.share) {
+    try {
+      let sourceFile;
+      if (item.fileId) {
+        sourceFile = await getPdfFile(item.fileId);
+        if (!sourceFile) throw new Error("Imported PDF missing");
+      } else if (item.file) {
+        const encodedPath = item.file.split("/").map((part) => encodeURIComponent(part)).join("/");
+        const response = await fetch(new URL(encodedPath, window.location.href).href);
+        if (!response.ok) throw new Error("PDF fetch failed");
+        sourceFile = await response.blob();
+      } else {
+        throw new Error("PDF path missing");
+      }
+      const safeTitle = itemDisplayTitle(item).replace(/[\\/:*?"<>|]+/g, "-").trim() || "Sheet music";
+      const shareFile = new File([sourceFile], `${safeTitle}.pdf`, { type: "application/pdf" });
+      if (!navigator.canShare || navigator.canShare({ files: [shareFile] })) {
+        await navigator.share({ files: [shareFile], title: safeTitle });
+        closePdfSettings();
+        return;
+      }
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+      window.alert("The Share sheet could not open. The PDF will open next; use Safari's Share button, then choose Print.");
+    }
+  } else if (isAppleTouchDevice) {
+    window.alert("The clean PDF will open next.\n\nTo print on iPhone or iPad, use Safari's Share button, then choose Print.");
+  }
+  const printWindow = window.open("about:blank", "_blank");
+  if (!printWindow) {
+    window.alert("Allow pop-ups for this app, then choose Print PDF again.");
+    return;
+  }
+  printWindow.document.title = `Preparing ${itemDisplayTitle(item)}`;
+  printWindow.document.body.innerHTML = '<p style="font:16px system-ui;padding:24px">Preparing PDF for printing&hellip;</p>';
+  try {
+    let printUrl = "";
+    let revokeUrl = false;
+    if (item.fileId) {
+      const file = await getPdfFile(item.fileId);
+      if (!file) throw new Error("Imported PDF missing");
+      printUrl = URL.createObjectURL(file);
+      revokeUrl = true;
+    } else if (item.file) {
+      const encodedPath = item.file.split("/").map((part) => encodeURIComponent(part)).join("/");
+      printUrl = new URL(encodedPath, window.location.href).href;
+    } else {
+      throw new Error("PDF path missing");
+    }
+    printWindow.location.replace(printUrl);
+    printWindow.focus();
+    if (revokeUrl) window.setTimeout(() => URL.revokeObjectURL(printUrl), 120000);
+    closePdfSettings();
+  } catch (error) {
+    printWindow.close();
+    window.alert("This PDF could not be prepared for printing.");
+  }
+}
+
 function getPdfViewerSettings() {
   const settings = readJson(STORAGE_KEYS.settings, {});
   return {
@@ -5279,7 +5598,9 @@ function syncPdfViewerSettings() {
   const savedSettings = getPdfViewerSettings();
   const settings = state.pdfSettingsDraft || savedSettings;
   if (state.pdfSettingsDraft) el.pdfTipsShowOnOpen.checked = settings.showOnOpen;
-  el.pdfNumberingMode.value = settings.numberingMode;
+  el.pdfNumberingModeOptions.forEach((option) => {
+    option.checked = option.value === settings.numberingMode;
+  });
   el.pdfRepeatListEnabled.checked = settings.nextSongDefault;
   el.pdfMetronomeEnabled.checked = settings.metronomeEnabled;
   el.pdfSettingsTempoInput.value = String(settings.bpm || state.metronome.bpm);
@@ -5294,13 +5615,55 @@ function syncPdfViewerSettings() {
     ? `Page 1 is set to PDF page ${custom.startPage}.`
     : "Go to the page that should be page 1, then choose “Use current page as page 1.”";
   renderPdfPageNumbering(false);
+  applyPdfPageTheme();
+}
+
+function togglePdfPageTheme() {
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  const nextSettings = { ...settings, pdfDarkPage: !settings.pdfDarkPage };
+  writeJson(STORAGE_KEYS.settings, nextSettings);
+  applyPdfPageTheme(nextSettings.pdfDarkPage);
+}
+
+function applyPdfPageTheme(darkPage = Boolean(readJson(STORAGE_KEYS.settings, {}).pdfDarkPage)) {
+  el.pdfViewer?.classList.toggle("pdf-page-dark", darkPage);
+  if (el.pdfPageThemeToggleButton) {
+    el.pdfPageThemeToggleButton.setAttribute("aria-pressed", String(darkPage));
+    el.pdfPageThemeToggleButton.setAttribute("aria-label", darkPage ? "Use white sheet music background" : "Use black sheet music background");
+    el.pdfPageThemeToggleButton.title = darkPage ? "Use white sheet music background" : "Use black sheet music background";
+  }
+  if (el.pdfMobileThemeButton) {
+    el.pdfMobileThemeButton.setAttribute("aria-pressed", String(darkPage));
+    if (el.pdfMobileThemeLabel) el.pdfMobileThemeLabel.textContent = darkPage ? "Light page" : "Dark page";
+  }
+  syncPdfMobileToolsState();
+}
+
+function togglePdfMobileToolsMenu() {
+  const opening = el.pdfMobileToolsMenu.classList.contains("hidden");
+  el.pdfMobileToolsMenu.classList.toggle("hidden", !opening);
+  el.pdfMobileToolsButton.setAttribute("aria-expanded", opening ? "true" : "false");
+  syncPdfMobileToolsState();
+}
+
+function closePdfMobileToolsMenu() {
+  if (!el.pdfMobileToolsMenu) return;
+  el.pdfMobileToolsMenu.classList.add("hidden");
+  el.pdfMobileToolsButton?.setAttribute("aria-expanded", "false");
+}
+
+function syncPdfMobileToolsState() {
+  if (!el.pdfMobileAnnotateButton) return;
+  el.pdfMobileAnnotateButton.setAttribute("aria-pressed", state.pdfAnnotation.active ? "true" : "false");
+  el.pdfMobileAnnotateButton.lastChild.textContent = state.pdfAnnotation.active ? " Done annotating" : " Annotate";
+  el.pdfMobileToolsButton.classList.toggle("has-active-tool", state.pdfAnnotation.active || el.pdfViewer.classList.contains("pdf-page-dark"));
 }
 
 function updatePdfSettingsDraft() {
   if (!state.pdfSettingsDraft) return;
   const draft = state.pdfSettingsDraft;
   draft.showOnOpen = el.pdfTipsShowOnOpen.checked;
-  draft.numberingMode = el.pdfNumberingMode.value;
+  draft.numberingMode = el.pdfNumberingModeOptions.find((option) => option.checked)?.value || "off";
   draft.nextSongDefault = el.pdfRepeatListEnabled.checked;
   draft.metronomeEnabled = el.pdfMetronomeEnabled.checked;
   draft.bpm = clamp(Math.round(Number(el.pdfSettingsTempoInput.value) || 90), 40, 220);
@@ -5387,7 +5750,7 @@ function renderPdfPageNumbering(showNotice) {
   const useful = Boolean(displayed && displayed.count > 1);
   el.pdfViewer.classList.toggle("show-page-number", useful);
   el.pdfPageMarker.classList.toggle("hidden", !useful);
-  el.pdfPageMarker.textContent = useful ? `#${displayed.number}` : "";
+  el.pdfPageMarker.textContent = useful ? String(displayed.number) : "";
   if (!useful || !showNotice) {
     el.pdfPageNotice.classList.add("hidden");
     return;
@@ -5447,6 +5810,9 @@ function setPdfTipsVisible(showTips, duration = 0, mode = "") {
   el.pdfViewer.classList.toggle("show-tips", showTips);
   el.pdfZoneTips.dataset.guideMode = showTips ? mode : "";
   el.pdfZoneTips.setAttribute("aria-hidden", showTips ? "false" : "true");
+  el.pdfTopTapZonesButton.setAttribute("aria-pressed", String(showTips));
+  el.pdfTopTapZonesButton.setAttribute("aria-label", showTips ? "Hide tap zones" : "Show tap zones");
+  el.pdfTopTapZonesButton.title = showTips ? "Hide tap zones" : "Show tap zones";
   if (showTips && duration > 0) {
     state.currentPdf.tipsTimer = window.setTimeout(() => {
       setPdfTipsVisible(false);
@@ -5564,7 +5930,232 @@ function goToPdfPage(pageNumber) {
   renderPdfPage(targetPage);
 }
 
+function getPdfAnnotationPageKey() {
+  const itemId = state.currentPdf.item?.id;
+  return itemId ? `${itemId}:${state.currentPdf.pageNumber}` : "";
+}
+
+function getPdfAnnotationDocument() {
+  return readJson(STORAGE_KEYS.pdfAnnotations, {});
+}
+
+function getPdfPageAnnotations() {
+  const itemId = state.currentPdf.item?.id;
+  if (!itemId) return [];
+  const all = getPdfAnnotationDocument();
+  const strokes = all[itemId]?.[state.currentPdf.pageNumber];
+  return Array.isArray(strokes) ? strokes : [];
+}
+
+function savePdfPageAnnotations(strokes) {
+  const itemId = state.currentPdf.item?.id;
+  if (!itemId) return;
+  const all = getPdfAnnotationDocument();
+  const itemPages = { ...(all[itemId] || {}) };
+  if (strokes.length) itemPages[state.currentPdf.pageNumber] = strokes;
+  else delete itemPages[state.currentPdf.pageNumber];
+  if (Object.keys(itemPages).length) all[itemId] = itemPages;
+  else delete all[itemId];
+  writeJson(STORAGE_KEYS.pdfAnnotations, all);
+}
+
+function clonePdfAnnotationStrokes(strokes) {
+  return strokes.map((stroke) => ({ ...stroke, points: stroke.points.map((point) => ({ ...point })) }));
+}
+
+function pushPdfAnnotationUndo() {
+  const key = getPdfAnnotationPageKey();
+  if (!key) return;
+  const history = state.pdfAnnotation.undoByPage.get(key) || [];
+  history.push(clonePdfAnnotationStrokes(getPdfPageAnnotations()));
+  if (history.length > 20) history.shift();
+  state.pdfAnnotation.undoByPage.set(key, history);
+  updatePdfAnnotationControls();
+}
+
+function undoPdfAnnotation() {
+  const key = getPdfAnnotationPageKey();
+  const history = state.pdfAnnotation.undoByPage.get(key) || [];
+  if (!history.length) return;
+  savePdfPageAnnotations(history.pop());
+  state.pdfAnnotation.undoByPage.set(key, history);
+  renderPdfAnnotations();
+  updatePdfAnnotationControls();
+}
+
+function clearPdfAnnotationsForPage() {
+  if (!getPdfPageAnnotations().length) return;
+  if (!window.confirm("Clear all annotations from this page?")) return;
+  pushPdfAnnotationUndo();
+  savePdfPageAnnotations([]);
+  renderPdfAnnotations();
+  updatePdfAnnotationControls();
+}
+
+function setPdfAnnotationMode(active) {
+  if (!state.currentPdf.doc) return;
+  state.pdfAnnotation.active = Boolean(active);
+  state.pdfAnnotation.pointerId = null;
+  state.pdfAnnotation.currentStroke = null;
+  state.pdfAnnotation.erasing = false;
+  hidePdfTips();
+  el.pdfViewer.classList.toggle("annotation-active", state.pdfAnnotation.active);
+  el.pdfAnnotationToolbar.classList.toggle("hidden", !state.pdfAnnotation.active);
+  el.pdfAnnotateButton.setAttribute("aria-pressed", state.pdfAnnotation.active ? "true" : "false");
+  el.pdfAnnotateButton.setAttribute("aria-label", state.pdfAnnotation.active ? "Finish annotating" : "Annotate this PDF");
+  el.pdfTopTapZonesButton.disabled = state.pdfAnnotation.active;
+  el.pdfTapLeft.disabled = state.pdfAnnotation.active;
+  el.pdfTapRight.disabled = state.pdfAnnotation.active;
+  if (state.pdfAnnotation.active) {
+    showPdfAnnotationNotice();
+    syncPdfAnnotationCanvas();
+  }
+  syncPdfMobileToolsState();
+  updatePdfAnnotationControls();
+}
+
+function showPdfAnnotationNotice() {
+  window.clearTimeout(state.pdfAnnotation.noticeTimer);
+  el.pdfAnnotationNotice.classList.remove("hidden");
+  state.pdfAnnotation.noticeTimer = window.setTimeout(() => el.pdfAnnotationNotice.classList.add("hidden"), 2400);
+}
+
+function selectPdfAnnotationTool(tool) {
+  if (!["pencil", "highlighter", "eraser"].includes(tool)) return;
+  state.pdfAnnotation.tool = tool;
+  updatePdfAnnotationControls();
+}
+
+function selectPdfAnnotationColor(color) {
+  state.pdfAnnotation.color = color;
+  if (state.pdfAnnotation.tool === "eraser") state.pdfAnnotation.tool = "pencil";
+  updatePdfAnnotationControls();
+}
+
+function updatePdfAnnotationControls() {
+  if (!el.pdfAnnotationToolbar) return;
+  el.pdfAnnotationToolbar.querySelectorAll("[data-annotation-tool]").forEach((button) => button.setAttribute("aria-pressed", button.dataset.annotationTool === state.pdfAnnotation.tool ? "true" : "false"));
+  el.pdfAnnotationToolbar.querySelectorAll("[data-annotation-color]").forEach((button) => button.setAttribute("aria-pressed", button.dataset.annotationColor === state.pdfAnnotation.color ? "true" : "false"));
+  const history = state.pdfAnnotation.undoByPage.get(getPdfAnnotationPageKey()) || [];
+  el.pdfAnnotationUndoButton.disabled = !history.length;
+  el.pdfAnnotationClearButton.disabled = !getPdfPageAnnotations().length;
+  el.pdfAnnotationPreviousButton.disabled = state.currentPdf.pageNumber <= 1;
+  el.pdfAnnotationNextButton.disabled = state.currentPdf.pageNumber >= state.currentPdf.pageCount;
+}
+
+function syncPdfAnnotationCanvas() {
+  if (!el.pdfAnnotationCanvas || !el.pdfCanvas || el.pdfCanvas.classList.contains("hidden")) return;
+  window.requestAnimationFrame(() => {
+    const stageRect = el.pdfStage.getBoundingClientRect();
+    const pageRect = el.pdfCanvas.getBoundingClientRect();
+    if (!pageRect.width || !pageRect.height) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    el.pdfAnnotationCanvas.style.left = `${pageRect.left - stageRect.left}px`;
+    el.pdfAnnotationCanvas.style.top = `${pageRect.top - stageRect.top}px`;
+    el.pdfAnnotationCanvas.style.width = `${pageRect.width}px`;
+    el.pdfAnnotationCanvas.style.height = `${pageRect.height}px`;
+    el.pdfAnnotationCanvas.width = Math.max(1, Math.round(pageRect.width * dpr));
+    el.pdfAnnotationCanvas.height = Math.max(1, Math.round(pageRect.height * dpr));
+    el.pdfAnnotationCanvas.dataset.dpr = String(dpr);
+    renderPdfAnnotations();
+  });
+}
+
+function renderPdfAnnotations() {
+  const canvas = el.pdfAnnotationCanvas;
+  if (!canvas?.width) return;
+  const dpr = Number(canvas.dataset.dpr) || 1;
+  const width = canvas.width / dpr;
+  const height = canvas.height / dpr;
+  const context = canvas.getContext("2d");
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+  context.clearRect(0, 0, width, height);
+  getPdfPageAnnotations().forEach((stroke) => drawPdfAnnotationStroke(context, stroke, width, height));
+  if (state.pdfAnnotation.currentStroke) drawPdfAnnotationStroke(context, state.pdfAnnotation.currentStroke, width, height);
+}
+
+function drawPdfAnnotationStroke(context, stroke, width, height) {
+  if (!stroke?.points?.length) return;
+  context.save();
+  context.strokeStyle = stroke.color || "#245A9A";
+  context.globalAlpha = stroke.tool === "highlighter" ? 0.3 : 0.94;
+  context.lineWidth = Math.max(stroke.tool === "highlighter" ? 14 : 2.2, Math.min(width, height) * (stroke.tool === "highlighter" ? 0.022 : 0.0035));
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.beginPath();
+  stroke.points.forEach((point, index) => {
+    const x = point.x * width;
+    const y = point.y * height;
+    if (index) context.lineTo(x, y);
+    else context.moveTo(x, y);
+  });
+  if (stroke.points.length === 1) context.lineTo(stroke.points[0].x * width + 0.1, stroke.points[0].y * height + 0.1);
+  context.stroke();
+  context.restore();
+}
+
+function getPdfAnnotationPoint(event) {
+  const rect = el.pdfAnnotationCanvas.getBoundingClientRect();
+  return { x: clamp((event.clientX - rect.left) / Math.max(rect.width, 1), 0, 1), y: clamp((event.clientY - rect.top) / Math.max(rect.height, 1), 0, 1) };
+}
+
+function handlePdfAnnotationPointerDown(event) {
+  if (!state.pdfAnnotation.active || (event.pointerType === "mouse" && event.button !== 0)) return;
+  event.preventDefault();
+  state.pdfAnnotation.pointerId = event.pointerId;
+  el.pdfAnnotationCanvas.setPointerCapture?.(event.pointerId);
+  pushPdfAnnotationUndo();
+  const point = getPdfAnnotationPoint(event);
+  if (state.pdfAnnotation.tool === "eraser") {
+    state.pdfAnnotation.erasing = true;
+    erasePdfAnnotationsAt(point);
+    return;
+  }
+  state.pdfAnnotation.currentStroke = { tool: state.pdfAnnotation.tool, color: state.pdfAnnotation.color, points: [point] };
+  renderPdfAnnotations();
+}
+
+function handlePdfAnnotationPointerMove(event) {
+  if (!state.pdfAnnotation.active || state.pdfAnnotation.pointerId !== event.pointerId) return;
+  event.preventDefault();
+  const events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
+  events.forEach((sample) => {
+    const point = getPdfAnnotationPoint(sample);
+    if (state.pdfAnnotation.erasing) erasePdfAnnotationsAt(point);
+    else state.pdfAnnotation.currentStroke?.points.push(point);
+  });
+  renderPdfAnnotations();
+}
+
+function finishPdfAnnotationPointer(event) {
+  if (state.pdfAnnotation.pointerId !== event.pointerId) return;
+  event.preventDefault();
+  if (state.pdfAnnotation.currentStroke) {
+    const strokes = getPdfPageAnnotations();
+    strokes.push(state.pdfAnnotation.currentStroke);
+    savePdfPageAnnotations(strokes);
+  }
+  state.pdfAnnotation.pointerId = null;
+  state.pdfAnnotation.currentStroke = null;
+  state.pdfAnnotation.erasing = false;
+  renderPdfAnnotations();
+  updatePdfAnnotationControls();
+}
+
+function erasePdfAnnotationsAt(point) {
+  const canvasRect = el.pdfAnnotationCanvas.getBoundingClientRect();
+  const threshold = 22 / Math.max(1, Math.min(canvasRect.width, canvasRect.height));
+  const strokes = getPdfPageAnnotations();
+  const kept = strokes.filter((stroke) => !stroke.points.some((sample) => Math.hypot(sample.x - point.x, sample.y - point.y) <= threshold));
+  if (kept.length !== strokes.length) {
+    savePdfPageAnnotations(kept);
+    renderPdfAnnotations();
+  }
+}
+
 function closePdfViewer() {
+  closePdfMobileToolsMenu();
+  setPdfAnnotationMode(false);
   hidePdfTips();
   closePdfSettings();
   window.clearTimeout(state.currentPdf.pageNoticeTimer);
@@ -5583,6 +6174,7 @@ function closePdfViewer() {
 }
 
 function handlePdfTapZoneClick(event, direction) {
+  if (state.pdfAnnotation.active) return;
   if (state.currentPdf.suppressClick) {
     event.preventDefault();
     state.currentPdf.suppressClick = false;
@@ -5612,6 +6204,7 @@ function performPdfTapZoneAction(clientY, direction) {
 }
 
 function handlePdfTouchStart(event) {
+  if (state.pdfAnnotation.active) return;
   if (event.touches.length === 2) {
     event.preventDefault();
     const center = getTouchCenter(event.touches);
@@ -5636,6 +6229,7 @@ function handlePdfTouchStart(event) {
 }
 
 function handlePdfTouchMove(event) {
+  if (state.pdfAnnotation.active) return;
   if (state.currentPdf.touchMode === "pinch" && event.touches.length >= 2) {
     event.preventDefault();
     const distance = getTouchDistance(event.touches);
@@ -5662,6 +6256,7 @@ function handlePdfTouchMove(event) {
 }
 
 function handlePdfTouchEnd(event) {
+  if (state.pdfAnnotation.active) return;
   if (state.currentPdf.touchMode === "pinch") {
     event.preventDefault();
     if (event.touches.length >= 2) return;
@@ -5759,6 +6354,7 @@ function applyPdfTransform() {
   const { panX, panY, zoom } = state.currentPdf;
   el.pdfCanvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
   el.pdfCanvas.classList.toggle("is-zoomed", zoom > 1.02);
+  syncPdfAnnotationCanvas();
 }
 
 function clampPdfPan() {
@@ -6219,12 +6815,44 @@ const PIANO_CHORDS = {
   sixth: { intervals: [0, 4, 7, 9], use: "The 6th adds warmth without the stronger pull of a 7th; useful in country, jazz, and older popular music." },
   ninth: { intervals: [0, 2, 4, 7, 10], use: "The 9th expands a dominant 7th with extra color, especially in blues, funk, and jazz." }
 };
+const PIANO_STYLE_GUIDES = {
+  hymn: {
+    intro: "A familiar, settled sound. Move away from the home chord, then return to it.",
+    chordType: "major", scaleType: "major", scaleLabel: "Major",
+    chords: [[0, "major", "I · Home"], [5, "major", "IV · Away"], [7, "dominant7", "V7 · Leads home"], [0, "major", "I · Home"]]
+  },
+  country: {
+    intro: "Start with three dependable chords. The dominant 7th gives the return home extra pull.",
+    chordType: "major", scaleType: "majorPentatonic", scaleLabel: "Major pentatonic",
+    chords: [[0, "major", "I"], [5, "major", "IV"], [7, "dominant7", "V7"], [0, "major", "I"]]
+  },
+  blues: {
+    intro: "Use dominant 7th chords for the progression and the Blues scale for melody or improvising.",
+    chordType: "dominant7", scaleType: "blues", scaleLabel: "Blues",
+    chords: [[0, "dominant7", "I7"], [5, "dominant7", "IV7"], [7, "dominant7", "V7"], [0, "dominant7", "I7"]]
+  },
+  jazz: {
+    intro: "Try the common ii–V–I movement: mellow minor 7th, tense dominant 7th, then a warm major 7th home.",
+    chordType: "major7", scaleType: "dorian", scaleLabel: "Dorian over ii; Mixolydian over V; Major over I",
+    chords: [[2, "minor7", "ii7", "dorian"], [7, "dominant7", "V7", "mixolydian"], [0, "major7", "Imaj7", "major"]]
+  },
+  pop: {
+    intro: "These four chords create a familiar progression used in many popular songs.",
+    chordType: "major", scaleType: "majorPentatonic", scaleLabel: "Major or major pentatonic",
+    chords: [[0, "major", "I"], [7, "major", "V"], [9, "minor", "vi"], [5, "major", "IV"]]
+  }
+};
+const PIANO_CHORD_SUFFIXES = {
+  major: "", minor: "m", dominant7: "7", major7: "maj7", minor7: "m7"
+};
 const PIANO_SCALES = {
   major: { intervals: [0, 2, 4, 5, 7, 9, 11, 12], label: "Major", use: "Bright and familiar; common in hymns, folk music, and popular songs." },
   naturalMinor: { intervals: [0, 2, 3, 5, 7, 8, 10, 12], label: "Natural minor", use: "Reflective or dramatic; the basic minor-scale pattern." },
   majorPentatonic: { intervals: [0, 2, 4, 7, 9, 12], label: "Major pentatonic", use: "Open and friendly; useful in folk, country, and simple improvisation." },
   minorPentatonic: { intervals: [0, 3, 5, 7, 10, 12], label: "Minor pentatonic", use: "Flexible and expressive; widely used in rock, blues, and improvisation." },
   blues: { intervals: [0, 3, 5, 6, 7, 10, 12], label: "Blues", use: "Adds the distinctive blue note between the fourth and fifth." },
+  dorian: { intervals: [0, 2, 3, 5, 7, 9, 10, 12], label: "Dorian", use: "A minor sound with a brighter sixth; common over minor 7th chords in jazz, funk, and modal music." },
+  mixolydian: { intervals: [0, 2, 4, 5, 7, 9, 10, 12], label: "Mixolydian", use: "A major sound with a lowered seventh; useful over dominant 7th chords in blues, jazz, rock, and country." },
   chromatic: { intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], label: "Chromatic", use: "Uses every neighboring note; helpful for fingering, warmups, and hearing half steps." }
 };
 const PIANO_NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
@@ -6249,7 +6877,7 @@ const KEY_SIGNATURE_POSITIONS = {
 };
 const keyboardKeyChange = { steps: 0 };
 const PIANO_KEY_NAMES = ["C", "C♯ / D♭", "D", "D♯ / E♭", "E", "F", "F♯ / G♭", "G", "G♯ / A♭", "A", "A♯ / B♭", "B"];
-const PIANO_SHAPES = new Set(["trail", "garden", "twinkle", "circle", "zigzag", "rainbow"]);
+const PIANO_SHAPES = new Set(["circle", "zigzag", "rainbow"]);
 const PIANO_GARDEN_OBJECTS = [
   ["🐶", "Dog"], ["🐱", "Cat"], ["🎵", "Music note"],
   ["🦊", "Fox"], ["🐼", "Panda"], ["🎹", "Keyboard"],
@@ -6330,7 +6958,7 @@ function loadPianoSettings() {
   const saved = readJson(STORAGE_KEYS.piano, {});
   if (PIANO_SOUND_LABELS[saved.sound]) state.piano.sound = saved.sound;
   if (PIANO_SHAPES.has(saved.shape)) state.piano.shape = saved.shape;
-  else if (saved.shape) state.piano.shape = "trail";
+  else if (saved.shape) state.piano.shape = "circle";
   const savedVolume = Number(saved.volume);
   if (Number.isFinite(savedVolume)) state.piano.volume = clamp(savedVolume, 0, 1);
   const savedTranspose = Number(saved.transpose);
@@ -6417,7 +7045,11 @@ function renderPiano() {
   });
   el.pianoSoundStatus.textContent = PIANO_SOUND_LABELS[state.piano.sound];
   if (el.keyboardSound) el.keyboardSound.value = state.piano.sound;
-  if (el.keyboardVolume) el.keyboardVolume.value = String(Math.round(state.piano.volume * 100));
+  if (el.keyboardVolume) {
+    const keyboardVolumePercent = Math.round(state.piano.volume * 100);
+    el.keyboardVolume.value = String(keyboardVolumePercent);
+    el.keyboardVolume.style.setProperty("--volume-level", `${keyboardVolumePercent}%`);
+  }
   if (el.keyboardTransposeValue) el.keyboardTransposeValue.value = state.piano.transpose > 0 ? `+${state.piano.transpose}` : String(state.piano.transpose);
   if (el.keyboardTransposeDown) el.keyboardTransposeDown.disabled = state.piano.transpose <= -6;
   if (el.keyboardTransposeUp) el.keyboardTransposeUp.disabled = state.piano.transpose >= 6;
@@ -6432,7 +7064,7 @@ function renderPiano() {
 }
 
 function handlePianoShapeChange() {
-  state.piano.shape = PIANO_SHAPES.has(el.pianoShape.value) ? el.pianoShape.value : "trail";
+  state.piano.shape = PIANO_SHAPES.has(el.pianoShape.value) ? el.pianoShape.value : "circle";
   state.piano.twinkleIndex = 0;
   savePianoSettings();
   renderPiano();
@@ -6444,9 +7076,20 @@ const SIDETRACK_NOTES = [
   ["G sharp 4", "G#"], ["A4", "A"], ["A sharp 4", "A#"], ["B4", "B"], ["C5", "C"]
 ];
 const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20, lastPhrase: -1 };
+const JAZZ_PUZZLE_IMAGES = [
+  "assets/jazz-ensemble-puzzle.webp",
+  "assets/jazz-ensemble-puzzle-2.webp",
+  "assets/jazz-ensemble-puzzle-3.webp",
+  "assets/jazz-ensemble-puzzle-4.webp",
+  "assets/jazz-ensemble-puzzle-5.webp",
+  "assets/jazz-ensemble-puzzle-6.webp",
+  "assets/jazz-ensemble-puzzle-7.webp"
+];
 let sidetrackPuzzleDrag = null;
 let sidetrackJazzDrag = null;
 let sidetrackJazzSelected = null;
+let sidetrackJazzImageIndex = 0;
+let sidetrackJazzAdvanceTimer = null;
 
 function initializeSidetrackActivities() {
   if (!el.sidetrackKeyboard || el.sidetrackKeyboard.childElementCount) return;
@@ -6472,19 +7115,31 @@ function initializeSidetrackActivities() {
 
 function buildJazzPuzzle() {
   if (!el.sidetrackJazzPuzzle) return;
+  window.clearTimeout(sidetrackJazzAdvanceTimer);
+  sidetrackJazzAdvanceTimer = null;
+  const image = JAZZ_PUZZLE_IMAGES[sidetrackJazzImageIndex];
+  const pictureNumber = sidetrackJazzImageIndex + 1;
+  el.sidetrackJazzPuzzle.style.setProperty("--jazz-puzzle-image", `url("${image}")`);
   const pieces = Array.from({ length: 9 }, (_, index) => index).sort(() => Math.random() - 0.5);
   el.sidetrackJazzPuzzle.innerHTML = `
     <div class="jazz-puzzle-heading">
-      <strong>Build the jazz ensemble</strong>
+      <strong>Build the music scene</strong>
       <button class="jazz-puzzle-reset" type="button" aria-label="Shuffle and start over" title="Start over">↻</button>
     </div>
-    <div class="jazz-puzzle-board" aria-label="Jazz ensemble puzzle board">
-      ${Array.from({ length: 9 }, (_, index) => `<span class="jazz-puzzle-slot" data-jazz-index="${index}"></span>`).join("")}
+    <div class="jazz-puzzle-choices" role="group" aria-label="Choose a puzzle picture">
+      ${JAZZ_PUZZLE_IMAGES.map((choiceImage, index) => `
+        <button class="jazz-puzzle-choice${index === sidetrackJazzImageIndex ? " selected" : ""}" type="button" data-jazz-picture="${index}" aria-label="Choose puzzle ${index + 1}" aria-pressed="${index === sidetrackJazzImageIndex}" style="--jazz-choice-image: url('${choiceImage}')"></button>
+      `).join("")}
     </div>
-    <div class="jazz-puzzle-tray" aria-label="Puzzle pieces">
-      ${pieces.map((index) => `<button class="jazz-puzzle-piece" type="button" data-jazz-index="${index}" aria-label="Jazz puzzle piece ${index + 1}"></button>`).join("")}
+    <div class="jazz-puzzle-workspace">
+      <div class="jazz-puzzle-board" aria-label="Music picture ${pictureNumber} of ${JAZZ_PUZZLE_IMAGES.length} puzzle board">
+        ${Array.from({ length: 9 }, (_, index) => `<span class="jazz-puzzle-slot" data-jazz-index="${index}"></span>`).join("")}
+      </div>
+      <div class="jazz-puzzle-tray" aria-label="Current puzzle piece">
+        ${pieces.map((index) => `<button class="jazz-puzzle-piece" type="button" data-jazz-index="${index}" aria-label="Music puzzle piece ${index + 1}"></button>`).join("")}
+      </div>
     </div>
-    <p class="jazz-puzzle-status" aria-live="polite">Piece 1 of 9</p>`;
+    <p class="jazz-puzzle-status" aria-live="polite">Picture ${pictureNumber} of ${JAZZ_PUZZLE_IMAGES.length} • Piece 1 of 9</p>`;
   el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-piece").forEach((piece) => {
     const index = Number(piece.dataset.jazzIndex);
     piece.style.setProperty("--piece-column", String(index % 3));
@@ -6504,10 +7159,20 @@ function buildJazzPuzzle() {
       }
     });
   });
+  el.sidetrackJazzPuzzle.querySelectorAll("[data-jazz-picture]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextIndex = Number(button.dataset.jazzPicture);
+      if (!Number.isInteger(nextIndex) || !JAZZ_PUZZLE_IMAGES[nextIndex]) return;
+      sidetrackJazzImageIndex = nextIndex;
+      resetJazzPuzzle();
+    });
+  });
   el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-reset")?.addEventListener("click", resetJazzPuzzle);
 }
 
 function resetJazzPuzzle() {
+  window.clearTimeout(sidetrackJazzAdvanceTimer);
+  sidetrackJazzAdvanceTimer = null;
   sidetrackJazzDrag?.floating?.remove();
   sidetrackJazzDrag?.piece?.classList.remove("dragging");
   sidetrackJazzDrag = null;
@@ -6601,7 +7266,10 @@ function placeJazzPuzzlePiece(piece, slot) {
   piece.disabled = true;
   const remaining = el.sidetrackJazzPuzzle.querySelectorAll(".jazz-puzzle-tray .jazz-puzzle-piece").length;
   const status = el.sidetrackJazzPuzzle.querySelector(".jazz-puzzle-status");
-  status.textContent = remaining ? `Piece ${10 - remaining} of 9` : "Jazz ensemble complete!";
+  const pictureNumber = sidetrackJazzImageIndex + 1;
+  status.textContent = remaining
+    ? `Picture ${pictureNumber} of ${JAZZ_PUZZLE_IMAGES.length} • Piece ${10 - remaining} of 9`
+    : "Great! Choose another puzzle or play this one again.";
   el.sidetrackJazzPuzzle.classList.toggle("complete", remaining === 0);
   playJazzPuzzleSuccess();
 }
@@ -6628,15 +7296,24 @@ function buildSidetrackPuzzle() {
     <div class="sidetrack-puzzle-pieces"></div>
     <p class="sidetrack-puzzle-status" aria-live="polite">Build the keyboard</p>`;
   const naturalNotes = SIDETRACK_NOTES.filter(([, label]) => !label.includes("#"));
-  const pieces = naturalNotes.map(([note, label], index) => ({ note, label, index })).sort(() => Math.random() - 0.5);
+  const pieces = naturalNotes.map(([note, label], index) => ({
+    note,
+    label: note === "C4" ? "C\u2084" : note === "C5" ? "C\u2085" : label,
+    keyName: note === "C4" ? "low C" : note === "C5" ? "high C" : label,
+    index
+  }))
+    .sort(() => Math.random() - 0.5);
   const tray = el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-pieces");
-  pieces.forEach(({ note, label, index }) => {
+  pieces.forEach(({ note, label, keyName, index }) => {
     const piece = document.createElement("button");
     piece.type = "button";
     piece.className = "sidetrack-puzzle-piece";
     piece.dataset.note = note;
+    piece.dataset.keyName = keyName;
     piece.dataset.puzzleIndex = String(index);
     piece.textContent = label;
+    piece.setAttribute("aria-label", `${keyName}; drag to its keyboard position`);
+    piece.title = keyName;
     piece.addEventListener("pointerdown", startSidetrackPuzzleDrag);
     piece.addEventListener("pointermove", moveSidetrackPuzzleDrag);
     piece.addEventListener("pointerup", endSidetrackPuzzleDrag);
@@ -6679,34 +7356,71 @@ function endSidetrackPuzzleDrag(event) {
   piece.style.visibility = "";
   piece.classList.remove("dragging");
   piece.style.transform = "";
-  const cCanUseEitherEnd = piece.textContent === "C" && ["0", "7"].includes(slot?.dataset.puzzleIndex);
   if (slot && !slot.classList.contains("filled")
-      && (slot.dataset.puzzleIndex === piece.dataset.puzzleIndex || cCanUseEitherEnd)) {
+      && slot.dataset.puzzleIndex === piece.dataset.puzzleIndex) {
     slot.appendChild(piece);
     slot.classList.add("filled");
-    piece.disabled = true;
+    enablePlacedKeyOrderKey(piece);
     playJazzPuzzleSuccess();
     const remaining = el.sidetrackPuzzle.querySelectorAll(".sidetrack-puzzle-pieces .sidetrack-puzzle-piece").length;
     const status = el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-status");
-    status.textContent = remaining ? `${remaining} key${remaining === 1 ? "" : "s"} left` : "Keyboard complete!";
+    status.textContent = remaining
+      ? `${piece.dataset.keyName} placed — play it! ${remaining} key${remaining === 1 ? "" : "s"} left`
+      : "Keyboard complete!";
     if (!remaining) enableCompletedKeyOrder();
+  } else if (slot) {
+    const status = el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-status");
+    status.textContent = piece.dataset.note === "C4"
+      ? "Low C goes on the far left"
+      : piece.dataset.note === "C5"
+        ? "High C goes on the far right"
+        : "Try a different space";
   }
   sidetrackPuzzleDrag = null;
 }
 
+function enablePlacedKeyOrderKey(piece) {
+  if (!piece || piece.classList.contains("key-order-playable")) return;
+  piece.disabled = false;
+  piece.classList.add("keyboard-key", "key-order-playable");
+  piece.removeEventListener("pointerdown", startSidetrackPuzzleDrag);
+  piece.removeEventListener("pointermove", moveSidetrackPuzzleDrag);
+  piece.removeEventListener("pointerup", endSidetrackPuzzleDrag);
+  piece.removeEventListener("pointercancel", cancelSidetrackPuzzleDrag);
+  piece.setAttribute("aria-label", `Play ${piece.dataset.keyName || piece.textContent}`);
+  piece.title = `Play ${piece.dataset.keyName || piece.textContent}`;
+  piece.addEventListener("pointerdown", handlePianoPointerDown);
+  piece.addEventListener("pointermove", handlePianoPointerMove);
+  piece.addEventListener("pointerup", handlePianoPointerUp);
+  piece.addEventListener("pointercancel", handlePianoPointerUp);
+  piece.addEventListener("lostpointercapture", handlePianoPointerUp);
+}
+
 function enableCompletedKeyOrder() {
   el.sidetrackPuzzle.querySelectorAll(".sidetrack-puzzle-slot .sidetrack-puzzle-piece").forEach((piece) => {
-    piece.disabled = false;
-    piece.classList.add("keyboard-key", "key-order-playable");
-    piece.removeEventListener("pointerdown", startSidetrackPuzzleDrag);
-    piece.removeEventListener("pointermove", moveSidetrackPuzzleDrag);
-    piece.removeEventListener("pointerup", endSidetrackPuzzleDrag);
-    piece.removeEventListener("pointercancel", cancelSidetrackPuzzleDrag);
-    piece.addEventListener("pointerdown", handlePianoPointerDown);
-    piece.addEventListener("pointermove", handlePianoPointerMove);
-    piece.addEventListener("pointerup", handlePianoPointerUp);
-    piece.addEventListener("pointercancel", handlePianoPointerUp);
-    piece.addEventListener("lostpointercapture", handlePianoPointerUp);
+    enablePlacedKeyOrderKey(piece);
+  });
+  const blackKeys = [
+    { slot: 0, note: "C sharp 4", label: "C sharp" },
+    { slot: 1, note: "D sharp 4", label: "D sharp" },
+    { slot: 3, note: "F sharp 4", label: "F sharp" },
+    { slot: 4, note: "G sharp 4", label: "G sharp" },
+    { slot: 5, note: "A sharp 4", label: "A sharp" }
+  ];
+  blackKeys.forEach(({ slot: slotIndex, note, label }) => {
+    const slot = el.sidetrackPuzzle.querySelector(`.sidetrack-puzzle-slot[data-puzzle-index="${slotIndex}"]`);
+    if (!slot || slot.querySelector(".key-order-black-playable")) return;
+    const key = document.createElement("button");
+    key.type = "button";
+    key.className = "keyboard-key key-order-black-playable";
+    key.dataset.note = note;
+    key.setAttribute("aria-label", label);
+    ["pointerdown", "pointermove", "pointerup", "pointercancel", "lostpointercapture"].forEach((eventName) => {
+      const handler = eventName === "pointerdown" ? handlePianoPointerDown
+        : eventName === "pointermove" ? handlePianoPointerMove : handlePianoPointerUp;
+      key.addEventListener(eventName, handler);
+    });
+    slot.appendChild(key);
   });
   el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-status").textContent = "Keyboard complete — play it!";
 }
@@ -6875,7 +7589,7 @@ function shuffledGardenObjects(count) {
 
 function applyPianoShape() {
   if (!el.pianoNoteArc) return;
-  const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "trail";
+  const shape = PIANO_SHAPES.has(state.piano.shape) ? state.piano.shape : "circle";
   el.pianoNoteArc.dataset.shape = shape;
   if (shape === "garden") ensureGardenFill();
   if (shape === "twinkle") ensureTwinkleFill();
@@ -7219,11 +7933,68 @@ function renderPianoChordGuide() {
     <span>${PIANO_NOTE_NAMES[root]} · ${PIANO_NOTE_NAMES[fourth]} · ${PIANO_NOTE_NAMES[fifth]} · ${PIANO_NOTE_NAMES[relativeMinor]}m</span>
   `;
   el.pianoChordFamily.innerHTML = `
-    <span><strong>${PIANO_NOTE_NAMES[root]}</strong>I Â· Home</span>
-    <span><strong>${PIANO_NOTE_NAMES[fourth]}</strong>IV Â· Away</span>
-    <span><strong>${PIANO_NOTE_NAMES[fifth]}</strong>V Â· Leads home</span>
-    <span><strong>${PIANO_NOTE_NAMES[relativeMinor]}m</strong>vi Â· Softer</span>
+    <span><strong>${PIANO_NOTE_NAMES[root]}</strong>I · Home</span>
+    <span><strong>${PIANO_NOTE_NAMES[fourth]}</strong>IV · Away</span>
+    <span><strong>${PIANO_NOTE_NAMES[fifth]}</strong>V · Leads home</span>
+    <span><strong>${PIANO_NOTE_NAMES[relativeMinor]}m</strong>vi · Softer</span>
   `;
+  renderPianoStyleGuide();
+}
+
+function applyPianoStyleGuide() {
+  const guide = PIANO_STYLE_GUIDES[el.pianoStyle?.value];
+  if (guide) {
+    if (!el.pianoStyle.dataset.homeRoot) el.pianoStyle.dataset.homeRoot = el.pianoChordRoot.value;
+    el.pianoChordType.value = guide.chordType;
+    el.scaleRoot.value = el.pianoStyle.dataset.homeRoot;
+    el.scaleType.value = guide.scaleType;
+  } else {
+    delete el.pianoStyle.dataset.homeRoot;
+  }
+  renderPianoChordGuide();
+}
+
+function handlePianoChordRootChange() {
+  if (PIANO_STYLE_GUIDES[el.pianoStyle?.value]) {
+    el.pianoStyle.dataset.homeRoot = el.pianoChordRoot.value;
+    el.scaleRoot.value = el.pianoChordRoot.value;
+  }
+  renderPianoChordGuide();
+}
+
+function renderPianoStyleGuide() {
+  if (!el.pianoStyle || !el.pianoStyleRecipe) return;
+  const guide = PIANO_STYLE_GUIDES[el.pianoStyle.value];
+  el.pianoStyleRecipe.hidden = !guide;
+  if (!guide) {
+    el.pianoStyleRecipe.replaceChildren();
+    return;
+  }
+  const home = Number(el.pianoStyle.dataset.homeRoot ?? el.pianoChordRoot.value) || 0;
+  const chordButtons = guide.chords.map(([offset, type, role, scaleType]) => {
+    const root = (home + offset) % 12;
+    const suffix = PIANO_CHORD_SUFFIXES[type] ?? "";
+    const scaleAttribute = scaleType ? ` data-style-scale="${scaleType}"` : "";
+    return `<button type="button" data-style-root="${root}" data-style-type="${type}"${scaleAttribute}><strong>${PIANO_NOTE_NAMES[root]}${suffix}</strong><span>${role}</span></button>`;
+  }).join("");
+  el.pianoStyleRecipe.innerHTML = `
+    <div><strong>Try this first</strong><span>${guide.intro}</span></div>
+    <div class="piano-style-chords">${chordButtons}</div>
+    <p><strong>Scale:</strong> ${guide.scaleLabel}</p>
+  `;
+}
+
+function handlePianoStyleRecipeClick(event) {
+  const button = event.target.closest("[data-style-root][data-style-type]");
+  if (!button) return;
+  el.pianoChordRoot.value = button.dataset.styleRoot;
+  el.pianoChordType.value = button.dataset.styleType;
+  if (button.dataset.styleScale) {
+    el.scaleRoot.value = button.dataset.styleRoot;
+    el.scaleType.value = button.dataset.styleScale;
+  }
+  renderPianoChordGuide();
+  playPianoGuideChord();
 }
 
 function showKeyboardGuide(guide) {
@@ -7398,7 +8169,7 @@ function getPlayablePianoButtons() {
 }
 
 function pianoGameNoteLabel(label) {
-  return String(label).replace(" sharp ", "â™¯");
+  return String(label).replace(" sharp ", "♯");
 }
 
 function randomPianoGameLabel(exclude = "") {
@@ -7432,7 +8203,7 @@ function startPianoCopyGame() {
     randomPianoGameLabel()
   ];
   el.pianoGames.open = true;
-  el.pianoGameStatus.textContent = "Get ready to listenâ€¦";
+  el.pianoGameStatus.textContent = "Get ready to listen…";
   updatePianoGameUi();
   window.setTimeout(playPianoCopySequence, 450);
 }
@@ -7451,7 +8222,7 @@ async function playPianoCopySequence() {
   }
   if (token !== state.piano.game.playToken || state.piano.game.mode !== "copy") return;
   state.piano.game.acceptingInput = true;
-  el.pianoGameStatus.textContent = `Your turn â€” copy ${state.piano.game.sequence.length} notes.`;
+  el.pianoGameStatus.textContent = `Your turn — copy ${state.piano.game.sequence.length} notes.`;
 }
 
 function startPianoGuessGame() {
@@ -7468,7 +8239,7 @@ async function playNextPianoGuess() {
   const token = ++state.piano.game.playToken;
   state.piano.game.acceptingInput = false;
   state.piano.game.targetLabel = randomPianoGameLabel(state.piano.game.targetLabel);
-  el.pianoGameStatus.textContent = "Listenâ€¦";
+  el.pianoGameStatus.textContent = "Listen…";
   const button = getPlayablePianoButtons().find((candidate) => candidate.getAttribute("aria-label") === state.piano.game.targetLabel);
   if (button) await previewPianoGameNote(button, false, 700);
   if (token !== state.piano.game.playToken || state.piano.game.mode !== "guess") return;
@@ -7494,18 +8265,18 @@ function handlePianoGameInput(button) {
     if (label !== game.sequence[game.inputIndex]) {
       game.acceptingInput = false;
       game.inputIndex = 0;
-      el.pianoGameStatus.textContent = "Not quite â€” listen once more.";
+      el.pianoGameStatus.textContent = "Not quite — listen once more.";
       window.setTimeout(playPianoCopySequence, 800);
       return;
     }
     game.inputIndex += 1;
     if (game.inputIndex < game.sequence.length) {
-      el.pianoGameStatus.textContent = `${game.inputIndex} correct â€” keep going.`;
+      el.pianoGameStatus.textContent = `${game.inputIndex} correct — keep going.`;
       return;
     }
     game.acceptingInput = false;
     game.inputIndex = 0;
-    el.pianoGameStatus.textContent = "Correct! Adding one more noteâ€¦";
+    el.pianoGameStatus.textContent = "Correct! Adding one more note…";
     game.sequence.push(randomPianoGameLabel(game.sequence[game.sequence.length - 1]));
     window.setTimeout(playPianoCopySequence, 900);
     return;
@@ -7513,7 +8284,7 @@ function handlePianoGameInput(button) {
   if (game.mode === "guess") {
     if (label === game.targetLabel) {
       game.acceptingInput = false;
-      el.pianoGameStatus.textContent = `Correct â€” ${pianoGameNoteLabel(label)}!`;
+      el.pianoGameStatus.textContent = `Correct — ${pianoGameNoteLabel(label)}!`;
       window.setTimeout(playNextPianoGuess, 900);
     } else {
       el.pianoGameStatus.textContent = "Try another note.";
@@ -7528,7 +8299,7 @@ function replayPianoGame() {
   } else if (state.piano.game.mode === "guess") {
     const button = getPlayablePianoButtons().find((candidate) => candidate.getAttribute("aria-label") === state.piano.game.targetLabel);
     state.piano.game.acceptingInput = false;
-    el.pianoGameStatus.textContent = "Listen againâ€¦";
+    el.pianoGameStatus.textContent = "Listen again…";
     previewPianoGameNote(button, false, 700).then(() => {
       if (state.piano.game.mode !== "guess") return;
       state.piano.game.acceptingInput = true;
@@ -8148,11 +8919,24 @@ function reorderStepControlsHtml(kind, id, label, index, count) {
   `;
 }
 
+function saveCardOrder(orderedIds) {
+  const cardIds = state.data.items.filter((item) => item.type === "card").map((item) => item.id);
+  const validIds = new Set(cardIds);
+  const nextIds = orderedIds.filter((id, index) => validIds.has(id) && orderedIds.indexOf(id) === index);
+  cardIds.forEach((id) => {
+    if (!nextIds.includes(id)) nextIds.push(id);
+  });
+  writeJson(STORAGE_KEYS.cardOrder, nextIds);
+  renderCards();
+}
+
 function dragHandleHtml(kind, id, label) {
   const safeId = escapeHtml(id);
   const safeLabel = escapeHtml(label);
   const dataAttribute = kind === "favorite"
     ? `data-favorite-drag="${safeId}"`
+    : kind === "card"
+      ? `data-card-drag="${safeId}"`
     : kind === "list"
       ? `data-list-drag="${safeId}"`
       : `data-list-item-drag="${safeId}"`;
@@ -8312,6 +9096,7 @@ function openListEditModal(listId) {
   state.expandedListIds = [list.id];
   state.editingListId = list.id;
   state.listEditView = "current";
+  state.listEditSort = "pdf";
   state.listEditMode = false;
   state.listReorderMode = false;
   state.listPickerOpen = false;
@@ -8323,6 +9108,25 @@ function openListEditModal(listId) {
   renderListEditModal();
   el.listEditModal.classList.remove("hidden");
   fitOpenMobileModals();
+}
+
+function moveCardOrderStep(id, direction) {
+  const orderedIds = getOrderedCards().map((card) => card.id);
+  const index = orderedIds.indexOf(id);
+  const nextIndex = direction === "up" ? index - 1 : index + 1;
+  if (index < 0 || nextIndex < 0 || nextIndex >= orderedIds.length) return;
+  [orderedIds[index], orderedIds[nextIndex]] = [orderedIds[nextIndex], orderedIds[index]];
+  saveCardOrder(orderedIds);
+}
+
+function toggleAlphabeticalListView(listId) {
+  if (!state.lists.some((list) => list.id === listId)) return;
+  if (state.alphabeticalListViewIds.has(listId)) {
+    state.alphabeticalListViewIds.delete(listId);
+  } else {
+    state.alphabeticalListViewIds.add(listId);
+  }
+  renderLists();
 }
 
 function closeListEditModal() {
@@ -8418,7 +9222,7 @@ function renderListEditItems(list) {
           ${meta ? `<span class="compact-meta">${escapeHtml(meta)}</span>` : ""}
         </div>
         <div class="list-edit-item-actions">
-          <button class="icon-button remove-button" type="button" data-list-modal-remove="${value}" aria-label="Remove ${escapeHtml(title)} from list" title="Remove from list">&#128465;</button>
+          <button class="remove-button list-item-remove-button" type="button" data-list-modal-remove="${value}" aria-label="Remove ${escapeHtml(title)} from this list only" title="Remove from this list only"><span aria-hidden="true">&minus;</span><span>Remove</span></button>
           ${dragHandleHtml("list-item", entry.item.id, title)}
         </div>
       </div>
@@ -8545,7 +9349,7 @@ function createList(title = "", entries = []) {
 function deleteList(listId) {
   const list = state.lists.find((candidate) => candidate.id === listId);
   if (!list) return false;
-  const ok = window.confirm(`Delete "${list.title}"? This only removes the list, not the songs.`);
+  const ok = window.confirm(`Delete the list "${list.title}"?\n\nThe songs and files will remain available elsewhere in the app.`);
   if (!ok) return false;
 
   state.lists = state.lists.filter((candidate) => candidate.id !== listId);
@@ -8812,7 +9616,7 @@ function setlistMeta(item, entry) {
     item.type,
     entry.notes || item.notes || ""
   ].filter(Boolean);
-  return escapeHtml(pieces.join(" ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· "));
+  return escapeHtml(pieces.join(" · "));
 }
 
 function tagsHtml(tags) {
@@ -8888,6 +9692,7 @@ async function exportBackup() {
       importedItems: readJson(STORAGE_KEYS.importedItems, []),
       itemEdits: readJson(STORAGE_KEYS.itemEdits, {}),
       cardSubtypes: getRememberedCardSubtypes(),
+      cardOrder: readJson(STORAGE_KEYS.cardOrder, []),
       lists: readJson(STORAGE_KEYS.lists, state.lists),
       quickIndexes: readJson(STORAGE_KEYS.quickIndexes, state.data.quickIndexes || []),
       setlists: readJson(STORAGE_KEYS.setlists, state.data.setlists || []),
@@ -8895,6 +9700,7 @@ async function exportBackup() {
       lastOpened: readJson(STORAGE_KEYS.lastOpened, null),
       quickChecks: readJson(STORAGE_KEYS.quickChecks, {}),
       pdfPages: readJson(STORAGE_KEYS.pdfPages, {}),
+      pdfAnnotations: readJson(STORAGE_KEYS.pdfAnnotations, {}),
       recents: readJson(STORAGE_KEYS.recents, []),
       settings: readJson(STORAGE_KEYS.settings, {}),
       starterFavorites: readJson(STORAGE_KEYS.starterFavorites, []),
@@ -8946,6 +9752,7 @@ function importBackupFromFile(event) {
       writeJson(STORAGE_KEYS.importedItems, data.importedItems || []);
       writeJson(STORAGE_KEYS.itemEdits, data.itemEdits || {});
       writeJson(STORAGE_KEYS.cardSubtypes, data.cardSubtypes || []);
+      writeJson(STORAGE_KEYS.cardOrder, data.cardOrder || []);
       if (data.lists) {
         writeJson(STORAGE_KEYS.lists, data.lists);
       } else {
@@ -8961,6 +9768,7 @@ function importBackupFromFile(event) {
       }
       writeJson(STORAGE_KEYS.quickChecks, data.quickChecks || {});
       writeJson(STORAGE_KEYS.pdfPages, data.pdfPages || {});
+      writeJson(STORAGE_KEYS.pdfAnnotations, data.pdfAnnotations || {});
       writeJson(STORAGE_KEYS.recents, data.recents || []);
       writeJson(STORAGE_KEYS.settings, data.settings || {});
       writeJson(STORAGE_KEYS.starterFavorites, data.starterFavorites || []);
