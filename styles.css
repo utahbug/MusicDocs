@@ -1816,7 +1816,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .key-signature-staff .staff-lines { color: var(--text); }
 .key-signature-staff .staff-lines line { stroke: #536575; stroke: color-mix(in srgb, currentColor 72%, var(--surface)); stroke-width: 1.55; vector-effect: non-scaling-stroke; }
 .key-signature-staff text { fill: var(--text); }
-.key-signature-staff .staff-clef { dominant-baseline: alphabetic; font-family: "Noto Music", "Segoe UI Symbol", serif; font-size: 50px; }
+.key-signature-staff .staff-clef { dominant-baseline: alphabetic; font-family: "Apple Symbols", "Noto Music", "Segoe UI Symbol", serif; font-size: 68px; }
 .key-signature-staff .key-signature-mark { dominant-baseline: central; font-family: "Noto Music", "Segoe UI Symbol", serif; font-size: 25px; font-weight: 700; text-anchor: middle; }
 .key-signature-staff .key-signature-mark.flat { transform: translateY(-3px); }
 .key-change-table { border: 1px solid var(--line); border-radius: 10px; max-height: 310px; overflow-y: auto; }

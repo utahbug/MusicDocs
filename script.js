@@ -8132,7 +8132,7 @@ function renderKeySignatureStaff(keyIndex) {
         <line x1="12" y1="50" x2="218" y2="50"></line>
         <line x1="12" y1="60" x2="218" y2="60"></line>
       </g>
-      <text class="staff-clef" x="18" y="61">𝄞</text>
+      <text class="staff-clef" x="14" y="66">𝄞</text>
       ${marks}
     </svg>
   `;
