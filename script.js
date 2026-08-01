@@ -7289,7 +7289,7 @@ function buildSidetrackPuzzle() {
   if (!el.sidetrackPuzzle) return;
   el.sidetrackPuzzle.innerHTML = `
     <div class="sidetrack-puzzle-heading">
-      <p class="sidetrack-puzzle-instruction">Drag the keys into keyboard order</p>
+      <p class="sidetrack-puzzle-instruction">Put the keys in order</p>
       <button class="sidetrack-puzzle-reset" type="button" aria-label="Reset piano puzzle" title="Start over">↻</button>
     </div>
     <div class="sidetrack-puzzle-board">${SIDETRACK_NOTES.filter(([, label]) => !label.includes("#")).map(([, label], index) => `<span class="sidetrack-puzzle-slot" data-puzzle-index="${index}"></span>`).join("")}</div>
