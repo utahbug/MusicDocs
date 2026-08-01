@@ -6914,7 +6914,7 @@ const TWINKLE_MELODY = [
 ];
 const SIDETRACK_POP_JAZZ_SCALE = [
   "C4", "D sharp 4", "F4", "F sharp 4", "G4", "A sharp 4", "C5",
-  "A sharp 4", "G4", "F sharp 4", "F4", "D sharp 4"
+  "A sharp 4", "G4", "F sharp 4", "F4", "D sharp 4", "C4"
 ];
 const PIANO_FEATURED_SOUNDS = new Set(["grand-piano", "water-drop", "spaceship"]);
 
@@ -7085,7 +7085,7 @@ const KEY_ORDER_CHORDS = {
   B4: ["B4", "D5", "F5"],
   C5: ["C5", "E5", "G5"]
 };
-const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 20 };
+const sidetrackAirGame = { active: false, popped: 0, created: 0, total: 26 };
 const JAZZ_PUZZLE_IMAGES = [
   "assets/jazz-ensemble-puzzle.webp",
   "assets/jazz-ensemble-puzzle-2.webp",

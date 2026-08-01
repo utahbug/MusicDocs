@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="styles.css?v=musicdocs-102">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-2" defer></script>
-    <script src="script.js?v=musicdocs-99" defer></script>
+    <script src="script.js?v=musicdocs-100" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -66,7 +66,7 @@
               <button type="button" role="menuitem" data-menu-section="metronome">Metronome</button>
               <button type="button" role="menuitem" data-menu-section="tuner">Tuner</button>
               <button type="button" role="menuitem" data-menu-section="pitch">Pitch</button>
-              <button type="button" role="menuitem" data-menu-section="piano">Fun Stuff</button>
+              <button type="button" role="menuitem" data-menu-section="piano">Secret Room</button>
               <button type="button" role="menuitem" data-menu-section="keyboard">Keyboard</button>
               <button type="button" role="menuitem" data-menu-section="audio">Audio Library</button>
             </div>
@@ -341,7 +341,7 @@
         <section id="pianoSection" class="view piano-view" data-view="piano" aria-labelledby="pianoTitle">
           <div class="piano-panel">
             <div class="piano-header">
-              <h2 id="pianoTitle">Fun Stuff</h2>
+              <h2 id="pianoTitle">Secret Room</h2>
             </div>
             <div class="piano-sound-controls fun-sound-controls">
               <div class="fun-sound-picker">
@@ -443,7 +443,7 @@
                   <span>Puzzle</span>
                 </button>
                   </div>
-                  <select id="pianoShape" class="sr-only" aria-label="Fun Stuff activity">
+                  <select id="pianoShape" class="sr-only" aria-label="Secret Room activity">
                     <option value="circle" selected>Keyboard</option>
                     <option value="zigzag">Key Order</option>
                     <option value="rainbow">Pop notes</option>
@@ -496,7 +496,7 @@
                 <svg viewBox="0 0 28 24" aria-hidden="true"><path d="M3 9h4l6-5v16l-6-5H3z"></path><path d="M17 8c2 2 2 6 0 8M20.5 5c4 4 4 10 0 14"></path></svg>
                 <span class="sr-only">Volume</span>
               </span>
-              <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun Stuff volume">
+              <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Secret Room volume">
             </label>
             <p id="pianoSoundStatus" class="piano-prototype-note" aria-live="polite">Grand piano</p>
           </div>
