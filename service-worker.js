@@ -1,10 +1,10 @@
-const CACHE_NAME = "musicdocs-shell-v156";
+const CACHE_NAME = "musicdocs-shell-v157";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css?v=musicdocs-102",
   "./lyrics-cards.js?v=musicdocs-2",
-  "./script.js?v=musicdocs-98",
+  "./script.js?v=musicdocs-99",
   "./library.json",
   "./manifest.json",
   "./favicon.ico",

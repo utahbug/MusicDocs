@@ -8076,8 +8076,8 @@ async function playPianoScale() {
       window.setTimeout(() => {
         releasePianoVoice(voice, true);
         button?.classList.remove("game-preview");
-      }, 460);
-    }, index * 560);
+      }, 380);
+    }, index * 470);
   });
 }
 
