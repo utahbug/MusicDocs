@@ -1527,6 +1527,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key.is-playing { background: rgba(74,145,197,0.16); box-shadow: inset 0 0 0 2px rgba(47,126,151,0.32); filter: none; transform: translateX(-50%) translateY(-2px); }
 .piano-note-arc[data-shape="trail"] .piano-play-object.jazzy-key:active { background: rgba(47,158,145,0.2); transform: translateX(-50%) translateY(1px); }
 .piano-note-arc[data-shape="garden"], .piano-note-arc[data-shape="twinkle"], .piano-note-arc[data-shape="circle"], .piano-note-arc[data-shape="zigzag"], .piano-note-arc[data-shape="rainbow"] { height: 360px; }
+.piano-note-arc[data-shape="circle"] { height: clamp(240px, 62vw, 300px); }
 .piano-note-arc[data-shape="garden"] { background-image: radial-gradient(circle at 18% 22%, rgba(255,255,255,0.62) 0 3px, transparent 4px), radial-gradient(circle at 78% 72%, rgba(255,255,255,0.52) 0 4px, transparent 5px), linear-gradient(155deg, color-mix(in srgb, #B9E8C6 18%, var(--surface)), color-mix(in srgb, #82C7F2 14%, var(--surface))); }
 .piano-note-arc[data-shape="twinkle"] { background-image: radial-gradient(circle at 20% 22%, rgba(241,184,75,0.14) 0 3px, transparent 4px), radial-gradient(circle at 80% 72%, rgba(105,199,177,0.14) 0 4px, transparent 5px), linear-gradient(155deg, color-mix(in srgb, #FFF7D6 18%, var(--surface)), color-mix(in srgb, #F4E6B8 12%, var(--surface))); }
 .piano-note { align-items: center; border-radius: 50%; display: inline-flex; font-family: "Atkinson Hyperlegible", system-ui, sans-serif; font-weight: 850; justify-content: center; left: var(--px); position: absolute; touch-action: none; transform: translateX(-50%); transition: left 240ms ease, bottom 240ms ease, transform 120ms ease, box-shadow 120ms ease, filter 120ms ease; user-select: none; -webkit-user-select: none; }
@@ -1619,10 +1620,10 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .jazz-puzzle-workspace .jazz-puzzle-tray { width: min(42vw, 155px); }
   .jazz-puzzle-choice { flex-basis: 48px; height: 38px; min-height: 38px; }
 }
-.sidetrack-keyboard { align-items: stretch; display: flex; justify-content: center; padding: 38px 22px 28px; }
+.sidetrack-keyboard { align-items: flex-start; display: flex; justify-content: center; padding: 24px 14px 18px; }
 .sidetrack-key { border: 1px solid #7890A1; border-radius: 0 0 7px 7px; flex: 1; max-width: 58px; min-width: 0; position: relative; touch-action: none; }
-.sidetrack-key.is-white { background: linear-gradient(#FFFFFF, #E9F0F5); color: #173F72; height: 250px; z-index: 1; }
-.sidetrack-key.is-black { background: linear-gradient(#425263, #142331); color: #FFFFFF; height: 155px; margin-left: -18px; margin-right: -18px; max-width: 36px; z-index: 2; }
+.sidetrack-key.is-white { background: linear-gradient(#FFFFFF, #E9F0F5); color: #173F72; height: clamp(150px, 40vw, 190px); z-index: 1; }
+.sidetrack-key.is-black { background: linear-gradient(#425263, #142331); color: #FFFFFF; height: clamp(92px, 24vw, 115px); margin-left: -16px; margin-right: -16px; max-width: 32px; z-index: 2; }
 .sidetrack-key span { bottom: 12px; font-size: 0.95rem; font-weight: 850; left: 50%; opacity: 0; position: absolute; transform: translateX(-50%); transition: opacity 130ms ease; }
 .sidetrack-key.show-note span { opacity: 1; }
 .sidetrack-key.is-playing { filter: brightness(0.88); }
