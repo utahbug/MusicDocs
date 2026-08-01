@@ -7036,7 +7036,9 @@ function renderPiano() {
     button.setAttribute("aria-pressed", String(selected));
   });
   el.pianoMoreSoundsButton.classList.toggle("has-selection", !PIANO_FEATURED_SOUNDS.has(state.piano.sound));
-  el.pianoVolume.value = String(Math.round(state.piano.volume * 100));
+  const pianoVolumePercent = Math.round(state.piano.volume * 100);
+  el.pianoVolume.value = String(pianoVolumePercent);
+  el.pianoVolume.style.setProperty("--volume-level", `${pianoVolumePercent}%`);
   el.pianoShape.value = state.piano.shape;
   el.pianoShapeButtons.forEach((button) => {
     const selected = button.dataset.pianoShape === state.piano.shape;

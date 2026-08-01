@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-95">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-96">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-2" defer></script>
-    <script src="script.js?v=musicdocs-92" defer></script>
+    <script src="script.js?v=musicdocs-93" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -342,7 +342,6 @@
           <div class="piano-panel">
             <div class="piano-header">
               <h2 id="pianoTitle">Fun Stuff</h2>
-              <span>Turn sideways for more notes</span>
             </div>
             <div class="piano-sound-controls fun-sound-controls">
               <div class="fun-sound-picker">
@@ -450,14 +449,14 @@
                     <option value="rainbow">Pop notes</option>
                   </select>
                 </div>
-                <label class="piano-volume-control">
+                </div>
+                <label class="piano-volume-control keyboard-volume-control fun-volume-control">
                   <span class="piano-volume-icon">
                     <svg viewBox="0 0 28 24" aria-hidden="true"><path d="M3 9h4l6-5v16l-6-5H3z"></path><path d="M17 8c2 2 2 6 0 8M20.5 5c4 4 4 10 0 14"></path></svg>
                     <span class="sr-only">Volume</span>
                   </span>
                   <input id="pianoVolume" type="range" min="0" max="100" step="1" value="58" aria-label="Fun Stuff volume">
                 </label>
-              </div>
             </div>
             <div class="piano-note-arc" aria-label="Playable sound objects">
               <button class="piano-note piano-play-object" data-note="C4" data-object="🐶" type="button" aria-label="Dog">🐶</button>
