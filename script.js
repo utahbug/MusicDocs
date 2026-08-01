@@ -8119,14 +8119,22 @@ function keySignatureMemoryTrick(keyIndex) {
 function renderKeySignatureStaff(keyIndex) {
   const signature = KEY_SIGNATURES[keyIndex];
   const positions = KEY_SIGNATURE_POSITIONS[signature.type] || [];
+  const signatureWidth = 42 + signature.count * 19;
+  const groupStart = (230 - signatureWidth) / 2;
   const symbol = signature.type === "sharp" ? "♯" : "♭";
   const marks = positions.slice(0, signature.count).map((y, index) =>
-    `<text class="key-signature-mark" x="${73 + index * 19}" y="${y + 7}">${symbol}</text>`
+    `<text class="key-signature-mark" x="${groupStart + 48 + index * 19}" y="${y + 7}">${symbol}</text>`
   ).join("");
   return `
     <svg class="key-signature-staff" viewBox="0 0 230 76" role="img" aria-label="${KEY_CHANGE_NAMES[keyIndex]} major key signature: ${signature.label}">
-      <path class="staff-line-path" d="M12 20H218 M12 30H218 M12 40H218 M12 50H218 M12 60H218"></path>
-      <text class="staff-clef" x="18" y="61">𝄞</text>
+      <g class="staff-lines" aria-hidden="true">
+        <line x1="12" y1="20" x2="218" y2="20"></line>
+        <line x1="12" y1="30" x2="218" y2="30"></line>
+        <line x1="12" y1="40" x2="218" y2="40"></line>
+        <line x1="12" y1="50" x2="218" y2="50"></line>
+        <line x1="12" y1="60" x2="218" y2="60"></line>
+      </g>
+      <text class="staff-clef" x="${groupStart}" y="61">𝄞</text>
       ${marks}
     </svg>
   `;
