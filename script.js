@@ -8119,11 +8119,9 @@ function keySignatureMemoryTrick(keyIndex) {
 function renderKeySignatureStaff(keyIndex) {
   const signature = KEY_SIGNATURES[keyIndex];
   const positions = KEY_SIGNATURE_POSITIONS[signature.type] || [];
-  const signatureWidth = 42 + signature.count * 19;
-  const groupStart = (230 - signatureWidth) / 2;
   const symbol = signature.type === "sharp" ? "♯" : "♭";
   const marks = positions.slice(0, signature.count).map((y, index) =>
-    `<text class="key-signature-mark" x="${groupStart + 48 + index * 19}" y="${y + 7}">${symbol}</text>`
+    `<text class="key-signature-mark ${signature.type}" x="${73 + index * 19}" y="${y}">${symbol}</text>`
   ).join("");
   return `
     <svg class="key-signature-staff" viewBox="0 0 230 76" role="img" aria-label="${KEY_CHANGE_NAMES[keyIndex]} major key signature: ${signature.label}">
@@ -8134,7 +8132,7 @@ function renderKeySignatureStaff(keyIndex) {
         <line x1="12" y1="50" x2="218" y2="50"></line>
         <line x1="12" y1="60" x2="218" y2="60"></line>
       </g>
-      <text class="staff-clef" x="${groupStart}" y="61">𝄞</text>
+      <text class="staff-clef" x="18" y="61">𝄞</text>
       ${marks}
     </svg>
   `;
@@ -8156,7 +8154,6 @@ function renderKeyChangeGuide() {
       <strong>${KEY_CHANGE_NAMES[root]} <span aria-hidden="true">→</span> ${KEY_CHANGE_NAMES[result]}</strong>
       <span>${direction}</span>
       <span>${KEY_SIGNATURES[result].label}</span>
-      <span class="key-change-memory">${keySignatureMemoryTrick(result)}</span>
     </div>
     ${renderKeySignatureStaff(result)}
   `;

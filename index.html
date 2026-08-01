@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-104">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-105">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-2" defer></script>
-    <script src="script.js?v=musicdocs-102" defer></script>
+    <script src="script.js?v=musicdocs-103" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -607,6 +607,13 @@
               <p class="key-change-hint">One semitone equals one half step.</p>
               <div id="keyChangeResult" class="key-change-result" aria-live="polite"></div>
               <div id="keyChangeTable" class="key-change-table" aria-label="Keys from six semitones down through six semitones up"></div>
+              <details class="chord-tips key-change-tips">
+                <summary>Key change tips</summary>
+                <div class="chord-tips-content">
+                  <p><strong>Remember: with flats, the second-to-last flat names the key.</strong></p>
+                  <p><strong>Remember: with sharps, the key is one half step above the last sharp.</strong></p>
+                </div>
+              </details>
             </section>
             <section id="scaleGuide" class="keyboard-scale-guide" aria-labelledby="scaleGuideHeading" hidden>
               <div class="scale-guide-controls">
