@@ -1402,7 +1402,9 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .fun-control-row .piano-shape-control { min-width: 0; }
 .fun-control-row .fun-activity-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .fun-control-row .piano-volume-control { margin-bottom: 14px; }
-.fun-sound-controls .fun-volume-control { margin: 0; max-width: none; width: 100%; }
+.fun-volume-control { align-items: center; display: grid; gap: 10px; grid-template-columns: auto minmax(140px, 1fr); margin: 14px auto 0; max-width: 680px; width: 100%; }
+.fun-volume-control .piano-volume-icon { align-items: center; color: var(--accent-strong); display: inline-flex; justify-content: center; width: 34px; }
+.fun-volume-control .piano-volume-icon svg { fill: var(--accent-soft); height: 27px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; width: 31px; }
 .piano-shape-control { margin: 10px auto 0; max-width: 680px; width: 100%; }
 .piano-shape-control > span { color: var(--muted); display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; }
 .fun-activity-grid { display: grid; gap: 7px; grid-template-columns: repeat(6, minmax(0, 1fr)); }
