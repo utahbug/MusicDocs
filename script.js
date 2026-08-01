@@ -3948,7 +3948,7 @@ function renderInlineListItems(list) {
                 : `Next Song: Off`}
             </button>
           ` : ""}
-          <span class="list-file-count" aria-label="${pdfCount} PDF files">files: ${pdfCount}</span>
+          <span class="list-file-count" aria-label="${pdfCount} PDF ${pdfCount === 1 ? "file" : "files"}">${pdfCount} ${pdfCount === 1 ? "file" : "files"}</span>
         </div>
       ` : ""}
       ${entries.map((entry) => {
