@@ -360,10 +360,6 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 .list-tab-group.active .list-title-mark { background: linear-gradient(135deg, #4A84C4, #245A9A); box-shadow: 0 2px 7px color-mix(in srgb, #245A9A 22%, transparent); }
 .list-tab-title { color: inherit; flex: 1 1 auto; font-size: 0.96rem; font-weight: 400; min-width: 0px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.list-tab-count { color: var(--muted); flex: 0 0 auto; font-size: 0.82rem; font-weight: 750; margin-left: 5px; }
-
-.list-tab-group.active .list-tab-count { color: var(--accent-strong); opacity: 0.88; }
-
 .list-alphabetical-toggle { align-items: center; background: color-mix(in srgb, var(--accent-soft) 68%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--line)); border-radius: 999px; color: var(--accent-strong); display: inline-flex; flex: 0 0 auto; font-size: 0.66rem; font-weight: 850; height: 28px; justify-content: center; letter-spacing: 0.02em; min-width: 38px; padding: 2px 7px; white-space: nowrap; }
 .list-alphabetical-toggle:hover, .list-alphabetical-toggle:focus-visible { background: var(--accent-hover); }
 .list-alphabetical-toggle.is-active { background: #FFFFFF; border-color: #FFFFFF; box-shadow: 0 0 0 2px color-mix(in srgb, #FFFFFF 28%, transparent); color: #245A9A; }
@@ -388,6 +384,8 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 
 .inline-list-items { background: var(--surface); border-top: 1px solid var(--line); display: grid; margin-left: 18px; }
 .list-play-through-row { align-items: center; background: color-mix(in srgb, var(--accent) 7%, var(--surface)); border-bottom: 1px solid var(--line); display: flex; justify-content: flex-start; padding: 7px 8px; }
+.list-file-count { color: var(--muted); font-size: 0.78rem; font-style: italic; margin-left: auto; padding-right: 78px; white-space: nowrap; }
+.list-play-through-row.alphabetical-view .list-file-count { padding-right: 40px; }
 .list-play-through-button { align-items: center; background: linear-gradient(105deg, #237C7A, #2B67B1); border: 1px solid color-mix(in srgb, var(--accent-strong) 70%, var(--line)); border-radius: 999px; color: #FFFFFF; display: inline-flex; font-size: 0.78rem; font-weight: 800; gap: 5px; min-height: 34px; padding: 6px 12px; }
 .list-play-through-button:hover, .list-play-through-button:focus-visible { box-shadow: 0 0 0 3px var(--accent-hover); }
 .list-play-through-button.is-active { background: linear-gradient(105deg, #238B62, #276AB3); border-color: #176B4A; box-shadow: 0 0 0 3px color-mix(in srgb, #2FB878 22%, transparent); }

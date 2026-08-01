@@ -3894,7 +3894,6 @@ function renderLists() {
 function renderListTabs(active) {
   el.listTabs.classList.add("list-reorder-list");
   el.listTabs.innerHTML = state.lists.map((list, index) => {
-    const itemCount = getResolvedListEntries(list).length;
     const activeClass = list.id === active.id ? " active" : "";
     const isExpanded = state.expandedListIds.includes(list.id);
     const expandedClass = isExpanded ? " expanded" : "";
@@ -3911,7 +3910,6 @@ function renderListTabs(active) {
           <span class="list-title-mark" aria-hidden="true">&#9776;</span>
           <span class="list-tab-title">${escapeHtml(title)}</span>
         </button>
-        ${isExpanded && itemCount ? `<span class="list-tab-count" aria-label="${itemCount} items">${itemCount}</span>` : ""}
         <button class="list-alphabetical-toggle${alphabeticalView ? " is-active" : ""}" type="button" data-toggle-list-alphabetical="${escapeHtml(list.id)}" aria-label="${alphabeticalView ? "Restore saved order for" : "Show alphabetically"} ${escapeHtml(title)}" aria-pressed="${alphabeticalView}" title="${alphabeticalView ? "Restore saved order" : "Show A-Z"}">A-Z</button>
         <button class="icon-button list-row-edit-button" type="button" data-edit-list-row="${escapeHtml(list.id)}" aria-label="Edit ${escapeHtml(title)}" title="Edit list">&#9998;</button>
         ${reorderHandle}
@@ -3941,13 +3939,16 @@ function renderInlineListItems(list) {
 
   return `
     <div class="inline-list-items" data-list-items="${escapeHtml(list.id)}">
-      ${pdfCount > 1 ? `
-        <div class="list-play-through-row">
-          <button class="list-play-through-button ${playlistArmed ? "is-active" : ""}" type="button" data-play-pdf-list="${escapeHtml(list.id)}" aria-pressed="${playlistArmed}">
-            ${playlistArmed
-              ? `Next Song: On`
-              : `Next Song: Off`}
-          </button>
+      ${pdfCount ? `
+        <div class="list-play-through-row${alphabeticalView ? " alphabetical-view" : ""}">
+          ${pdfCount > 1 ? `
+            <button class="list-play-through-button ${playlistArmed ? "is-active" : ""}" type="button" data-play-pdf-list="${escapeHtml(list.id)}" aria-pressed="${playlistArmed}">
+              ${playlistArmed
+                ? `Next Song: On`
+                : `Next Song: Off`}
+            </button>
+          ` : ""}
+          <span class="list-file-count" aria-label="${pdfCount} PDF files">files: ${pdfCount}</span>
         </div>
       ` : ""}
       ${entries.map((entry) => {
