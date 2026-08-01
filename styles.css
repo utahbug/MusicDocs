@@ -369,6 +369,8 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 
 .list-tab-group.active .list-alphabetical-toggle:not(.is-active) { background: color-mix(in srgb, var(--surface) 74%, transparent); border-color: color-mix(in srgb, #3667A8 42%, var(--line)); color: var(--accent-strong); }
 
 .list-row-edit-button { align-self: center; background: transparent; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); flex: 0 0 30px; font-size: 0.86rem; height: 30px; margin: 0px 7px 0px 5px; min-height: 30px; min-width: 30px; padding: 0px; width: 30px; }
+.list-tab-group:not(.active) .list-alphabetical-toggle,
+.list-tab-group:not(.active) .list-row-edit-button { display: none; }
 
 @media (max-width: 520px) {
   .list-alphabetical-toggle { font-size: 0.62rem; height: 27px; min-width: 35px; padding-inline: 6px; }
