@@ -7300,8 +7300,8 @@ function buildSidetrackPuzzle() {
   const naturalNotes = SIDETRACK_NOTES.filter(([, label]) => !label.includes("#"));
   const pieces = naturalNotes.map(([note, label], index) => ({
     note,
-    label: note === "C4" ? "C\u2084" : note === "C5" ? "C\u2085" : label,
-    keyName: note === "C4" ? "low C" : note === "C5" ? "high C" : label,
+    label: note === "C4" ? "C" : note === "C5" ? "C\u2191" : label,
+    keyName: note === "C4" ? "middle C" : note === "C5" ? "high C" : label,
     index
   }))
     .sort(() => Math.random() - 0.5);
@@ -7310,6 +7310,7 @@ function buildSidetrackPuzzle() {
     const piece = document.createElement("button");
     piece.type = "button";
     piece.className = "sidetrack-puzzle-piece";
+    piece.classList.toggle("middle-c-key", note === "C4");
     piece.dataset.note = note;
     piece.dataset.keyName = keyName;
     piece.dataset.puzzleIndex = String(index);
@@ -7373,7 +7374,7 @@ function endSidetrackPuzzleDrag(event) {
   } else if (slot) {
     const status = el.sidetrackPuzzle.querySelector(".sidetrack-puzzle-status");
     status.textContent = piece.dataset.note === "C4"
-      ? "Low C goes on the far left"
+      ? "Middle C goes on the far left"
       : piece.dataset.note === "C5"
         ? "High C goes on the far right"
         : "Try a different space";

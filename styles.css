@@ -1645,8 +1645,9 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .sidetrack-puzzle-slot[data-puzzle-index="5"]::after { background: linear-gradient(#354758, #101C27); border: 1px solid #0D1821; border-radius: 0 0 4px 4px; box-shadow: 0 3px 5px rgba(16, 31, 43, 0.28); content: ""; height: 78px; position: absolute; right: -28%; top: -1px; width: 52%; z-index: 5; }
 .sidetrack-puzzle-slot.filled { padding: 0; }
 .sidetrack-puzzle-piece { background: linear-gradient(#FFFFFF, #DFEAF2); border: 1px solid #7890A1; border-radius: 5px; color: #173F72; font-size: 1rem; font-weight: 850; height: 92px; position: relative; touch-action: none; transition: box-shadow 100ms ease; width: clamp(32px, 10vw, 54px); z-index: 6; }
+.sidetrack-puzzle-piece.middle-c-key { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.14em; }
 .sidetrack-puzzle-piece.dragging { box-shadow: 0 10px 22px rgba(23,63,114,0.3); z-index: 12; }
-.sidetrack-puzzle-slot .sidetrack-puzzle-piece { background: transparent; border: 0; height: 100%; width: 100%; z-index: 2; }
+.sidetrack-puzzle-slot .sidetrack-puzzle-piece { align-items: flex-end; background: transparent; border: 0; display: flex; flex: 1 1 100%; height: 100%; justify-content: center; line-height: 1; max-width: none; min-width: 0; padding: 0 2px 15px; width: 100%; z-index: 6; }
 .sidetrack-puzzle-slot .key-order-playable { cursor: pointer; transition: background 100ms ease, box-shadow 100ms ease, transform 80ms ease; }
 .sidetrack-puzzle-slot .key-order-playable:hover,
 .sidetrack-puzzle-slot .key-order-playable:focus-visible { background: color-mix(in srgb, #78BCEF 16%, transparent); box-shadow: inset 0 -6px 0 color-mix(in srgb, #3667A8 18%, transparent); }
