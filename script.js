@@ -7362,9 +7362,21 @@ function moveSidetrackPuzzleDrag(event) {
 function endSidetrackPuzzleDrag(event) {
   if (!sidetrackPuzzleDrag || sidetrackPuzzleDrag.pointerId !== event.pointerId) return;
   const { piece } = sidetrackPuzzleDrag;
+  const pieceRect = piece.getBoundingClientRect();
   piece.style.visibility = "hidden";
-  const slot = document.elementFromPoint(event.clientX, event.clientY)?.closest(".sidetrack-puzzle-slot");
+  const pointedSlot = document.elementFromPoint(event.clientX, event.clientY)?.closest(".sidetrack-puzzle-slot");
   piece.style.visibility = "";
+  const expectedSlot = el.sidetrackPuzzle.querySelector(`.sidetrack-puzzle-slot[data-puzzle-index="${piece.dataset.puzzleIndex}"]`);
+  const expectedRect = expectedSlot?.getBoundingClientRect();
+  const horizontalOverlap = expectedRect
+    ? Math.max(0, Math.min(pieceRect.right, expectedRect.right) - Math.max(pieceRect.left, expectedRect.left))
+    : 0;
+  const verticalOverlap = expectedRect
+    ? Math.max(0, Math.min(pieceRect.bottom, expectedRect.bottom) - Math.max(pieceRect.top, expectedRect.top))
+    : 0;
+  const overlapsExpectedSlot = horizontalOverlap >= pieceRect.width * 0.45
+    && verticalOverlap >= pieceRect.height * 0.45;
+  const slot = overlapsExpectedSlot ? expectedSlot : pointedSlot;
   piece.classList.remove("dragging");
   piece.style.transform = "";
   if (slot && !slot.classList.contains("filled")
