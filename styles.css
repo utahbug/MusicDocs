@@ -246,6 +246,7 @@ textarea { resize: vertical; }
 .rich-toolbar button.is-active, .rich-toolbar button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #FFFFFF; }
 
 .rich-toolbar button.is-active:hover, .rich-toolbar button.is-active:focus-visible, .rich-toolbar button[aria-pressed="true"]:hover, .rich-toolbar button[aria-pressed="true"]:focus-visible { background: var(--accent-strong); border-color: var(--accent-strong); color: #FFFFFF; }
+.card-photo-icon { fill: none; height: 20px; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; width: 20px; }
 
 .rich-toolbar-separator { align-self: stretch; border-left: 1px solid var(--line); margin: 2px; }
 .rich-font-picker { display: block; }
@@ -295,15 +296,26 @@ textarea { resize: vertical; }
 
 .rich-card-preview { max-height: 320px; }
 
-.rich-card-editor img, .rich-card-content img { border: 1px solid var(--line); border-radius: 6px; display: block; height: auto; margin: 8px 0px; max-width: 100%; }
+.rich-card-editor img, .rich-card-content img { border: 1px solid var(--line); border-radius: 6px; display: block; height: auto; margin: 8px 0px; max-width: 100%; object-fit: contain; }
 
 .rich-card-editor img { cursor: pointer; }
+.rich-card-content img { cursor: zoom-in; }
 
-.rich-card-editor img[data-card-image-size="small"], .rich-card-content img[data-card-image-size="small"] { width: min(42%, 240px); }
+.rich-card-editor img[data-card-image-size="small"], .rich-card-content img[data-card-image-size="small"], .rich-card-editor img[data-card-image-size="thumbnail"], .rich-card-content img[data-card-image-size="thumbnail"] { width: min(34%, 180px); }
 
 .rich-card-editor img[data-card-image-size="medium"], .rich-card-content img[data-card-image-size="medium"] { width: min(72%, 520px); }
 
-.rich-card-editor img[data-card-image-size="large"], .rich-card-content img[data-card-image-size="large"] { width: 100%; }
+.rich-card-editor img[data-card-image-size="large"], .rich-card-content img[data-card-image-size="large"], .rich-card-editor img[data-card-image-size="full"], .rich-card-content img[data-card-image-size="full"] { width: 100%; }
+
+.card-image-controls { align-items: center; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 9px; display: flex; flex-wrap: wrap; gap: 7px 10px; padding: 8px 10px; }
+.card-image-controls > span { color: var(--accent-strong); font-size: 0.82rem; font-weight: 800; }
+.card-image-size-buttons { display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: 5px; }
+.card-image-size-buttons button { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; color: var(--ink); font-size: 0.8rem; font-weight: 750; min-height: 34px; padding: 5px 9px; }
+.card-image-size-buttons button.is-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.card-image-size-buttons .card-image-remove { border-color: #c9a1a1; color: #9d3030; margin-left: auto; }
+.card-image-lightbox { align-items: center; background: rgba(5, 14, 24, 0.88); display: flex; inset: 0; justify-content: center; padding: 24px; position: fixed; z-index: 1200; }
+.card-image-lightbox img { border-radius: 8px; box-shadow: 0 14px 45px rgba(0,0,0,.45); max-height: calc(100dvh - 48px); max-width: calc(100vw - 48px); object-fit: contain; }
+.card-image-lightbox button { background: #fff; border: 0; border-radius: 50%; color: #183955; font-size: 1.4rem; height: 42px; position: absolute; right: 14px; top: 14px; width: 42px; }
 
 .rich-card-editor table, .rich-card-content table { border-collapse: collapse; margin: 6px 0px; min-width: min(100%, 260px); white-space: normal; }
 

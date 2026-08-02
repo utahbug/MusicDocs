@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-113">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-114">
     <script src="assets/pdf.min.js?v=3.11.174" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-2" defer></script>
-    <script src="script.js?v=musicdocs-111" defer></script>
+    <script src="script.js?v=musicdocs-112" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -904,6 +904,7 @@
                 <button type="button" data-rich-command="strikeThrough" aria-label="Strikeout" title="Strikeout" aria-pressed="false"><span class="strikeout-icon" aria-hidden="true"><span>S</span></span></button>
                 <button type="button" data-rich-command="insertOrderedList" aria-label="Numbered list" title="Numbered list" aria-pressed="false"><span class="toolbar-icon numbered-list-icon" aria-hidden="true"></span></button>
                 <button type="button" data-rich-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list" aria-pressed="false"><span class="toolbar-icon bullet-list-icon" aria-hidden="true"></span></button>
+                <button type="button" data-rich-command="photo" aria-label="Add photo" title="Add photo"><svg class="card-photo-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5.5h16v13H4zM7 15l3.2-3.4 2.5 2.4 1.8-1.8L18 16M8.2 9a1.2 1.2 0 1 0 0 .1"/></svg></button>
                 <span class="rich-toolbar-separator" aria-hidden="true"></span>
                 <button type="button" data-rich-size="-1" aria-label="Reduce selected text" title="Reduce selected text">A&minus;</button>
                 <button type="button" data-rich-size="1" aria-label="Enlarge selected text" title="Enlarge selected text">A+</button>
@@ -923,6 +924,15 @@
               </div>
               <input id="inlineCardImageInput" type="file" accept="image/*" hidden>
               <div id="importCardEditor" class="rich-card-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Card text"></div>
+              <div id="cardImageControls" class="card-image-controls hidden" role="group" aria-label="Selected image size">
+                <span>Image size</span>
+                <div class="card-image-size-buttons">
+                  <button type="button" data-card-image-size-choice="thumbnail">Thumbnail</button>
+                  <button type="button" data-card-image-size-choice="medium">Medium</button>
+                  <button type="button" data-card-image-size-choice="full">Full width</button>
+                  <button class="card-image-remove" type="button" data-card-image-remove aria-label="Remove selected image" title="Remove image">Remove</button>
+                </div>
+              </div>
               <textarea id="importCardContent" class="hidden" rows="10"></textarea>
             </div>
             <label id="plainCardContentRow" class="hidden">

@@ -160,6 +160,7 @@ const state = {
   importReturnSection: "",
   modalDrag: null,
   cardEditorRange: null,
+  selectedCardImage: null,
   pdfSettingsDraft: null,
   cardReadingScale: normalizeCardReadingScale(readJson(STORAGE_KEYS.settings, {}).cardReadingScale),
   activeSection: "lists",
@@ -597,6 +598,7 @@ function collectElements() {
   el.importCardContent = document.getElementById("importCardContent");
   el.importCardEditor = document.getElementById("importCardEditor");
   el.inlineCardImageInput = document.getElementById("inlineCardImageInput");
+  el.cardImageControls = document.getElementById("cardImageControls");
   el.importPlainContent = document.getElementById("importPlainContent");
   el.richCardContentRow = document.getElementById("richCardContentRow");
   el.plainCardContentRow = document.getElementById("plainCardContentRow");
@@ -741,6 +743,7 @@ function wireEvents() {
   });
   el.importCardEditor.addEventListener("click", handleCardEditorClick);
   el.importCardEditor.addEventListener("input", syncCardEditorToHiddenField);
+  el.cardImageControls.addEventListener("click", handleCardImageControlClick);
   el.importForm.addEventListener("submit", handleImportSubmit);
   el.listEditCloseButton.addEventListener("click", closeListEditModal);
   el.listEditDeleteButton.addEventListener("click", handleDeleteListFromForm);
@@ -1848,6 +1851,7 @@ function fitOpenMobileModals() {
 function resetImportForm() {
   el.importForm.reset();
   state.cardEditorRange = null;
+  state.selectedCardImage = null;
   el.importType.value = "pdf";
   el.importCategory.value = "";
   el.importCardSubtypeCustom.value = "";
@@ -1855,6 +1859,7 @@ function resetImportForm() {
   el.importCardContent.value = "";
   el.importPlainContent.value = "";
   el.importCardEditor.innerHTML = "";
+  updateCardImageControls();
   el.cardFontPicker.value = "Georgia";
   updateFilePickerName(el.importPdfFile, el.importPdfFileName);
   updateFilePickerName(el.importCardImage, el.importCardImageName, "No image selected");
@@ -1989,7 +1994,10 @@ function updateImportTypeFields() {
   el.importFileLabel.textContent = "File";
   el.importPdfFile.accept = "application/pdf,.pdf,image/*";
   el.cardImportFields.classList.toggle("hidden", type !== "card" && type !== "note");
-  el.importCardImageRow.classList.toggle("hidden", type !== "card");
+  // Card photos are inserted from the editor toolbar so sizing is explicit.
+  // Keep the legacy field in the DOM for older saved cards, but do not offer a
+  // second, conflicting image workflow.
+  el.importCardImageRow.classList.add("hidden");
   el.richCardContentRow.classList.toggle("hidden", type !== "card");
   el.plainCardContentRow.classList.toggle("hidden", type !== "note");
   el.linkImportFields.classList.toggle("hidden", type !== "link");
@@ -2130,18 +2138,56 @@ function restoreCardEditorSelection() {
 
 function handleCardEditorClick(event) {
   const image = event.target.closest("img");
-  if (!image || !el.importCardEditor.contains(image)) return;
-  cycleCardImageSize(image);
-  syncCardEditorToHiddenField();
+  state.selectedCardImage = image && el.importCardEditor.contains(image) ? image : null;
+  updateCardImageControls();
 }
 
-function cycleCardImageSize(image) {
-  const sizes = ["small", "medium", "large"];
-  const current = image.dataset.cardImageSize || "medium";
-  const next = sizes[(sizes.indexOf(current) + 1) % sizes.length] || "medium";
-  image.dataset.cardImageSize = next;
-  image.title = `Tap to resize (${next})`;
-  setImportStatus(`Photo size: ${next}. Tap the photo again to change size.`);
+function normalizeCardImageSize(value) {
+  if (value === "small") return "thumbnail";
+  if (value === "large") return "full";
+  return ["thumbnail", "medium", "full"].includes(value) ? value : "thumbnail";
+}
+
+function updateCardImageControls() {
+  if (!el.cardImageControls) return;
+  const image = state.selectedCardImage;
+  const isSelected = Boolean(image && image.isConnected && el.importCardEditor.contains(image));
+  el.cardImageControls.classList.toggle("hidden", !isSelected);
+  if (!isSelected) {
+    state.selectedCardImage = null;
+    return;
+  }
+  const size = normalizeCardImageSize(image.dataset.cardImageSize);
+  image.dataset.cardImageSize = size;
+  el.cardImageControls.querySelectorAll("[data-card-image-size-choice]").forEach((button) => {
+    const active = button.dataset.cardImageSizeChoice === size;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+}
+
+function handleCardImageControlClick(event) {
+  const image = state.selectedCardImage;
+  if (!image || !image.isConnected) {
+    updateCardImageControls();
+    return;
+  }
+  const sizeButton = event.target.closest("[data-card-image-size-choice]");
+  if (sizeButton) {
+    image.dataset.cardImageSize = sizeButton.dataset.cardImageSizeChoice;
+    image.title = "Select image to change its size";
+    syncCardEditorToHiddenField();
+    updateCardImageControls();
+    setImportStatus(`Image size: ${sizeButton.textContent.trim()}.`);
+    return;
+  }
+  if (event.target.closest("[data-card-image-remove]")) {
+    image.remove();
+    state.selectedCardImage = null;
+    syncCardEditorToHiddenField();
+    updateCardImageControls();
+    setImportStatus("Image removed from this card.");
+  }
 }
 
 async function handleInlineCardImageSelected(event) {
@@ -2150,9 +2196,14 @@ async function handleInlineCardImageSelected(event) {
 
   try {
     const dataUrl = await imageFileToCardDataUrl(file);
-    insertCardEditorHtml(`<img src="${escapeHtml(dataUrl)}" alt="" data-card-image-size="medium" title="Tap to resize"><div><br></div>`);
+    const marker = `new-card-image-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    insertCardEditorHtml(`<img src="${escapeHtml(dataUrl)}" alt="" data-card-image-size="thumbnail" data-new-card-image="${marker}" title="Select image to change its size"><div><br></div>`);
+    state.selectedCardImage = el.importCardEditor.querySelector(`[data-new-card-image="${marker}"]`);
+    state.selectedCardImage?.removeAttribute("data-new-card-image");
     syncCardEditorToHiddenField();
     updateRichToolbarState();
+    updateCardImageControls();
+    setImportStatus("Image added as a thumbnail. Choose its size below the image.");
   } catch {
     setImportStatus("That photo could not be inserted into the card text.", true);
   } finally {
@@ -2317,7 +2368,7 @@ function sanitizeCardHtml(html = "") {
         clean.setAttribute("alt", attr.value);
         return;
       }
-      if (tagName === "IMG" && name === "data-card-image-size" && ["small", "medium", "large"].includes(attr.value)) {
+      if (tagName === "IMG" && name === "data-card-image-size" && ["small", "medium", "large", "thumbnail", "full"].includes(attr.value)) {
         clean.setAttribute("data-card-image-size", attr.value);
         return;
       }
@@ -4407,6 +4458,12 @@ async function handleBodyClick(event) {
     return;
   }
 
+  const readingImage = event.target.closest(".rich-card-content img");
+  if (readingImage) {
+    openCardImageLightbox(readingImage);
+    return;
+  }
+
   const cardExitButton = event.target.closest("[data-exit-card]");
   if (cardExitButton) {
     returnFromCardDetail();
@@ -5952,6 +6009,23 @@ function updatePdfSequenceControls() {
   el.pdfFollowButton.setAttribute("aria-pressed", followOn ? "true" : "false");
   el.pdfSkipSongButton.classList.toggle("hidden", !hasSourcePosition || !followOn);
   el.pdfSkipSongButton.disabled = state.currentPdf.sequenceTransitioning;
+}
+
+function openCardImageLightbox(image) {
+  const existing = document.querySelector(".card-image-lightbox");
+  existing?.remove();
+  const layer = document.createElement("div");
+  layer.className = "card-image-lightbox";
+  layer.setAttribute("role", "dialog");
+  layer.setAttribute("aria-modal", "true");
+  layer.setAttribute("aria-label", "Enlarged card image");
+  layer.innerHTML = `<button type="button" aria-label="Close enlarged image" title="Close">&times;</button><img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt || "Card image")}">`;
+  const close = () => layer.remove();
+  layer.addEventListener("click", close);
+  layer.querySelector("img").addEventListener("click", (event) => event.stopPropagation());
+  layer.querySelector("button").addEventListener("click", close);
+  document.body.appendChild(layer);
+  layer.querySelector("button").focus();
 }
 
 function skipCurrentPdfInList() {
