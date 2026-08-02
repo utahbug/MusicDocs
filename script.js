@@ -542,6 +542,7 @@ function collectElements() {
   el.pdfHomeButton = document.getElementById("pdfHomeButton");
   el.pdfTipsButton = document.getElementById("pdfTipsButton");
   el.pdfFollowButton = document.getElementById("pdfFollowButton");
+  el.pdfSkipSongButton = document.getElementById("pdfSkipSongButton");
   el.pdfMetronomeButton = document.getElementById("pdfMetronomeButton");
   el.pdfTempoInput = document.getElementById("pdfTempoInput");
   el.pdfTempoUpButton = document.getElementById("pdfTempoUpButton");
@@ -937,6 +938,7 @@ function wireEvents() {
   el.pdfMetronomeEnabled.addEventListener("change", updatePdfSettingsDraft);
   el.pdfSettingsTempoInput.addEventListener("change", updatePdfSettingsDraft);
   el.pdfFollowButton.addEventListener("click", togglePdfFollow);
+  el.pdfSkipSongButton.addEventListener("click", skipCurrentPdfInList);
   el.pdfZoneTips.addEventListener("click", handlePdfZoneTipsClick);
   el.pdfTipsShowOnOpen.addEventListener("change", updatePdfSettingsDraft);
   el.pdfMetronomeButton.addEventListener("click", toggleMetronome);
@@ -5299,8 +5301,8 @@ async function openPdf(item, options = {}) {
     state.currentPdf.sequenceListId = followEnabled ? validSequenceListId : "";
     state.currentPdf.sequenceSourceListId = validSequenceListId;
   }
-  updatePdfSequenceControls();
   state.currentPdf.sequenceTransitioning = preserveSequence;
+  updatePdfSequenceControls();
   releasePdfObjectUrl();
   state.currentPdf.item = item;
   state.currentPdf.doc = null;
@@ -5896,7 +5898,7 @@ function moveToAdjacentPdfInList(direction) {
 }
 
 function updatePdfSequenceControls() {
-  if (!el.pdfFollowButton) return;
+  if (!el.pdfFollowButton || !el.pdfSkipSongButton) return;
   const sourceItems = getPdfSequence(state.currentPdf.sequenceSourceListId);
   const sourceIndex = sourceItems.findIndex((item) => item.id === state.currentPdf.item?.id);
   const hasSourcePosition = sourceIndex >= 0;
@@ -5906,6 +5908,14 @@ function updatePdfSequenceControls() {
   el.pdfFollowButton.classList.toggle("is-active", followOn);
   el.pdfFollowButton.textContent = `Next Song: ${followOn ? "On" : "Off"}`;
   el.pdfFollowButton.setAttribute("aria-pressed", followOn ? "true" : "false");
+  el.pdfSkipSongButton.classList.toggle("hidden", !hasSourcePosition || !followOn);
+  el.pdfSkipSongButton.disabled = state.currentPdf.sequenceTransitioning;
+}
+
+function skipCurrentPdfInList() {
+  if (!state.currentPdf.doc || state.currentPdf.sequenceTransitioning || !getCurrentPdfSequencePosition()) return;
+  el.pdfSkipSongButton.disabled = true;
+  moveToAdjacentPdfInList(1);
 }
 
 function togglePdfFollow() {
