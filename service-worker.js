@@ -1,4 +1,4 @@
-const CACHE_NAME = "musicdocs-shell-v182";
+const CACHE_NAME = "musicdocs-shell-v183";
 
 const CORE_ASSETS = [
   "./",
