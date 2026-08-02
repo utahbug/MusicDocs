@@ -8007,7 +8007,7 @@ function renderPianoStyleGuide() {
     return `<button type="button" data-style-root="${root}" data-style-type="${type}"${scaleAttribute}><strong>${PIANO_NOTE_NAMES[root]}${suffix}</strong><span>${role}</span></button>`;
   }).join("");
   el.pianoStyleRecipe.innerHTML = `
-    <div><strong>Try this first</strong><span>${guide.intro}</span></div>
+    <div><strong>Try this first</strong></div>
     <div class="piano-style-chords">${chordButtons}</div>
     <p><strong>Scale:</strong> ${guide.scaleLabel}</p>
   `;
