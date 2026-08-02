@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-109">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-110">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-2" defer></script>
-    <script src="script.js?v=musicdocs-108" defer></script>
+    <script src="script.js?v=musicdocs-109" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -640,6 +640,12 @@
                 <button id="scalePlayButton" class="primary-button" type="button">Play scale</button>
               </div>
               <div id="scaleResult" class="scale-result" aria-live="polite"></div>
+              <details class="chord-tips scale-tips">
+                <summary>Scale tips</summary>
+                <div class="chord-tips-content">
+                  <p id="scaleTipText"></p>
+                </div>
+              </details>
             </section>
           </div>
         </section>

@@ -524,6 +524,7 @@ function collectElements() {
   el.scaleType = document.getElementById("scaleType");
   el.scalePlayButton = document.getElementById("scalePlayButton");
   el.scaleResult = document.getElementById("scaleResult");
+  el.scaleTipText = document.getElementById("scaleTipText");
 
   el.detailContent = document.getElementById("detailContent");
 
@@ -8050,7 +8051,7 @@ function showKeyboardGuide(guide) {
 }
 
 function renderPianoScaleGuide() {
-  if (!el.scaleRoot || !el.scaleType || !el.scaleResult) return;
+  if (!el.scaleRoot || !el.scaleType || !el.scaleResult || !el.scaleTipText) return;
   const root = Number(el.scaleRoot.value) || 0;
   const scale = PIANO_SCALES[el.scaleType.value] || PIANO_SCALES.major;
   const scaleMidis = new Set(scale.intervals.map((interval) => 60 + root + interval));
@@ -8062,8 +8063,8 @@ function renderPianoScaleGuide() {
   el.scaleResult.innerHTML = `
     <strong>${PIANO_NOTE_NAMES[root]} ${scale.label}</strong>
     <span>${notes.join(" · ")}</span>
-    <small>${scale.use}</small>
   `;
+  el.scaleTipText.textContent = scale.use;
 }
 
 async function playPianoScale() {
@@ -8071,7 +8072,8 @@ async function playPianoScale() {
   if (!context) return;
   const root = Number(el.scaleRoot.value) || 0;
   const scale = PIANO_SCALES[el.scaleType.value] || PIANO_SCALES.major;
-  const midis = scale.intervals.map((interval) => 60 + root + interval);
+  const ascendingMidis = scale.intervals.map((interval) => 60 + root + interval);
+  const midis = ascendingMidis.concat(ascendingMidis.slice(0, -1).reverse());
   document.querySelectorAll(".keyboard-key").forEach((button) => {
     button.classList.remove("chord-highlight", "game-preview");
   });

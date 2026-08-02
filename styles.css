@@ -146,9 +146,9 @@ body.pdf-open .nav-overflow-wrap .overflow-menu { bottom: calc(58px + env(safe-a
 .prototype-notice { background: color-mix(in srgb, var(--accent-soft) 64%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius: 10px; color: color-mix(in srgb, var(--ink) 82%, var(--muted)); font-size: 0.82rem; line-height: 1.48; margin: 8px clamp(16px, 4vw, 36px) 0px; max-width: 1108px; padding: 10px 13px; text-align: left; }
 .prototype-notice p { margin: 0px; }
 body.pdf-open .prototype-notice { display: none; }
-.app-shell:has(.welcome-view.active) .prototype-notice,
-.app-shell:has(.keyboard-view.active) .prototype-notice { max-width: 900px; }
-.app-shell:has(.piano-view.active) .prototype-notice { max-width: 760px; }
+.app-shell:has(.welcome-view.active) .prototype-notice { max-width: 900px; }
+.app-shell:has(.keyboard-view.active) .prototype-notice,
+.app-shell:has(.piano-view.active) .prototype-notice { display: none; }
 .app-shell:has(.metronome-view.active) .prototype-notice,
 .app-shell:has(.tuner-view.active) .prototype-notice,
 .app-shell:has(.pitch-view.active) .prototype-notice { max-width: 450px; }
@@ -1793,7 +1793,8 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .scale-result { background: linear-gradient(105deg, color-mix(in srgb, #9B8EEA 11%, var(--surface)), color-mix(in srgb, #69C7B1 10%, var(--surface))); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 10px; display: grid; gap: 4px; margin-top: 10px; padding: 11px 13px; }
 .scale-result strong { color: var(--accent-strong); font-size: 1.05rem; }
 .scale-result span { color: var(--text); font-size: 1rem; letter-spacing: 0.025em; }
-.scale-result small { color: var(--muted); font-size: 0.82rem; }
+.scale-tips { margin: 10px 0 0; }
+.scale-tips .chord-tips-content p { color: var(--muted); margin: 10px 2px 12px; }
 .key-change-controls { align-items: end; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: auto 220px 270px; justify-content: start; padding-bottom: 11px; }
 .key-change-controls h3 { align-items: center; color: var(--accent-strong); display: flex; font-size: 1.08rem; margin: 0; min-height: 48px; }
 .key-change-controls label, .key-change-stepper { display: grid; gap: 5px; }
