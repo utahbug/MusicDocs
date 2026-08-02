@@ -1806,7 +1806,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .key-change-stepper button:disabled { color: var(--muted); opacity: 0.45; }
 .key-change-stepper output { align-items: center; background: var(--surface); border-block: 1px solid var(--line); display: flex; font-size: 1.08rem; font-weight: 800; justify-content: center; }
 .key-change-hint { color: var(--muted); font-size: 0.82rem; margin: 9px 0; }
-.key-change-result { align-items: center; background: linear-gradient(135deg, color-mix(in srgb, #237C7A 12%, var(--surface)), color-mix(in srgb, #3667A8 10%, var(--surface))); border: 1px solid var(--line); border-radius: 11px; display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) minmax(190px, 0.72fr); margin-bottom: 11px; padding: 11px 14px; }
+.key-change-result { align-items: center; background: linear-gradient(135deg, color-mix(in srgb, #237C7A 12%, var(--surface)), color-mix(in srgb, #3667A8 10%, var(--surface))); border: 1px solid var(--line); border-radius: 11px; display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) minmax(190px, 0.72fr); margin: 11px 0; padding: 11px 14px; }
 .key-change-summary { display: grid; gap: 3px; }
 .key-change-summary strong { color: var(--accent-strong); font-size: clamp(1.35rem, 4vw, 1.75rem); }
 .key-change-summary strong span { color: var(--muted); padding-inline: 6px; }
