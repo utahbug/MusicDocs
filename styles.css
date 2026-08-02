@@ -690,7 +690,7 @@ body.dark-background .tag, body.dark-background .type-pill { background: #193E50
 
 .image-detail-card .song-card-image { margin-top: 0px; }
 
-.detail-actions.card-detail-actions { align-items: center; display: grid; gap: 8px; grid-template-columns: auto minmax(0px, 1fr) auto auto auto auto; margin-top: 0px; }
+.detail-actions.card-detail-actions { align-items: center; display: grid; gap: 8px; grid-template-columns: auto auto minmax(0px, 1fr) auto auto auto auto; margin-top: 0px; }
 .card-reading-controls { display: inline-flex; }
 .card-reading-controls button { background: var(--accent-soft); border: 1px solid var(--line); color: var(--accent-strong); font-size: 0.78rem; font-weight: 800; height: 38px; min-width: 34px; padding: 0px 6px; }
 .card-reading-controls button:first-child { border-radius: 7px 0px 0px 7px; }
@@ -702,13 +702,6 @@ body.dark-background .tag, body.dark-background .type-pill { background: #193E50
 .card-speech-button.is-speaking { background: var(--accent); border-color: var(--accent); color: #fff; }
 .card-speech-icon { font-size: 1rem; line-height: 1; }
 .card-speech-status { color: var(--muted); font-size: 0.8rem; }
-.card-reading-heading-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: space-between; }
-.card-reading-heading-row .lyrics-card-title { flex: 1 1 320px; }
-.card-reading-heading-row .card-speech-row { flex: 0 0 auto; margin-left: auto; }
-
-@media (max-width: 600px) {
-  .card-reading-heading-row .card-speech-row { margin-left: 0; }
-}
 .card-toolbar-spacer { min-width: 0px; }
 .card-exit-button { color: var(--accent-strong); font-size: 1.25rem; font-weight: 800; }
 .card-detail-footer-actions { display: flex; justify-content: flex-start; padding-top: 4px; }
@@ -1255,13 +1248,14 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .rich-toolbar { max-width: 100%; overflow: hidden; }
   .rich-toolbar button { flex: 0 0 40px; min-height: 40px; min-width: 40px; padding: 0px; width: 40px; }
   .rich-font-picker select { height: 40px; min-height: 40px; }
-  .detail-actions.card-detail-actions { gap: 3px; grid-template-columns: auto minmax(0px, 1fr) auto auto auto auto; }
+  .detail-actions.card-detail-actions { gap: 5px; grid-template-columns: auto auto minmax(0px, 1fr) auto auto auto; }
   .card-detail-actions .card-exit-button { grid-column: 1; grid-row: 1; }
-  .card-detail-actions .card-toolbar-spacer, .card-detail-actions .compact-detail-title { grid-column: 2; grid-row: 1; }
-  .card-detail-actions .card-reading-controls { grid-column: 3; grid-row: 1; justify-self: end; }
-  .card-detail-actions > .favorite-toggle { grid-column: 4; grid-row: 1; }
-  .card-detail-actions > .danger-icon { grid-column: 5; grid-row: 1; }
-  .card-detail-actions > [data-edit-item] { grid-column: 6; grid-row: 1; }
+  .card-detail-actions > .card-speech-row { grid-column: 2; grid-row: 1; }
+  .card-detail-actions .card-toolbar-spacer, .card-detail-actions .compact-detail-title { grid-column: 3 / span 4; grid-row: 1; }
+  .card-detail-actions .card-reading-controls { grid-column: 3; grid-row: 2; justify-self: end; }
+  .card-detail-actions > .favorite-toggle { grid-column: 4; grid-row: 2; }
+  .card-detail-actions > .danger-icon { grid-column: 5; grid-row: 2; }
+  .card-detail-actions > [data-edit-item] { grid-column: 6; grid-row: 2; }
   .form-grid { grid-template-columns: 1fr; }
   .list-edit-add-grid { grid-template-columns: minmax(150px, 68%) 108px; }
   .list-edit-section { padding-left: 8px; padding-right: 8px; }
