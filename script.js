@@ -1,7 +1,7 @@
 "use strict";
 
 const PDFJS_VERSION = "3.11.174";
-const PDFJS_WORKER_URL = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.js`;
+const PDFJS_WORKER_URL = new URL(`assets/pdf.worker.min.js?v=${PDFJS_VERSION}`, document.baseURI).href;
 
 const APP_STORAGE_SCOPE = getAppStorageScope();
 const APP_RELEASE_VERSION = "1.0";
@@ -353,6 +353,7 @@ async function init() {
 function collectElements() {
   el.appShell = document.getElementById("appShell");
   el.appUpdateNotice = document.getElementById("appUpdateNotice");
+  el.offlineReadiness = document.getElementById("offlineReadiness");
   el.backgroundToggleButton = document.getElementById("backgroundToggleButton");
   el.homeTitleButton = document.getElementById("homeTitleButton");
   el.welcomeSection = document.getElementById("welcomeSection");
@@ -1051,6 +1052,15 @@ async function refreshAppShell(button = null) {
     button.textContent = "Checking…";
   }
 
+  if (!navigator.onLine) {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Check for updates";
+    }
+    showAppNotice("You are offline. Your installed version is still available.");
+    return;
+  }
+
   try {
     sessionStorage.setItem(UPDATE_CHECK_SESSION_KEY, JSON.stringify({
       fromBuild: APP_BUILD_VERSION,
@@ -1061,11 +1071,6 @@ async function refreshAppShell(button = null) {
   }
 
   try {
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((key) => caches.delete(key)));
-    }
-
     if (navigator.serviceWorker) {
       const registration = await navigator.serviceWorker.getRegistration();
       await registration?.update();
@@ -1703,13 +1708,50 @@ function showSectionFromHash() {
 }
 
 function setupServiceWorker() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js", { updateViaCache: "none" }).then((registration) => {
-      registration.update();
-    }).catch(() => {
-      // The app still works as a normal static site if service workers are unavailable.
-    });
+  if (!("serviceWorker" in navigator)) {
+    setOfflineReadiness(false, "Offline mode unavailable");
+    return;
   }
+  navigator.serviceWorker.register("service-worker.js", { updateViaCache: "none" }).then(async (registration) => {
+    await registration.update();
+    const readyRegistration = await navigator.serviceWorker.ready;
+    await checkOfflineReadiness(readyRegistration);
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      window.setTimeout(() => checkOfflineReadiness(readyRegistration), 300);
+    });
+  }).catch(() => setOfflineReadiness(false, "Offline setup incomplete"));
+}
+
+function checkOfflineReadiness(registration) {
+  return new Promise((resolve) => {
+    const worker = registration?.active || navigator.serviceWorker.controller;
+    if (!worker) {
+      setOfflineReadiness(false, "Preparing offline access…", "checking");
+      resolve(false);
+      return;
+    }
+    const channel = new MessageChannel();
+    const timer = window.setTimeout(() => {
+      setOfflineReadiness(false, navigator.onLine ? "Preparing offline access…" : "Offline files are incomplete", navigator.onLine ? "checking" : "incomplete");
+      resolve(false);
+    }, 10000);
+    channel.port1.onmessage = ({ data }) => {
+      if (data?.type !== "OFFLINE_READY_STATUS") return;
+      window.clearTimeout(timer);
+      if (data.ready) setOfflineReadiness(true, "✓ Ready offline");
+      else setOfflineReadiness(false, navigator.onLine ? "Preparing offline access…" : "Offline files are incomplete — connect to finish setup", navigator.onLine ? "checking" : "incomplete");
+      resolve(Boolean(data.ready));
+    };
+    worker.postMessage({ type: "CHECK_OFFLINE_READY" }, [channel.port2]);
+  });
+}
+
+function setOfflineReadiness(ready, text, mode = "") {
+  if (!el.offlineReadiness) return;
+  el.offlineReadiness.textContent = text;
+  el.offlineReadiness.classList.toggle("is-ready", ready);
+  el.offlineReadiness.classList.toggle("is-incomplete", !ready && mode === "incomplete");
+  el.offlineReadiness.classList.toggle("is-checking", !ready && mode !== "incomplete");
 }
 
 function openImportModal(itemId = null, preferredType = "pdf", context = "library") {
