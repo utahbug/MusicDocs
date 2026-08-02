@@ -8115,7 +8115,14 @@ function keySignatureMemoryTrick(keyIndex) {
 function renderKeySignatureDisplay(keyIndex) {
   const signature = KEY_SIGNATURES[keyIndex];
   const symbol = signature.type === "sharp" ? "♯" : signature.type === "flat" ? "♭" : "♮";
-  const symbols = signature.count ? symbol.repeat(signature.count) : symbol;
+  const signatureOffsets = signature.type === "sharp"
+    ? [-10, 5, -15, 0, 15, -5, 10]
+    : signature.type === "flat"
+      ? [0, -15, 5, -10, 10, -5, 15]
+      : [0];
+  const symbols = Array.from({ length: Math.max(1, signature.count) }, (_, index) =>
+    `<span style="--key-offset:${signatureOffsets[index]}px">${symbol}</span>`
+  ).join("");
   const noteNames = signature.count ? signature.label.split(": ")[1] : "No sharps or flats";
   return `
     <div class="key-signature-display" role="img" aria-label="Key of ${KEY_CHANGE_NAMES[keyIndex]} major: ${signature.label}">
