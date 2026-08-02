@@ -8148,7 +8148,6 @@ function renderKeyChangeGuide() {
     <div class="key-change-summary">
       <strong>${KEY_CHANGE_NAMES[root]} <span aria-hidden="true">→</span> ${KEY_CHANGE_NAMES[result]}</strong>
       <span>${direction}</span>
-      <span>${KEY_SIGNATURES[result].label}</span>
     </div>
     ${renderKeySignatureDisplay(result)}
   `;
