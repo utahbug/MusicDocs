@@ -805,7 +805,11 @@ body.dark-background .modal-heading .form-close-button:hover, body.dark-backgrou
 
 #importTypeRow { order: 3; }
 
-#importForm .form-apply-button { order: 9; }
+#importFormActions { order: 9; }
+
+.form-bottom-actions { align-items: center; display: flex; gap: 10px; }
+.form-discard-button { min-height: 42px; }
+.required-marker { color: var(--danger); font-weight: 800; }
 
 #importStatus { order: 10; }
 
