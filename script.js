@@ -163,6 +163,8 @@ const state = {
   selectedCardImage: null,
   speechCardId: "",
   speechUtterance: null,
+  speechVoices: [],
+  speechVoiceId: String(readJson(STORAGE_KEYS.settings, {}).cardSpeechVoice || ""),
   pdfSettingsDraft: null,
   cardReadingScale: normalizeCardReadingScale(readJson(STORAGE_KEYS.settings, {}).cardReadingScale),
   activeSection: "lists",
@@ -331,6 +333,7 @@ async function init() {
   setupKeyboardUi();
   applyAppSettings();
   wireEvents();
+  setupCardSpeechVoices();
   configurePdfJs();
   await loadLibrary();
   loadLocalState();
@@ -5136,6 +5139,12 @@ function closeSwipeRows(exceptRow = null) {
 }
 
 function handleBodyChange(event) {
+  const cardSpeechVoice = event.target.closest("[data-card-speech-voice]");
+  if (cardSpeechVoice) {
+    selectCardSpeechVoice(cardSpeechVoice.value);
+    return;
+  }
+
   const batchSelect = event.target.closest("[data-batch-select]");
   if (batchSelect) {
     setBatchDeleteSelection(batchSelect.dataset.batchSelect, batchSelect.value, batchSelect.checked);
@@ -5253,6 +5262,44 @@ function cardSpeechText(item) {
   return [title, body].map((value) => String(value || "").trim()).filter(Boolean).join(". \n");
 }
 
+function cardSpeechVoiceOptionsHtml() {
+  const selectedVoiceExists = state.speechVoices.some((voice) => voice.voiceURI === state.speechVoiceId);
+  return [
+    `<option value=""${selectedVoiceExists ? "" : " selected"}>Device default</option>`,
+    ...state.speechVoices.map((voice) => {
+      const selected = voice.voiceURI === state.speechVoiceId ? " selected" : "";
+      return `<option value="${escapeHtml(voice.voiceURI)}"${selected}>${escapeHtml(voice.name)} (${escapeHtml(voice.lang || "Unknown language")})</option>`;
+    })
+  ].join("");
+}
+
+function refreshCardSpeechVoices() {
+  if (!("speechSynthesis" in window)) return;
+  state.speechVoices = window.speechSynthesis.getVoices()
+    .slice()
+    .sort((a, b) => (a.lang || "").localeCompare(b.lang || "") || a.name.localeCompare(b.name));
+  document.querySelectorAll("[data-card-speech-voice]").forEach((select) => {
+    select.innerHTML = cardSpeechVoiceOptionsHtml();
+  });
+}
+
+function setupCardSpeechVoices() {
+  if (!("speechSynthesis" in window)) return;
+  refreshCardSpeechVoices();
+  if (typeof window.speechSynthesis.addEventListener === "function") {
+    window.speechSynthesis.addEventListener("voiceschanged", refreshCardSpeechVoices);
+  } else {
+    window.speechSynthesis.onvoiceschanged = refreshCardSpeechVoices;
+  }
+}
+
+function selectCardSpeechVoice(voiceId) {
+  state.speechVoiceId = String(voiceId || "");
+  const settings = readJson(STORAGE_KEYS.settings, {});
+  writeJson(STORAGE_KEYS.settings, { ...settings, cardSpeechVoice: state.speechVoiceId });
+  if (state.speechUtterance) stopCardSpeech("Voice changed. Tap Read aloud to begin again.");
+}
+
 function updateCardSpeechUi(isSpeaking = false, message = "") {
   document.querySelectorAll("[data-card-speech]").forEach((button) => {
     const active = isSpeaking && button.dataset.cardSpeech === state.speechCardId;
@@ -5292,7 +5339,9 @@ function toggleCardSpeech(itemId) {
 
   stopCardSpeech();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = document.documentElement.lang || navigator.language || "en-US";
+  const selectedVoice = state.speechVoices.find((voice) => voice.voiceURI === state.speechVoiceId);
+  if (selectedVoice) utterance.voice = selectedVoice;
+  utterance.lang = selectedVoice?.lang || document.documentElement.lang || navigator.language || "en-US";
   utterance.rate = 0.95;
   state.speechCardId = itemId;
   state.speechUtterance = utterance;
@@ -5360,6 +5409,10 @@ function detailHtml(item) {
           <span class="card-speech-icon" aria-hidden="true">&#128266;</span>
           <span data-card-speech-label>Read aloud</span>
         </button>
+        <label class="card-speech-voice-field">
+          <span>Voice</span>
+          <select data-card-speech-voice aria-label="Read aloud voice">${cardSpeechVoiceOptionsHtml()}</select>
+        </label>
         <span class="card-speech-status" data-card-speech-status aria-live="polite"></span>
       </div>
     `;
@@ -5367,7 +5420,6 @@ function detailHtml(item) {
       <article class="detail-card card-detail-card${item.lyricsCard ? " lyrics-card-detail" : ""}" data-card-reading-level="${CARD_READING_SCALES.indexOf(state.cardReadingScale)}">
         <div class="detail-actions card-detail-actions">
           ${cardExitAction}
-          ${speechAction}
           ${item.lyricsCard ? `<span class="card-toolbar-spacer" aria-hidden="true"></span>` : cardTitle}
           ${item.lyricsCard ? cardReadingControls : ""}
           ${favoriteAction}
@@ -5375,6 +5427,7 @@ function detailHtml(item) {
           ${editAction}
         </div>
         ${lyricHeading}
+        ${speechAction}
         ${item.imageFileId ? localImageSlotHtml(item) : ""}
         ${cardContentHtml(item)}
         ${cardFactsHtml(item)}
