@@ -161,6 +161,8 @@ const state = {
   modalDrag: null,
   cardEditorRange: null,
   selectedCardImage: null,
+  speechCardId: "",
+  speechUtterance: null,
   pdfSettingsDraft: null,
   cardReadingScale: normalizeCardReadingScale(readJson(STORAGE_KEYS.settings, {}).cardReadingScale),
   activeSection: "lists",
@@ -831,6 +833,7 @@ function wireEvents() {
       stopTuner();
       stopPitch();
       stopAllPianoVoices();
+      stopCardSpeech();
     }
   });
   window.addEventListener("beforeunload", () => {
@@ -838,6 +841,7 @@ function wireEvents() {
     stopTuner();
     stopPitch();
     stopAllPianoVoices();
+    stopCardSpeech();
     if (state.audio.objectUrl) URL.revokeObjectURL(state.audio.objectUrl);
   });
   el.modalHeading.addEventListener("pointerdown", startModalDrag);
@@ -3164,6 +3168,7 @@ function showSection(sectionName) {
   if (!el.sections[sectionName]) return;
   if (sectionName !== "tuner") stopTuner();
   if (sectionName !== "pitch") stopPitch();
+  if (sectionName !== "detail") stopCardSpeech();
 
   if (sectionName !== "detail" && !el.pdfViewer.classList.contains("hidden")) {
     closePdfViewer();
@@ -4470,6 +4475,12 @@ async function handleBodyClick(event) {
     return;
   }
 
+  const cardSpeechButton = event.target.closest("[data-card-speech]");
+  if (cardSpeechButton) {
+    toggleCardSpeech(cardSpeechButton.dataset.cardSpeech);
+    return;
+  }
+
   const cardReadingButton = event.target.closest("[data-card-reading-size]");
   if (cardReadingButton) {
     changeCardReadingSize(cardReadingButton.dataset.cardReadingSize);
@@ -5197,6 +5208,7 @@ function openItem(id, options = {}) {
 function openDetail(id) {
   const item = state.itemsById.get(id);
   if (!item) return;
+  stopCardSpeech();
   rememberOpened(item);
 
   state.previousSection = state.activeSection;
@@ -5222,6 +5234,69 @@ function changeCardReadingSize(action) {
   writeJson(STORAGE_KEYS.settings, { ...settings, cardReadingScale: state.cardReadingScale });
   const card = document.querySelector(".card-detail-card");
   if (card) card.dataset.cardReadingLevel = String(CARD_READING_SCALES.indexOf(state.cardReadingScale));
+}
+
+function cardSpeechText(item) {
+  const title = itemDisplayTitle(item);
+  const body = item.lyricsText
+    || (item.cardHtml ? htmlToPlainText(item.cardHtml) : "")
+    || (Array.isArray(item.content) ? item.content.join("\n") : item.content || "");
+  return [title, body].map((value) => String(value || "").trim()).filter(Boolean).join(". \n");
+}
+
+function updateCardSpeechUi(isSpeaking = false, message = "") {
+  document.querySelectorAll("[data-card-speech]").forEach((button) => {
+    const active = isSpeaking && button.dataset.cardSpeech === state.speechCardId;
+    button.classList.toggle("is-speaking", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+    const label = button.querySelector("[data-card-speech-label]");
+    if (label) label.textContent = active ? "Stop" : "Read aloud";
+  });
+  const status = document.querySelector("[data-card-speech-status]");
+  if (status) status.textContent = message;
+}
+
+function stopCardSpeech(message = "") {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  state.speechCardId = "";
+  state.speechUtterance = null;
+  updateCardSpeechUi(false, message);
+}
+
+function toggleCardSpeech(itemId) {
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    window.alert("Read aloud is not supported by this browser or device.");
+    return;
+  }
+
+  if (state.speechCardId === itemId && state.speechUtterance) {
+    stopCardSpeech("Reading stopped.");
+    return;
+  }
+
+  const item = state.itemsById.get(itemId);
+  const text = item ? cardSpeechText(item) : "";
+  if (!text) {
+    window.alert("This card has no text to read aloud.");
+    return;
+  }
+
+  stopCardSpeech();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = document.documentElement.lang || navigator.language || "en-US";
+  utterance.rate = 0.95;
+  state.speechCardId = itemId;
+  state.speechUtterance = utterance;
+  utterance.onend = () => {
+    if (state.speechUtterance === utterance) stopCardSpeech("Finished reading.");
+  };
+  utterance.onerror = (event) => {
+    if (state.speechUtterance !== utterance) return;
+    const message = ["canceled", "interrupted"].includes(event.error) ? "" : "Unable to read this card aloud.";
+    stopCardSpeech(message);
+  };
+  updateCardSpeechUi(true, "Reading card aloud.");
+  window.speechSynthesis.speak(utterance);
 }
 
 function detailHtml(item) {
@@ -5270,6 +5345,15 @@ function detailHtml(item) {
     const lyricHeading = item.lyricsCard && visibleTitle
       ? `<h2 id="detailTitle" class="lyrics-card-title">${escapeHtml(title)}</h2>`
       : "";
+    const speechAction = `
+      <div class="card-speech-row">
+        <button class="secondary-button card-speech-button" type="button" data-card-speech="${escapeHtml(item.id)}" aria-pressed="false">
+          <span class="card-speech-icon" aria-hidden="true">&#128266;</span>
+          <span data-card-speech-label>Read aloud</span>
+        </button>
+        <span class="card-speech-status" data-card-speech-status aria-live="polite"></span>
+      </div>
+    `;
     return `
       <article class="detail-card card-detail-card${item.lyricsCard ? " lyrics-card-detail" : ""}" data-card-reading-level="${CARD_READING_SCALES.indexOf(state.cardReadingScale)}">
         <div class="detail-actions card-detail-actions">
@@ -5281,6 +5365,7 @@ function detailHtml(item) {
           ${editAction}
         </div>
         ${lyricHeading}
+        ${speechAction}
         ${item.imageFileId ? localImageSlotHtml(item) : ""}
         ${cardContentHtml(item)}
         ${cardFactsHtml(item)}
@@ -5335,6 +5420,7 @@ function detailHtml(item) {
 }
 
 function returnFromCardDetail() {
+  stopCardSpeech();
   const targetSection = state.previousSection || "cards";
   el.detailContent.innerHTML = "";
   showSection(targetSection);
