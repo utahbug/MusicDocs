@@ -705,6 +705,7 @@ body.dark-background .tag, body.dark-background .type-pill { background: #193E50
 .card-speech-voice-field { align-items: center; display: inline-flex; gap: 6px; }
 .card-speech-voice-field > span { color: var(--muted); font-size: 0.8rem; font-weight: 750; }
 .card-speech-voice-field select { min-height: 40px; max-width: min(58vw, 330px); }
+.card-form-voice-field { align-items: flex-end; display: grid; margin-left: auto; min-width: min(280px, 52vw); }
 .card-toolbar-spacer { min-width: 0px; }
 .card-exit-button { color: var(--accent-strong); font-size: 1.25rem; font-weight: 800; }
 .card-detail-footer-actions { display: flex; justify-content: flex-start; padding-top: 4px; }
@@ -1261,6 +1262,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .card-speech-row { align-items: flex-end; }
   .card-speech-voice-field { flex: 1 1 190px; }
   .card-speech-voice-field select { max-width: 100%; min-width: 0px; width: 100%; }
+  .card-form-voice-field { flex: 0 1 240px; margin-left: auto; min-width: 150px; }
   .form-grid { grid-template-columns: 1fr; }
   .list-edit-add-grid { grid-template-columns: minmax(150px, 68%) 108px; }
   .list-edit-section { padding-left: 8px; padding-right: 8px; }
