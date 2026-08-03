@@ -5278,6 +5278,7 @@ function cardSpeechVoiceOptionsHtml() {
 function refreshCardSpeechVoices() {
   if (!("speechSynthesis" in window)) return;
   state.speechVoices = window.speechSynthesis.getVoices()
+    .filter((voice) => /^en(?:[-_]|$)/i.test(voice.lang || ""))
     .slice()
     .sort((a, b) => (a.lang || "").localeCompare(b.lang || "") || a.name.localeCompare(b.name));
   document.querySelectorAll("[data-card-speech-voice]").forEach((select) => {
