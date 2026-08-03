@@ -5277,10 +5277,17 @@ function cardSpeechVoiceOptionsHtml() {
 
 function refreshCardSpeechVoices() {
   if (!("speechSynthesis" in window)) return;
-  state.speechVoices = window.speechSynthesis.getVoices()
-    .filter((voice) => /^en(?:[-_]|$)/i.test(voice.lang || ""))
+  const availableVoices = window.speechSynthesis.getVoices()
     .slice()
     .sort((a, b) => (a.lang || "").localeCompare(b.lang || "") || a.name.localeCompare(b.name));
+  const englishVoices = availableVoices.filter((voice) => /^en(?:[-_]|$)/i.test(voice.lang || ""));
+  const spanishVoices = availableVoices.filter((voice) => /^es(?:[-_]|$)/i.test(voice.lang || ""));
+  const preferredSpanishLocales = ["es-US", "es-MX", "es-ES"];
+  const preferredSpanishVoices = preferredSpanishLocales
+    .map((locale) => spanishVoices.find((voice) => (voice.lang || "").replace("_", "-").toLowerCase() === locale.toLowerCase()))
+    .filter(Boolean);
+  const remainingSpanishVoices = spanishVoices.filter((voice) => !preferredSpanishVoices.includes(voice));
+  state.speechVoices = [...englishVoices, ...preferredSpanishVoices, ...remainingSpanishVoices].slice(0, englishVoices.length + 3);
   document.querySelectorAll("[data-card-speech-voice]").forEach((select) => {
     select.innerHTML = cardSpeechVoiceOptionsHtml();
   });
