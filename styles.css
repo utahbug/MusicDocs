@@ -1083,10 +1083,6 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .pdf-follow-button { background: linear-gradient(105deg, #237C7A, #2B67B1); border: 1px solid color-mix(in srgb, var(--accent-strong) 70%, var(--line)); border-radius: 999px; box-shadow: 0 3px 10px rgba(28, 64, 102, 0.2); color: #FFFFFF; font-size: 0.78rem; font-weight: 850; min-height: 42px; padding: 7px 13px; white-space: nowrap; }
 .pdf-follow-button.is-active { background: linear-gradient(105deg, #238B62, #276AB3); border-color: #176B4A; box-shadow: 0 0 0 3px color-mix(in srgb, #2FB878 22%, transparent), 0 4px 14px rgba(28, 64, 102, 0.24); }
 .pdf-follow-button:hover, .pdf-follow-button:focus-visible { box-shadow: 0 0 0 3px var(--accent-hover), 0 4px 14px rgba(28, 64, 102, 0.24); }
-.pdf-skip-song-button { align-items: center; background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line)); border-radius: 999px; color: var(--accent-strong); display: inline-flex; font-size: 0.76rem; font-weight: 800; gap: 5px; min-height: 42px; padding: 7px 12px; white-space: nowrap; }
-.pdf-skip-song-button span { font-size: 1.2rem; line-height: 0.7; }
-.pdf-skip-song-button:hover, .pdf-skip-song-button:focus-visible { background: var(--accent-soft); border-color: var(--accent); }
-.pdf-skip-song-button:disabled { opacity: 0.5; }
 
 .pdf-tap-zone::before { background: rgba(37, 79, 96, 0.16); content: ""; bottom: 0px; opacity: 1; pointer-events: none; position: absolute; top: 25%; width: 14px; }
 
@@ -1147,7 +1143,6 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 @media (max-width: 480px) {
   .pdf-action-bar { gap: 6px; padding-left: max(6px, env(safe-area-inset-left)); padding-right: max(6px, env(safe-area-inset-right)); }
   .pdf-follow-button { font-size: 0.7rem; padding-inline: 9px; }
-  .pdf-skip-song-button { font-size: 0.68rem; padding-inline: 8px; }
   .pdf-action-button { min-width: 52px; padding-inline: 5px; }
   .pdf-settings-action { min-width: 58px; }
   .pdf-tempo-box { gap: 3px; padding-left: 5px; }
