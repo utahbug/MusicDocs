@@ -1969,9 +1969,9 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .about-disclaimer { display: none; }
   .mobile-disclaimer-trigger { background: transparent; border: 0px; color: var(--muted); display: inline; font-size: 0.72rem; font-style: italic; margin: 2px 0px; min-height: 32px; padding: 5px 3px; text-decoration: underline; text-underline-offset: 2px; }
   .mobile-disclaimer-trigger:hover, .mobile-disclaimer-trigger:focus-visible { color: var(--accent-strong); }
-  .mobile-disclaimer-dialog[open] { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-modal); color: var(--ink); display: grid; gap: 12px; margin: auto; max-height: calc(100dvh - 32px); max-width: min(420px, calc(100vw - 32px)); padding: 18px; text-align: left; width: calc(100vw - 32px); }
+  .mobile-disclaimer-dialog[open] { align-content: start; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-modal); color: var(--ink); display: grid; gap: 12px; grid-template-rows: auto minmax(0px, auto) auto; height: auto; inset: auto; left: 50%; margin: 0px; max-height: 70dvh; max-width: 420px; min-height: 0px; overflow: hidden; padding: 18px; position: fixed; text-align: left; top: 50%; transform: translate(-50%, -50%); width: 90vw; }
   .mobile-disclaimer-dialog::backdrop { background: var(--overlay); }
   .mobile-disclaimer-dialog h3 { font-size: 1rem; margin: 0px; }
-  .mobile-disclaimer-dialog p { color: var(--muted); font-size: 0.78rem; line-height: 1.5; margin: 0px; }
-  .mobile-disclaimer-dialog .secondary-button { justify-self: end; min-width: 76px; }
+  .mobile-disclaimer-dialog p { color: var(--muted); font-size: 0.78rem; line-height: 1.5; margin: 0px; min-height: 0px; overflow-y: auto; }
+  .mobile-disclaimer-dialog .secondary-button { height: auto; justify-self: end; min-height: 40px; min-width: 76px; width: auto; }
 }
