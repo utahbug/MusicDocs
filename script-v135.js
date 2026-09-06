@@ -5,7 +5,7 @@ const PDFJS_WORKER_URL = new URL(`assets/pdf.worker.min.js?v=${PDFJS_VERSION}`, 
 
 const APP_STORAGE_SCOPE = getAppStorageScope();
 const APP_RELEASE_VERSION = "1.0";
-const APP_BUILD_VERSION = "1.07";
+const APP_BUILD_VERSION = "1.08";
 const UPDATE_CHECK_SESSION_KEY = `${APP_STORAGE_SCOPE}.updateCheck`;
 const STORAGE_KEYS = {
   deletedItems: storageKey("deletedItems"),
@@ -987,7 +987,6 @@ function wireEvents() {
   el.pdfStage.addEventListener("touchend", handlePdfTouchEnd, { passive: false });
   el.pdfStage.addEventListener("touchcancel", handlePdfTouchEnd, { passive: false });
   window.addEventListener("hashchange", showSectionFromHash);
-  window.addEventListener("scroll", updateIdentityBar, { passive: true });
   const handleViewportChange = debounce(() => {
     if (!el.pdfViewer.classList.contains("hidden") && state.currentPdf.doc) {
       renderPdfPage(state.currentPdf.pageNumber);
@@ -3225,10 +3224,6 @@ function goHome() {
   closeListMoreMenu();
   renderLists();
   showSection("favorites");
-}
-
-function updateIdentityBar() {
-  document.body.classList.toggle("identity-condensed", window.scrollY > 28);
 }
 
 function showSection(sectionName) {
