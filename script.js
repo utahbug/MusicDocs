@@ -4316,7 +4316,7 @@ function renderCards() {
     compactAction: "edit",
     reorderCards: true,
     hideMeta: true,
-    emptyTitle: "Turn words into a rehearsal aid",
+    emptyTitle: "",
     emptyMessage: "Create Text for easy-to-read lyrics, notes, cues, teaching material, and images."
   });
   updateBatchDeleteControls("cards");
@@ -9975,7 +9975,12 @@ function libraryOptionsHtml() {
 
 function emptyState(title = "Nothing here yet", message = "Add something of your own or choose another section to explore the starter content.") {
   const node = document.getElementById("emptyStateTemplate").content.firstElementChild.cloneNode(true);
-  node.querySelector("h3").textContent = title;
+  const heading = node.querySelector("h3");
+  if (title) {
+    heading.textContent = title;
+  } else {
+    heading.remove();
+  }
   node.querySelector("p").textContent = message;
   return node;
 }
