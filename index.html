@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles-v128.css">
+    <link rel="stylesheet" href="styles-v131.css">
     <script src="assets/pdf.min.js?v=3.11.174" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-2" defer></script>
-    <script src="script.js?v=musicdocs-126" defer></script>
+    <script src="script-v130.js" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -995,19 +995,36 @@
           <p id="importStatus" class="form-status" role="status"></p>
 
           <div id="importFormActions" class="form-bottom-actions">
-            <button class="form-apply-button" type="submit" aria-label="Apply changes" title="Apply changes">Apply</button>
-            <button id="importDiscardButton" class="secondary-button form-discard-button hidden" type="button">Discard</button>
-            <label id="importSpeechVoiceField" class="card-speech-voice-field card-form-voice-field hidden">
-              <span>Read aloud voice</span>
-              <select data-card-speech-voice aria-label="Read aloud voice">
-                <option value="">Device default</option>
-              </select>
-            </label>
+            <div class="form-primary-actions">
+              <button class="form-apply-button" type="submit" aria-label="Apply changes" title="Apply changes">Apply</button>
+              <button id="importDiscardButton" class="secondary-button form-discard-button hidden" type="button">Discard</button>
+            </div>
+            <button id="importTextToolsButton" class="secondary-button text-tools-button hidden" type="button" aria-haspopup="dialog" aria-controls="textToolsDialog">
+              <svg class="text-tools-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M4 7h6m4 0h6M4 17h10m4 0h2"></path>
+                <circle cx="12" cy="7" r="2"></circle>
+                <circle cx="16" cy="17" r="2"></circle>
+              </svg>
+              <span>Tools</span>
+            </button>
           </div>
 
         </form>
       </div>
     </div>
+
+    <dialog id="textToolsDialog" class="text-tools-dialog" aria-labelledby="textToolsTitle">
+      <h3 id="textToolsTitle">Text Tools</h3>
+      <label id="importSpeechVoiceField" class="card-speech-voice-field text-tools-voice-field">
+        <span>Read aloud voice</span>
+        <select data-card-speech-voice aria-label="Read aloud voice">
+          <option value="">Device default</option>
+        </select>
+      </label>
+      <div class="text-tools-footer">
+        <button id="textToolsCloseButton" class="secondary-button" type="button">Close</button>
+      </div>
+    </dialog>
 
     <div id="listEditModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="listEditTitle">
       <div id="listEditPanel" class="modal-panel list-edit-modal-panel">
@@ -1175,7 +1192,7 @@
           <strong>Your work stays with you</strong>
           <p>Your personal lists, favorites, and edits remain on this device unless you export them.</p>
         </div>
-        <p class="about-version">Version 1.0 <span>Build 1.05</span></p>
+        <p class="about-version">Version 1.0 <span>Build 1.07</span></p>
         <button class="secondary-button about-update-button" type="button" data-refresh-app>Check for updates</button>
         <p id="offlineReadiness" class="offline-readiness is-checking" role="status">Preparing offline access&hellip;</p>
         <p class="about-disclaimer">MusicDocs is an independent tool for organizing and presenting music and documents.</p>

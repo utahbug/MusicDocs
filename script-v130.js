@@ -5,7 +5,7 @@ const PDFJS_WORKER_URL = new URL(`assets/pdf.worker.min.js?v=${PDFJS_VERSION}`, 
 
 const APP_STORAGE_SCOPE = getAppStorageScope();
 const APP_RELEASE_VERSION = "1.0";
-const APP_BUILD_VERSION = "1.01";
+const APP_BUILD_VERSION = "1.07";
 const UPDATE_CHECK_SESSION_KEY = `${APP_STORAGE_SCOPE}.updateCheck`;
 const STORAGE_KEYS = {
   deletedItems: storageKey("deletedItems"),
@@ -636,7 +636,10 @@ function collectElements() {
   el.importSaveButton = document.getElementById("importSaveButton");
   el.importDeleteButton = document.getElementById("importDeleteButton");
   el.importDiscardButton = document.getElementById("importDiscardButton");
+  el.importTextToolsButton = document.getElementById("importTextToolsButton");
   el.importSpeechVoiceField = document.getElementById("importSpeechVoiceField");
+  el.textToolsDialog = document.getElementById("textToolsDialog");
+  el.textToolsCloseButton = document.getElementById("textToolsCloseButton");
 
   el.listEditModal = document.getElementById("listEditModal");
   el.listEditPanel = document.getElementById("listEditPanel");
@@ -733,6 +736,11 @@ function wireEvents() {
   el.backupFileInput.addEventListener("change", importBackupFromFile);
   el.importCloseButton.addEventListener("click", closeImportModal);
   el.importDiscardButton.addEventListener("click", closeImportModal);
+  el.importTextToolsButton.addEventListener("click", openTextTools);
+  el.textToolsCloseButton.addEventListener("click", closeTextTools);
+  el.textToolsDialog.addEventListener("close", () => {
+    if (!el.importModal.classList.contains("hidden")) el.importTextToolsButton.focus();
+  });
   el.importDeleteButton.addEventListener("click", handleDeleteItemFromForm);
   el.importType.addEventListener("change", updateImportTypeFields);
   el.importCardSubtype.addEventListener("change", handleCardSubtypeChange);
@@ -1820,6 +1828,7 @@ function openImportModal(itemId = null, preferredType = "pdf", context = "librar
 
 function closeImportModal() {
   el.importModal.classList.add("hidden");
+  closeTextTools(false);
   clearModalPanelLayout(el.modalPanel);
   state.editingItemId = null;
   state.importContext = "library";
@@ -1827,6 +1836,24 @@ function closeImportModal() {
   el.importType.disabled = false;
   setImportStatus("");
   fitOpenMobileModals();
+}
+
+function openTextTools() {
+  if (typeof el.textToolsDialog.showModal === "function") {
+    el.textToolsDialog.showModal();
+  } else {
+    el.textToolsDialog.setAttribute("open", "");
+  }
+}
+
+function closeTextTools(restoreFocus = true) {
+  if (!el.textToolsDialog.open) return;
+  if (typeof el.textToolsDialog.close === "function") {
+    el.textToolsDialog.close();
+  } else {
+    el.textToolsDialog.removeAttribute("open");
+    if (restoreFocus && !el.importModal.classList.contains("hidden")) el.importTextToolsButton.focus();
+  }
 }
 
 function clearModalPanelLayout(panel) {
@@ -2005,7 +2032,8 @@ function applyImportContext() {
   el.importSaveButton.title = editing ? "Save changes" : "Save";
   el.importDeleteButton.classList.toggle("hidden", !editing || !isDeletableItem(state.editingItemId));
   el.importDiscardButton.classList.toggle("hidden", editing || type !== "card");
-  el.importSpeechVoiceField.classList.toggle("hidden", type !== "card");
+  el.importTextToolsButton.classList.toggle("hidden", type !== "card");
+  if (type !== "card") closeTextTools(false);
 
   el.importCategoryRow.classList.toggle("hidden", linkOnly);
   syncCardSubtypeFields();
@@ -5281,12 +5309,20 @@ function changeCardReadingSize(action) {
   if (card) card.dataset.cardReadingLevel = String(CARD_READING_SCALES.indexOf(state.cardReadingScale));
 }
 
+function cardReadableText(item) {
+  const candidates = [
+    item.lyricsText,
+    item.cardHtml ? htmlToPlainText(item.cardHtml) : "",
+    Array.isArray(item.content) ? item.content.join("\n") : item.content
+  ];
+  return candidates.map((value) => String(value || "").trim()).find(Boolean) || "";
+}
+
 function cardSpeechText(item) {
-  const title = itemDisplayTitle(item);
-  const body = item.lyricsText
-    || (item.cardHtml ? htmlToPlainText(item.cardHtml) : "")
-    || (Array.isArray(item.content) ? item.content.join("\n") : item.content || "");
-  return [title, body].map((value) => String(value || "").trim()).filter(Boolean).join(". \n");
+  const body = cardReadableText(item);
+  if (!body) return "";
+  const title = String(itemDisplayTitle(item) || "").trim();
+  return [title, body].filter(Boolean).join(". \n");
 }
 
 function cardSpeechVoiceOptionsHtml() {
@@ -5340,8 +5376,6 @@ function updateCardSpeechUi(isSpeaking = false, message = "") {
     const active = isSpeaking && button.dataset.cardSpeech === state.speechCardId;
     button.classList.toggle("is-speaking", active);
     button.setAttribute("aria-pressed", active ? "true" : "false");
-    const label = button.querySelector("[data-card-speech-label]");
-    if (label) label.textContent = active ? "Stop" : "Read aloud";
   });
   const status = document.querySelector("[data-card-speech-status]");
   if (status) status.textContent = message;
@@ -5438,27 +5472,27 @@ function detailHtml(item) {
     const lyricHeading = item.lyricsCard && visibleTitle
       ? `<h2 id="detailTitle" class="lyrics-card-title">${escapeHtml(title)}</h2>`
       : "";
-    const speechAction = `
-      <div class="card-speech-row">
-        <button class="secondary-button card-speech-button" type="button" data-card-speech="${escapeHtml(item.id)}" aria-pressed="false">
-          <span class="card-speech-icon" aria-hidden="true">&#128266;</span>
-          <span data-card-speech-label>Read aloud</span>
-        </button>
-        <span class="card-speech-status" data-card-speech-status aria-live="polite"></span>
-      </div>
-    `;
+    const speechAction = cardReadableText(item) ? `
+      <button class="icon-button card-speech-button" type="button" data-card-speech="${escapeHtml(item.id)}" aria-label="Read aloud" title="Read aloud" aria-pressed="false">
+        <svg class="card-speech-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M5 10v4h3l4 3V7l-4 3H5z"></path>
+          <path d="M15 9.5a4 4 0 0 1 0 5M17.5 7a7 7 0 0 1 0 10"></path>
+        </svg>
+      </button>
+    ` : "";
     return `
       <article class="detail-card card-detail-card${item.lyricsCard ? " lyrics-card-detail" : ""}" data-card-reading-level="${CARD_READING_SCALES.indexOf(state.cardReadingScale)}">
         <div class="detail-actions card-detail-actions">
           ${cardExitAction}
           ${item.lyricsCard ? `<span class="card-toolbar-spacer" aria-hidden="true"></span>` : cardTitle}
           ${item.lyricsCard ? cardReadingControls : ""}
+          ${speechAction}
           ${favoriteAction}
           ${deleteAction}
           ${editAction}
         </div>
+        <span class="card-speech-status sr-only" data-card-speech-status aria-live="polite"></span>
         ${lyricHeading}
-        ${speechAction}
         ${item.imageFileId ? localImageSlotHtml(item) : ""}
         ${cardContentHtml(item)}
         ${cardFactsHtml(item)}
