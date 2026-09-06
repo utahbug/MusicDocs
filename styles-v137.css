@@ -8,7 +8,7 @@
 
 * { box-sizing: border-box; letter-spacing: 0px; }
 
-html, body { min-height: 100%; overflow-x: clip; }
+html, body { min-height: 100%; }
 
 body { margin: 0px; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 17px; line-height: 1.45; }
 
@@ -24,9 +24,11 @@ button { cursor: pointer; }
 
 .sr-only { clip: rect(0px, 0px, 0px, 0px); border: 0px; height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 1px; }
 
-.app-shell { max-width: 100%; min-height: 100vh; overflow-x: clip; padding-bottom: 18px; }
+.app-shell { max-width: 100%; min-height: 100vh; padding-bottom: 18px; }
 
-.app-header { align-items: center; background: linear-gradient(110deg, #245A9A 0%, #3667A8 34%, #2D768A 61%, #237C7A 82%, #2F8B61 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 3px 14px rgba(22, 49, 83, 0.16); color: #FFFFFF; display: flex; gap: 16px; justify-content: space-between; min-height: var(--identity-height); padding: max(7px, env(safe-area-inset-top)) clamp(14px, 4vw, 32px) 7px; position: sticky; top: 0; transition: min-height 180ms ease, padding 180ms ease; z-index: 30; }
+.sticky-app-chrome { max-width: 100%; overflow: visible; position: sticky; top: 0; width: 100%; z-index: 25; }
+
+.app-header { align-items: center; background: linear-gradient(110deg, #245A9A 0%, #3667A8 34%, #2D768A 61%, #237C7A 82%, #2F8B61 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 3px 14px rgba(22, 49, 83, 0.16); color: #FFFFFF; display: flex; gap: 16px; justify-content: space-between; min-height: var(--identity-height); padding: max(7px, env(safe-area-inset-top)) clamp(14px, 4vw, 32px) 7px; position: relative; transition: min-height 180ms ease, padding 180ms ease; z-index: 2; }
 
 .header-actions { align-items: center; display: flex; flex: 0 0 auto; gap: 8px; justify-content: flex-end; margin-left: auto; position: relative; }
 
@@ -72,13 +74,14 @@ h3 { font-size: 1.1rem; line-height: 1.2; margin-bottom: 5px; }
 
 .eyebrow { color: var(--muted); font-size: 0.78rem; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
 
-.main-nav { background: var(--surface); border-bottom: 1px solid var(--line); display: flex; gap: 6px; max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 6px clamp(12px, 4vw, 32px); position: sticky; scrollbar-width: none; top: var(--identity-height); transition: top 180ms ease; z-index: 25; -webkit-overflow-scrolling: touch; }
+.main-nav { background: var(--surface); border-bottom: 1px solid var(--line); display: flex; gap: 6px; max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 6px clamp(12px, 4vw, 32px); position: relative; scrollbar-width: none; z-index: 1; -webkit-overflow-scrolling: touch; }
 .main-nav::-webkit-scrollbar { display: none; }
 
 body.pdf-open { --pdf-nav-space: calc(58px + env(safe-area-inset-bottom)); overflow: hidden; }
 
 body.pdf-open .main-nav { display: none; }
 body.pdf-open .app-header { display: none; }
+body.pdf-open .sticky-app-chrome { display: none; }
 
 body.pdf-open .nav-overflow-wrap .overflow-menu { bottom: calc(58px + env(safe-area-inset-bottom)); max-height: min(58dvh, 340px); position: fixed; right: max(8px, env(safe-area-inset-right)); top: auto; z-index: 120; }
 
@@ -1233,7 +1236,7 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .identity-subtitle { font-size: 0.58rem; }
   body.identity-condensed { --identity-height: max(40px, calc(35px + env(safe-area-inset-top))); }
   .header-actions { display: flex; justify-content: flex-end; }
-  .main-nav { border-top: 0px; display: flex; gap: 3px; inset: auto; overflow-x: auto; overflow-y: hidden; padding: 5px 4px; position: sticky; top: var(--identity-height); z-index: 25; }
+  .main-nav { border-top: 0px; display: flex; gap: 3px; inset: auto; overflow-x: auto; overflow-y: hidden; padding: 5px 4px; position: relative; z-index: 1; }
   .nav-button { font-size: 0.78rem; gap: 3px; min-height: 36px; padding: 5px 6px; white-space: nowrap; }
   .nav-icon-button { min-width: 34px; padding-inline: 6px; }
   .tab-icon { font-size: 0.86rem; }
