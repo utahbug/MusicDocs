@@ -1,4 +1,5 @@
 :root { --color-primary: #2B5F9E; --color-primary-dark: #214A78; --color-primary-light: #EAF2FB; --color-primary-hover: #D8E7F7; --color-border: #B7CCE0; --color-text: #1F2A2E; --color-muted-text: #5C6B70; --color-background: #F7FAFB; --color-surface: #FFFFFF; --color-danger: #B94A48; --color-star: #A8874A; --identity-height: 58px; --bg: var(--color-background); --surface: var(--color-surface); --surface-strong: var(--color-primary-light); --ink: var(--color-text); --muted: var(--color-muted-text); --line: var(--color-border); --accent: var(--color-primary); --accent-strong: var(--color-primary-dark); --accent-soft: var(--color-primary-light); --accent-hover: var(--color-primary-hover); --danger: var(--color-danger); --star: var(--color-star); --shadow: 0 3px 12px color-mix(in srgb, var(--color-text) 7%, transparent); --shadow-strong: 0 12px 32px color-mix(in srgb, var(--color-text) 16%, transparent); --shadow-modal: 0 24px 60px color-mix(in srgb, var(--color-text) 24%, transparent); --shadow-pdf: 0 8px 34px color-mix(in srgb, var(--color-text) 25%, transparent); --overlay: color-mix(in srgb, var(--color-text) 42%, transparent); --tap-feedback: color-mix(in srgb, var(--color-primary) 8%, transparent); --danger-soft: color-mix(in srgb, var(--color-danger) 9%, var(--color-surface)); --danger-border: color-mix(in srgb, var(--color-danger) 42%, var(--color-border)); --radius: 8px; color-scheme: light; }
+:root { --identity-height: max(58px, calc(46px + env(safe-area-inset-top))); }
 
 @font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/AtkinsonHyperlegible-Regular.woff2") format("woff2"); }
 @font-face { font-family: "Atkinson Hyperlegible"; font-style: italic; font-weight: 400; font-display: swap; src: url("assets/AtkinsonHyperlegible-Italic.woff2") format("woff2"); }
@@ -25,7 +26,7 @@ button { cursor: pointer; }
 
 .app-shell { max-width: 100%; min-height: 100vh; overflow-x: clip; padding-bottom: 18px; }
 
-.app-header { align-items: center; background: linear-gradient(110deg, #245A9A 0%, #3667A8 34%, #2D768A 61%, #237C7A 82%, #2F8B61 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 3px 14px rgba(22, 49, 83, 0.16); color: #FFFFFF; display: flex; gap: 16px; justify-content: space-between; min-height: var(--identity-height); padding: max(7px, env(safe-area-inset-top)) clamp(14px, 4vw, 32px) 7px; position: relative; transition: min-height 180ms ease, padding 180ms ease; z-index: 30; }
+.app-header { align-items: center; background: linear-gradient(110deg, #245A9A 0%, #3667A8 34%, #2D768A 61%, #237C7A 82%, #2F8B61 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 3px 14px rgba(22, 49, 83, 0.16); color: #FFFFFF; display: flex; gap: 16px; justify-content: space-between; min-height: var(--identity-height); padding: max(7px, env(safe-area-inset-top)) clamp(14px, 4vw, 32px) 7px; position: sticky; top: 0; transition: min-height 180ms ease, padding 180ms ease; z-index: 30; }
 
 .header-actions { align-items: center; display: flex; flex: 0 0 auto; gap: 8px; justify-content: flex-end; margin-left: auto; position: relative; }
 
@@ -33,12 +34,12 @@ button { cursor: pointer; }
 
 .identity-logo { border: 1px solid rgba(255, 255, 255, 0.34); border-radius: 9px; box-shadow: 0 2px 8px rgba(15, 35, 63, 0.18); flex: 0 0 auto; height: 38px; transition: height 180ms ease, width 180ms ease; width: 38px; }
 .identity-name, .identity-subtitle { display: block; }
-.identity-name { font-size: clamp(1.08rem, 3vw, 1.45rem); letter-spacing: 0.01em; }
-.identity-subtitle { color: rgba(255, 255, 255, 0.8); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em; margin-top: 2px; }
-body.identity-condensed { --identity-height: 36px; }
-body.identity-condensed .app-header { padding-bottom: 3px; padding-top: max(3px, env(safe-area-inset-top)); }
+.identity-name { font-size: clamp(1.08rem, 3vw, 1.45rem); letter-spacing: 0.01em; transition: font-size 180ms ease; }
+.identity-subtitle { color: rgba(255, 255, 255, 0.8); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em; margin-top: 2px; max-height: 1.2em; opacity: 1; overflow: hidden; transition: margin 180ms ease, max-height 180ms ease, opacity 150ms ease; }
+body.identity-condensed { --identity-height: max(40px, calc(35px + env(safe-area-inset-top))); }
+body.identity-condensed .app-header { padding-bottom: 2px; padding-top: max(2px, env(safe-area-inset-top)); }
 body.identity-condensed .identity-logo { height: 26px; width: 26px; }
-body.identity-condensed .identity-subtitle { display: none; }
+body.identity-condensed .identity-subtitle { margin-top: 0; max-height: 0; opacity: 0; }
 body.identity-condensed .identity-name { font-size: 0.98rem; }
 
 .display-preference-wrap { flex: 0 0 auto; position: relative; }
@@ -71,7 +72,7 @@ h3 { font-size: 1.1rem; line-height: 1.2; margin-bottom: 5px; }
 
 .eyebrow { color: var(--muted); font-size: 0.78rem; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
 
-.main-nav { background: var(--surface); border-bottom: 1px solid var(--line); display: flex; gap: 6px; max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 6px clamp(12px, 4vw, 32px); position: sticky; scrollbar-width: none; top: 0px; z-index: 25; -webkit-overflow-scrolling: touch; }
+.main-nav { background: var(--surface); border-bottom: 1px solid var(--line); display: flex; gap: 6px; max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 6px clamp(12px, 4vw, 32px); position: sticky; scrollbar-width: none; top: var(--identity-height); transition: top 180ms ease; z-index: 25; -webkit-overflow-scrolling: touch; }
 .main-nav::-webkit-scrollbar { display: none; }
 
 body.pdf-open { --pdf-nav-space: calc(58px + env(safe-area-inset-bottom)); overflow: hidden; }
@@ -1223,16 +1224,16 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
 .pdf-song-numbering-fields p { color: var(--muted); font-size: 0.75rem; line-height: 1.35; margin: 0; }
 
 @media (max-width: 760px) {
-  :root { --identity-height: 48px; }
+  :root { --identity-height: max(48px, calc(38px + env(safe-area-inset-top))); }
   body { font-size: 16px; }
   .app-shell { padding-bottom: env(safe-area-inset-bottom); }
   .app-header { align-items: center; display: flex; gap: 8px; justify-content: space-between; padding: max(5px, env(safe-area-inset-top)) 8px 5px; }
   .app-header h1 { font-size: 1.08rem; line-height: 1.15; }
   .identity-logo { height: 32px; width: 32px; }
   .identity-subtitle { font-size: 0.58rem; }
-  body.identity-condensed { --identity-height: 34px; }
+  body.identity-condensed { --identity-height: max(40px, calc(35px + env(safe-area-inset-top))); }
   .header-actions { display: flex; justify-content: flex-end; }
-  .main-nav { border-top: 0px; display: flex; gap: 3px; inset: auto; overflow-x: auto; overflow-y: hidden; padding: 5px 4px; position: sticky; top: 0px; z-index: 25; }
+  .main-nav { border-top: 0px; display: flex; gap: 3px; inset: auto; overflow-x: auto; overflow-y: hidden; padding: 5px 4px; position: sticky; top: var(--identity-height); z-index: 25; }
   .nav-button { font-size: 0.78rem; gap: 3px; min-height: 36px; padding: 5px 6px; white-space: nowrap; }
   .nav-icon-button { min-width: 34px; padding-inline: 6px; }
   .tab-icon { font-size: 0.86rem; }
