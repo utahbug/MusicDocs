@@ -662,6 +662,9 @@ function collectElements() {
   el.aboutModal = document.getElementById("aboutModal");
   el.aboutPanel = document.getElementById("aboutPanel");
   el.aboutCloseButton = document.getElementById("aboutCloseButton");
+  el.mobileDisclaimerTrigger = document.getElementById("mobileDisclaimerTrigger");
+  el.mobileDisclaimerDialog = document.getElementById("mobileDisclaimerDialog");
+  el.mobileDisclaimerClose = document.getElementById("mobileDisclaimerClose");
 
   el.batchDeleteControls = {
     library: {
@@ -761,6 +764,11 @@ function wireEvents() {
   });
   el.helpCloseButton.addEventListener("click", closeHelpModal);
   el.aboutCloseButton.addEventListener("click", closeAboutModal);
+  el.mobileDisclaimerTrigger.addEventListener("click", openMobileDisclaimer);
+  el.mobileDisclaimerClose.addEventListener("click", closeMobileDisclaimer);
+  el.mobileDisclaimerDialog.addEventListener("close", () => {
+    if (!el.aboutModal.classList.contains("hidden")) el.mobileDisclaimerTrigger.focus();
+  });
   el.metronomeMinusButton.addEventListener("click", () => setMetronomeBpm(state.metronome.bpm - 1));
   el.metronomePlusButton.addEventListener("click", () => setMetronomeBpm(state.metronome.bpm + 1));
   el.metronomeBpm.addEventListener("input", () => setMetronomeBpm(Number(el.metronomeBpm.value)));
@@ -1050,7 +1058,26 @@ function openAboutModal() {
 
 function closeAboutModal() {
   el.aboutModal.classList.add("hidden");
+  closeMobileDisclaimer(false);
   fitOpenMobileModals();
+}
+
+function openMobileDisclaimer() {
+  if (typeof el.mobileDisclaimerDialog.showModal === "function") {
+    el.mobileDisclaimerDialog.showModal();
+  } else {
+    el.mobileDisclaimerDialog.setAttribute("open", "");
+  }
+}
+
+function closeMobileDisclaimer(restoreFocus = true) {
+  if (!el.mobileDisclaimerDialog.open) return;
+  if (typeof el.mobileDisclaimerDialog.close === "function") {
+    el.mobileDisclaimerDialog.close();
+  } else {
+    el.mobileDisclaimerDialog.removeAttribute("open");
+    if (restoreFocus) el.mobileDisclaimerTrigger.focus();
+  }
 }
 
 async function refreshAppShell(button = null) {
