@@ -1,13 +1,13 @@
-const CACHE_NAME = "musicdocs-shell-v205";
+const CACHE_NAME = "musicdocs-shell-v206";
 
 const CORE_ASSETS = [
   "./",
   "./index.html",
-  "./styles-v137.css",
+  "./styles-v138.css",
   "./assets/pdf.min.js?v=3.11.174",
   "./assets/pdf.worker.min.js?v=3.11.174",
   "./lyrics-cards.js?v=musicdocs-2",
-  "./script-v137.js",
+  "./script-v138.js",
   "./library.json",
   "./manifest.json",
   "./favicon.ico",

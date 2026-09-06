@@ -28,21 +28,16 @@ button { cursor: pointer; }
 
 .sticky-app-chrome { max-width: 100%; overflow: visible; position: sticky; top: 0; width: 100%; z-index: 25; }
 
-.app-header { align-items: center; background: linear-gradient(110deg, #245A9A 0%, #3667A8 34%, #2D768A 61%, #237C7A 82%, #2F8B61 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 3px 14px rgba(22, 49, 83, 0.16); color: #FFFFFF; display: flex; gap: 16px; justify-content: space-between; min-height: var(--identity-height); padding: max(7px, env(safe-area-inset-top)) clamp(14px, 4vw, 32px) 7px; position: relative; transition: min-height 180ms ease, padding 180ms ease; z-index: 2; }
+.app-header { align-items: center; background: linear-gradient(110deg, #245A9A 0%, #3667A8 34%, #2D768A 61%, #237C7A 82%, #2F8B61 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 3px 14px rgba(22, 49, 83, 0.16); color: #FFFFFF; display: flex; gap: 16px; justify-content: space-between; min-height: var(--identity-height); padding: max(7px, env(safe-area-inset-top)) clamp(14px, 4vw, 32px) 7px; position: relative; z-index: 2; }
 
 .header-actions { align-items: center; display: flex; flex: 0 0 auto; gap: 8px; justify-content: flex-end; margin-left: auto; position: relative; }
 
 .app-title-row { align-items: center; display: flex; flex: 1 1 auto; gap: 10px; min-width: 0px; }
 
-.identity-logo { border: 1px solid rgba(255, 255, 255, 0.34); border-radius: 9px; box-shadow: 0 2px 8px rgba(15, 35, 63, 0.18); flex: 0 0 auto; height: 38px; transition: height 180ms ease, width 180ms ease; width: 38px; }
+.identity-logo { border: 1px solid rgba(255, 255, 255, 0.34); border-radius: 9px; box-shadow: 0 2px 8px rgba(15, 35, 63, 0.18); flex: 0 0 auto; height: 38px; width: 38px; }
 .identity-name, .identity-subtitle { display: block; }
-.identity-name { font-size: clamp(1.08rem, 3vw, 1.45rem); letter-spacing: 0.01em; transition: font-size 180ms ease; }
-.identity-subtitle { color: rgba(255, 255, 255, 0.8); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em; margin-top: 2px; max-height: 1.2em; opacity: 1; overflow: hidden; transition: margin 180ms ease, max-height 180ms ease, opacity 150ms ease; }
-body.identity-condensed { --identity-height: max(40px, calc(35px + env(safe-area-inset-top))); }
-body.identity-condensed .app-header { padding-bottom: 2px; padding-top: max(2px, env(safe-area-inset-top)); }
-body.identity-condensed .identity-logo { height: 26px; width: 26px; }
-body.identity-condensed .identity-subtitle { margin-top: 0; max-height: 0; opacity: 0; }
-body.identity-condensed .identity-name { font-size: 0.98rem; }
+.identity-name { font-size: clamp(1.08rem, 3vw, 1.45rem); letter-spacing: 0.01em; }
+.identity-subtitle { color: rgba(255, 255, 255, 0.8); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em; margin-top: 2px; }
 
 .display-preference-wrap { flex: 0 0 auto; position: relative; }
 
@@ -1234,7 +1229,6 @@ body.pdf-open .pdf-viewer { bottom: 0px; height: 100dvh; }
   .app-header h1 { font-size: 1.08rem; line-height: 1.15; }
   .identity-logo { height: 32px; width: 32px; }
   .identity-subtitle { font-size: 0.58rem; }
-  body.identity-condensed { --identity-height: max(40px, calc(35px + env(safe-area-inset-top))); }
   .header-actions { display: flex; justify-content: flex-end; }
   .main-nav { border-top: 0px; display: flex; gap: 3px; inset: auto; overflow-x: auto; overflow-y: hidden; padding: 5px 4px; position: relative; z-index: 1; }
   .nav-button { font-size: 0.78rem; gap: 3px; min-height: 36px; padding: 5px 6px; white-space: nowrap; }
