@@ -1,7 +1,7 @@
 {
     "name":  "MusicDocs",
     "short_name":  "MusicDocs",
-    "description":  "A local-first helper for music, documents, lists, cards, links, and musician tools.",
+    "description":  "A local-first helper for music, documents, lists, text, links, and musician tools.",
     "start_url":  "./index.html",
     "scope":  "./",
     "display":  "standalone",

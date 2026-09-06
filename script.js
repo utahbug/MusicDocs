@@ -1261,7 +1261,7 @@ function hydrateLocalImages(container) {
       }
       const url = URL.createObjectURL(file);
       const img = new Image();
-      img.alt = slot.dataset.imageAlt || "Card image";
+      img.alt = slot.dataset.imageAlt || "Text image";
       img.onload = () => URL.revokeObjectURL(url);
       img.src = url;
       slot.replaceChildren(img);
@@ -1947,7 +1947,7 @@ function getCardSubtypeFromForm() {
     return normalizeCardSubtype(el.importCardSubtype.value);
   }
   const custom = normalizeCardSubtype(el.importCardSubtypeCustom.value);
-  if (!custom) throw new Error("Enter a custom card subtype before saving.");
+  if (!custom) throw new Error("Enter a custom Text subtype before saving.");
   return custom;
 }
 
@@ -1967,11 +1967,11 @@ function applyImportContext() {
     : "Title";
   el.importTitleField.required = titleRequired;
   el.importDialogTitle.textContent = editing
-    ? `Edit ${type === "link" ? "link" : type === "card" ? "card" : "item"}`
+    ? `Edit ${type === "link" ? "link" : type === "card" ? "Text" : "item"}`
     : context === "links"
       ? "Add link"
       : context === "cards"
-        ? "Add card"
+        ? "New Text"
         : "Add item";
   el.importSaveButton.innerHTML = "&#10003;";
   el.importSaveButton.setAttribute("aria-label", editing ? "Save changes" : "Save");
@@ -2202,7 +2202,7 @@ function handleCardImageControlClick(event) {
     state.selectedCardImage = null;
     syncCardEditorToHiddenField();
     updateCardImageControls();
-    setImportStatus("Image removed from this card.");
+    setImportStatus("Image removed from this Text item.");
   }
 }
 
@@ -2221,7 +2221,7 @@ async function handleInlineCardImageSelected(event) {
     updateCardImageControls();
     setImportStatus("Image added as a thumbnail. Choose its size below the image.");
   } catch {
-    setImportStatus("That photo could not be inserted into the card text.", true);
+    setImportStatus("That photo could not be inserted into the Text item.", true);
   } finally {
     event.target.value = "";
   }
@@ -2478,7 +2478,7 @@ async function buildImportedItemFromForm() {
 
   if (type === "card") {
     if (findDuplicateImportedItem(item)) {
-      throw new Error("That card already appears in the app.");
+      throw new Error("That Text item already appears in the app.");
     }
     await addCardImageFromForm(item.id, item);
   }
@@ -2501,7 +2501,7 @@ async function addCardImageFromForm(itemId, fields) {
 function buildEditableFieldsFromForm(type, fallbackTitle = "Untitled Item") {
   const enteredTitle = el.importTitleField.value.trim();
   if (type === "card" && !enteredTitle) {
-    throw new Error("Enter a title before saving the card.");
+    throw new Error("Enter a title before saving the Text item.");
   }
   const title = enteredTitle || fallbackTitle;
   const fields = {
@@ -2569,7 +2569,7 @@ function getImportFallbackTitle(type) {
     return "Untitled Link";
   }
 
-  if (type === "card") return "Untitled Card";
+  if (type === "card") return "Untitled Text";
   if (type === "image") return "Untitled Image";
   if (type === "note") return "Untitled Note";
   return "Untitled Item";
@@ -4290,7 +4290,7 @@ function renderCards() {
     reorderCards: true,
     hideMeta: true,
     emptyTitle: "Turn words into a rehearsal aid",
-    emptyMessage: "Add a Card for lyrics, cues, actions, or teaching notes that need to be easy to read."
+    emptyMessage: "Create Text for easy-to-read lyrics, notes, cues, teaching material, and images."
   });
   updateBatchDeleteControls("cards");
 }
@@ -4350,7 +4350,7 @@ function renderFavorites() {
     el.favoritesContent.classList.remove("compact-index-list");
     el.favoritesContent.classList.remove("favorite-list");
     el.favoritesContent.classList.remove("favorite-reorder-list");
-    el.favoritesContent.innerHTML = `<div class="empty-state compact-empty"><h3>Your quickest songs live here</h3><p>Tap a star beside any file, Card, or link to add it to Favorites.</p></div>`;
+    el.favoritesContent.innerHTML = `<div class="empty-state compact-empty"><h3>Your quickest songs live here</h3><p>Tap a star beside any file, Text item, or link to add it to Favorites.</p></div>`;
     return;
   }
   renderFavoriteRows(favoriteRows);
@@ -4460,7 +4460,7 @@ function renderSearch() {
     if (recentItems.length) {
       recentItems.forEach((item) => el.searchContent.appendChild(createItemCard(item)));
     } else {
-      el.searchContent.innerHTML = `<div class="empty-state"><p>Type a search term to find songs, cards, notes, pages, and tags.</p></div>`;
+      el.searchContent.innerHTML = `<div class="empty-state"><p>Type a search term to find songs, text, notes, pages, and tags.</p></div>`;
     }
     return;
   }
@@ -5341,7 +5341,7 @@ function toggleCardSpeech(itemId) {
   const item = state.itemsById.get(itemId);
   const text = item ? cardSpeechText(item) : "";
   if (!text) {
-    window.alert("This card has no text to read aloud.");
+    window.alert("This Text item has no text to read aloud.");
     return;
   }
 
@@ -5358,10 +5358,10 @@ function toggleCardSpeech(itemId) {
   };
   utterance.onerror = (event) => {
     if (state.speechUtterance !== utterance) return;
-    const message = ["canceled", "interrupted"].includes(event.error) ? "" : "Unable to read this card aloud.";
+    const message = ["canceled", "interrupted"].includes(event.error) ? "" : "Unable to read this Text item aloud.";
     stopCardSpeech(message);
   };
-  updateCardSpeechUi(true, "Reading card aloud.");
+  updateCardSpeechUi(true, "Reading text aloud.");
   window.speechSynthesis.speak(utterance);
 }
 
@@ -5378,7 +5378,7 @@ function detailHtml(item) {
     </button>
   `;
   const cardExitAction = `
-    <button class="icon-button card-exit-button" type="button" data-exit-card aria-label="Exit card and return" title="Return">
+    <button class="icon-button card-exit-button" type="button" data-exit-card aria-label="Exit Text and return" title="Return">
       &#8592;
     </button>
   `;
@@ -5407,7 +5407,7 @@ function detailHtml(item) {
     const visibleTitle = title && title !== "Untitled Song Card" && title !== "Untitled Card";
     const cardTitle = visibleTitle
       ? `<span id="detailTitle" class="compact-detail-title">${escapeHtml(title)}</span>`
-      : `<span id="detailTitle" class="sr-only">Card</span>`;
+      : `<span id="detailTitle" class="sr-only">Text</span>`;
     const lyricHeading = item.lyricsCard && visibleTitle
       ? `<h2 id="detailTitle" class="lyrics-card-title">${escapeHtml(title)}</h2>`
       : "";
@@ -6168,8 +6168,8 @@ function openCardImageLightbox(image) {
   layer.className = "card-image-lightbox";
   layer.setAttribute("role", "dialog");
   layer.setAttribute("aria-modal", "true");
-  layer.setAttribute("aria-label", "Enlarged card image");
-  layer.innerHTML = `<button type="button" aria-label="Close enlarged image" title="Close">&times;</button><img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt || "Card image")}">`;
+  layer.setAttribute("aria-label", "Enlarged Text image");
+  layer.innerHTML = `<button type="button" aria-label="Close enlarged image" title="Close">&times;</button><img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt || "Text image")}">`;
   const close = () => layer.remove();
   layer.addEventListener("click", close);
   layer.querySelector("img").addEventListener("click", (event) => event.stopPropagation());
@@ -9577,7 +9577,7 @@ function renderListEditResults() {
 }
 
 function listPickerTypeGroup(item) {
-  if (item.type === "card") return "Cards";
+  if (item.type === "card") return "Text";
   if (item.type === "link") return "Links";
   return "Files";
 }
@@ -9587,7 +9587,7 @@ function normalizeListEditSort(value) {
 }
 
 function compareListPickerType(a, b) {
-  const order = { Cards: 0, Files: 1, Links: 2 };
+  const order = { Text: 0, Files: 1, Links: 2 };
   const groupDifference = order[listPickerTypeGroup(a)] - order[listPickerTypeGroup(b)];
   return groupDifference || compareTitle(a, b);
 }
@@ -9909,7 +9909,7 @@ function compactLibraryMetaText(item) {
 }
 
 function compactTypeLabel(item) {
-  if (item?.type === "card") return getCardSubtype(item) || "card";
+  if (item?.type === "card") return getCardSubtype(item) || "Text";
   return item?.type || "item";
 }
 
@@ -9917,7 +9917,7 @@ function setlistMeta(item, entry) {
   const page = entry.page || item.page;
   const pieces = [
     page ? `p. ${page}` : "",
-    item.type,
+    item.type === "card" ? "Text" : item.type,
     entry.notes || item.notes || ""
   ].filter(Boolean);
   return escapeHtml(pieces.join(" · "));
@@ -10017,7 +10017,7 @@ async function exportBackup() {
       app: "kens-music-app",
       version: 2,
       exportedAt: new Date().toISOString(),
-      note: "Private app export. Includes lists, favorites, cards, links, metadata, and uploaded local file blobs when available. Share only with people who should receive those files.",
+      note: "Private app export. Includes lists, favorites, text, links, metadata, and uploaded local file blobs when available. Share only with people who should receive those files.",
       data,
       files,
       missingFileIds
@@ -10049,7 +10049,7 @@ function importBackupFromFile(event) {
       const backup = JSON.parse(String(reader.result || "{}"));
       const data = backup.data || backup;
       const fileRecords = Array.isArray(backup.files) ? backup.files : Array.isArray(data.files) ? data.files : [];
-      const ok = window.confirm("Import this app data and included files? This will replace local lists, favorites, cards, links, and item metadata on this device.");
+      const ok = window.confirm("Import this app data and included files? This will replace local lists, favorites, text, links, and item metadata on this device.");
       if (!ok) return;
 
       await restoreBackupFiles(fileRecords);

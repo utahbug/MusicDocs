@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-title" content="MusicDocs">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>MusicDocs</title>
-    <meta name="description" content="MusicDocs brings sheet music, lyric cards, lists, and rehearsal tools together in one musician-friendly app.">
+    <meta name="description" content="MusicDocs brings sheet music, readable text, lists, and rehearsal tools together in one musician-friendly app.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="MusicDocs">
     <meta property="og:title" content="MusicDocs">
@@ -28,10 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=musicdocs-121">
+    <link rel="stylesheet" href="styles.css?v=musicdocs-123">
     <script src="assets/pdf.min.js?v=3.11.174" defer></script>
     <script src="lyrics-cards.js?v=musicdocs-2" defer></script>
-    <script src="script.js?v=musicdocs-122" defer></script>
+    <script src="script.js?v=musicdocs-123" defer></script>
   </head>
   <body>
     <div id="appShell" class="app-shell">
@@ -97,7 +97,7 @@
         </button>
         <button class="nav-button active" type="button" data-section="lists" aria-label="Lists" title="Lists"><span class="tab-icon" aria-hidden="true">&#9776;</span><span>Lists</span></button>
         <button class="nav-button" type="button" data-section="library" aria-label="Files" title="Files"><span class="tab-icon" aria-hidden="true">&#9638;</span><span>Files</span></button>
-        <button class="nav-button" type="button" data-section="cards" aria-label="Cards" title="Cards"><span class="tab-icon" aria-hidden="true">&#9645;</span><span>Cards</span></button>
+        <button class="nav-button" type="button" data-section="cards" aria-label="Text" title="Text"><span class="tab-icon" aria-hidden="true">&#9645;</span><span>Text</span></button>
         <button class="nav-button" type="button" data-section="links" aria-label="Links" title="Links"><span class="tab-icon" aria-hidden="true">&#8599;</span><span>Links</span></button>
       </nav>
 
@@ -107,13 +107,13 @@
             <div class="welcome-mark" aria-hidden="true"><img src="assets/icon.svg" alt=""></div>
             <p class="welcome-eyebrow">Ready when you are</p>
             <h2 id="welcomeTitle">Music and documents at your fingertips</h2>
-            <p class="welcome-copy">Open files quickly, organize a working list, or use readable Cards on a phone.</p>
+            <p class="welcome-copy">Open files quickly, organize a working list, or view readable text on a phone.</p>
             <div class="welcome-actions">
               <button class="welcome-action welcome-action-files" type="button" data-welcome-section="library"><span aria-hidden="true">&#9835;</span><strong>Open a file</strong><small>Browse PDFs and images</small></button>
               <button class="welcome-action welcome-action-lists" type="button" data-welcome-section="lists"><span aria-hidden="true">&#9776;</span><strong>Choose a list</strong><small>Plan and rehearse</small></button>
-              <button class="welcome-action welcome-action-cards" type="button" data-welcome-section="cards"><span aria-hidden="true">&#9645;</span><strong>View Cards</strong><small>Readable on a phone</small></button>
+              <button class="welcome-action welcome-action-cards" type="button" data-welcome-section="cards"><span aria-hidden="true">&#9645;</span><strong>View text</strong><small>Readable on a phone</small></button>
             </div>
-            <p class="welcome-hint">New here? Open <strong>Cards</strong> to see phone-friendly text.</p>
+            <p class="welcome-hint">New here? Open <strong>Text</strong> for phone-friendly lyrics and notes.</p>
           </div>
         </section>
 
@@ -171,18 +171,18 @@
             <ul>
               <li>When <strong>On</strong>, tapping the next-page zone on a PDF's last page opens the next PDF.</li>
               <li>When <strong>Off</strong>, tapping that zone keeps the current PDF open.</li>
-              <li class="follow-note-item">Cards and links are skipped.</li>
+              <li class="follow-note-item">Text items and links are skipped.</li>
             </ul>
           </div>
         </section>
 
-        <section id="cardsSection" class="view" data-view="cards" aria-label="Cards">
+        <section id="cardsSection" class="view" data-view="cards" aria-label="Text">
           <div class="tab-action-row">
-            <button id="cardTopAddButton" class="top-add-button label-add-button card-label-add-button" type="button" aria-label="Add card" title="Add card">Add Card +</button>
+            <button id="cardTopAddButton" class="top-add-button label-add-button card-label-add-button" type="button" aria-label="New Text" title="New Text">New Text +</button>
           </div>
           <div id="cardsContent" class="cards-grid"></div>
-          <button id="cardAddButton" class="top-add-button label-add-button card-label-add-button bottom-card-add-button" type="button" aria-label="Add card" title="Add card">Add Card +</button>
-          <div class="cards-purpose-note">Cards let you add your own easy-to-read content, such as lyrics, notes, pasted text, or image. Cards can be added to favorites and lists.</div>
+          <button id="cardAddButton" class="top-add-button label-add-button card-label-add-button bottom-card-add-button" type="button" aria-label="New Text" title="New Text">New Text +</button>
+          <div class="cards-purpose-note">Text lets you create easy-to-read lyrics, notes, cues, teaching material, and images. Text can be added to Favorites and Lists.</div>
         </section>
 
         <section id="linksSection" class="view" data-view="links" aria-label="Links">
@@ -888,7 +888,7 @@
             <select id="importType">
               <option value="pdf">PDF sheet music or document</option>
               <option value="image">Photo / image</option>
-              <option value="card">Text card</option>
+              <option value="card">Text</option>
               <option value="link">Online link</option>
               <option value="note">Note / plan</option>
               <option value="index">Book page reference</option>
@@ -897,7 +897,7 @@
 
           <div id="cardImportFields" class="type-fields hidden">
             <div id="richCardContentRow" class="rich-card-row">
-              <div id="cardFormatToolbar" class="rich-toolbar" aria-label="Card text formatting">
+              <div id="cardFormatToolbar" class="rich-toolbar" aria-label="Text formatting">
                 <button type="button" data-rich-command="bold" aria-label="Bold" title="Bold" aria-pressed="false"><strong>B</strong></button>
                 <button type="button" data-rich-command="italic" aria-label="Italic" title="Italic" aria-pressed="false"><em>I</em></button>
                 <button type="button" data-rich-command="strikeThrough" aria-label="Strikeout" title="Strikeout" aria-pressed="false"><span class="strikeout-icon" aria-hidden="true"><span>S</span></span></button>
@@ -922,7 +922,7 @@
                 </label>
               </div>
               <input id="inlineCardImageInput" type="file" accept="image/*" hidden>
-              <div id="importCardEditor" class="rich-card-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Card text"></div>
+              <div id="importCardEditor" class="rich-card-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Text content"></div>
               <div id="cardImageControls" class="card-image-controls hidden" role="group" aria-label="Selected image size">
                 <span>Image size</span>
                 <div class="card-image-size-buttons">
@@ -985,7 +985,7 @@
 
           <div id="importCardImageRow" class="file-picker-field hidden">
             <span class="file-picker-label">Optional image</span>
-            <input id="importCardImage" class="sr-only" type="file" accept="image/*" aria-label="Select optional card image">
+            <input id="importCardImage" class="sr-only" type="file" accept="image/*" aria-label="Select optional Text image">
             <div class="file-picker-row">
               <label class="secondary-button file-picker-button" for="importCardImage">Select File</label>
               <span id="importCardImageName" class="file-picker-name">No image selected</span>
@@ -1039,7 +1039,7 @@
             <div id="listEditItems" class="list-edit-items"></div>
           </section>
 
-          <section id="listEditAddSection" class="list-edit-section list-edit-add-section hidden" aria-label="Add items from Files, Cards, and Links">
+          <section id="listEditAddSection" class="list-edit-section list-edit-add-section hidden" aria-label="Add items from Files, Text, and Links">
             <div class="picker-heading list-edit-section-heading">
               <strong>Add Items</strong>
               <button class="secondary-button list-edit-done-adding" type="button" data-list-edit-view="current">Done adding</button>
@@ -1055,7 +1055,7 @@
                   <option value="type">All — Type</option>
                   <option value="title">All — Title</option>
                   <option value="pdf" selected>PDF only</option>
-                  <option value="card">Cards only</option>
+                  <option value="card">Text only</option>
                   <option value="link">Links only</option>
                 </select>
               </label>
@@ -1114,7 +1114,7 @@
               <summary>Lists</summary>
               <div class="help-topic-content">
                 <ul>
-                  <li>Organize songs, cards, and links into custom groups.</li>
+                  <li>Organize songs, text, and links into custom groups.</li>
                   <li class="help-next-song-item"><strong>Next Song</strong>
                     <ul>
                       <li class="help-subitem">Defaults to On when a list opens.</li>
@@ -1129,11 +1129,11 @@
             </details>
 
             <details class="help-topic">
-              <summary>Cards</summary>
+              <summary>Text</summary>
               <div class="help-topic-content">
                 <div class="help-card-notes">
-                  <p>Cards let you add your own easy-to-read content, such as lyrics, notes, pasted text, or image. Cards can be added to favorites and lists.</p>
-                  <p>Whereas sheet music is best viewed on an iPad, Cards are ideal for displaying text (e.g., lyrics).</p>
+                  <p>Text lets you create easy-to-read lyrics, notes, cues, teaching material, and images.</p>
+                  <p>Text can be added to Favorites and Lists.</p>
                 </div>
               </div>
             </details>
@@ -1175,7 +1175,7 @@
           <strong>Your work stays with you</strong>
           <p>Your personal lists, favorites, and edits remain on this device unless you export them.</p>
         </div>
-        <p class="about-version">Version 1.0 <span>Build 1.01</span></p>
+        <p class="about-version">Version 1.0 <span>Build 1.02</span></p>
         <button class="secondary-button about-update-button" type="button" data-refresh-app>Check for updates</button>
         <p id="offlineReadiness" class="offline-readiness is-checking" role="status">Preparing offline access&hellip;</p>
         <p class="about-disclaimer">MusicDocs is an independent tool for organizing and presenting music and documents.</p>

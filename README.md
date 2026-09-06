@@ -1,12 +1,12 @@
 # MusicDocs
 
-A simple local-first helper for music, documents, quick lists, cards, links, and uploaded files.
+A simple local-first helper for music, documents, quick lists, text, links, and uploaded files.
 
 This repository is intended to hold the app shell: HTML, CSS, JavaScript, icons, and starter data. Personal music files and exported data backups should be treated as private.
 
 ## Local/private data
 
-The app stores user-added items, favorites, lists, uploaded PDFs/images, and cards in the browser on each device.
+The app stores user-added items, favorites, lists, uploaded PDFs/images, and text items in the browser on each device.
 
 Use the app menu:
 
